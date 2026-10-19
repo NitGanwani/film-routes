@@ -1,0 +1,22 @@
+# Local PostgreSQL for development and integration tests.
+# Start with: docker compose up -d
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: film-routes-db
+    environment:
+      POSTGRES_USER: film_routes
+      POSTGRES_PASSWORD: film_routes
+      POSTGRES_DB: film_routes
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U film_routes -d film_routes']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres_data:

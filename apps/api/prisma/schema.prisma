@@ -1,0 +1,233 @@
+// Data model for film-routes. See docs/concept.md for the product context.
+//
+// Conventions:
+//  - Table and column names are snake_case in the database (@@map / @map),
+//    camelCase in the Prisma client.
+//  - Primary keys are UUID v7 (time-ordered, friendlier to indexes than v4).
+//  - Timestamps are timestamptz.
+//  - User-facing labels (emotions, statuses) are NOT stored: the web client
+//    translates the enum values with its i18n files.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ──────────────────────────────────────────────────────────────
+
+enum Locale {
+  ES
+  EN
+
+  @@map("locale")
+}
+
+/// PRIVATE: only the author. UNLISTED: reachable through a personal invite.
+/// PUBLIC: listed in discovery; anyone can start it.
+enum Visibility {
+  PRIVATE
+  UNLISTED
+  PUBLIC
+
+  @@map("visibility")
+}
+
+/// Keep in sync with EMOTIONS in packages/shared.
+enum Emotion {
+  JOY
+  TENDERNESS
+  AWE
+  THOUGHTFUL
+  TENSION
+  FEAR
+  SADNESS
+  DISCOMFORT
+
+  @@map("emotion")
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  ABANDONED
+
+  @@map("enrollment_status")
+}
+
+// ─── Identity ───────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  /// Stored lowercase; the API normalises before writing.
+  username     String   @unique @db.VarChar(30)
+  /// Stored lowercase; the API normalises before writing.
+  email        String   @unique @db.VarChar(254)
+  passwordHash String   @map("password_hash")
+  locale       Locale   @default(ES)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  routes        Route[]
+  invitesIssued RouteInvite[]
+  enrollments   Enrollment[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+/// Rotating refresh tokens. Only a hash is stored, never the token itself.
+model RefreshToken {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ─── Film catalogue (cache of TMDB data) ────────────────────────────────
+
+model Film {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  tmdbId         Int      @unique @map("tmdb_id")
+  imdbId         String?  @map("imdb_id") @db.VarChar(16)
+  originalTitle  String   @map("original_title")
+  releaseYear    Int?     @map("release_year")
+  runtimeMinutes Int?     @map("runtime_minutes")
+  posterPath     String?  @map("poster_path")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  translations FilmTranslation[]
+  steps        RouteStep[]
+
+  @@map("films")
+}
+
+model FilmTranslation {
+  filmId   String  @map("film_id") @db.Uuid
+  locale   Locale
+  title    String
+  overview String?
+
+  film Film @relation(fields: [filmId], references: [id], onDelete: Cascade)
+
+  @@id([filmId, locale])
+  @@map("film_translations")
+}
+
+// ─── Routes ─────────────────────────────────────────────────────────────
+
+model Route {
+  id          String     @id @default(uuid(7)) @db.Uuid
+  authorId    String     @map("author_id") @db.Uuid
+  /// Language the author wrote title, description and notes in.
+  locale      Locale
+  title       String     @db.VarChar(120)
+  description String?
+  visibility  Visibility @default(PRIVATE)
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  author      User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  steps       RouteStep[]
+  invites     RouteInvite[]
+  enrollments Enrollment[]
+
+  @@index([authorId])
+  @@index([visibility, createdAt])
+  @@map("routes")
+}
+
+model RouteStep {
+  id            String   @id @default(uuid(7)) @db.Uuid
+  routeId       String   @map("route_id") @db.Uuid
+  filmId        String   @map("film_id") @db.Uuid
+  /// 1-based order inside the route.
+  position      Int
+  /// Spoiler-free note shown when the step unlocks.
+  noteBefore    String?  @map("note_before")
+  /// Shown only after the traveler marks the film as watched.
+  noteAfter     String?  @map("note_after")
+  /// How the author felt: the "you vs them" comparison starts here.
+  authorEmotion Emotion? @map("author_emotion")
+
+  route    Route          @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  film     Film           @relation(fields: [filmId], references: [id], onDelete: Restrict)
+  progress StepProgress[]
+
+  @@unique([routeId, position])
+  @@unique([routeId, filmId])
+  @@index([filmId])
+  @@map("route_steps")
+}
+
+/// Personal, single-use invitation link. Only a hash of the token is stored.
+model RouteInvite {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  routeId     String    @map("route_id") @db.Uuid
+  createdById String    @map("created_by_id") @db.Uuid
+  tokenHash   String    @unique @map("token_hash")
+  expiresAt   DateTime? @map("expires_at") @db.Timestamptz(3)
+  revokedAt   DateTime? @map("revoked_at") @db.Timestamptz(3)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  route      Route       @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  createdBy  User        @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  /// Single use: the unique inviteId on Enrollment guarantees it.
+  enrollment Enrollment?
+
+  @@index([routeId])
+  @@map("route_invites")
+}
+
+// ─── Progress ───────────────────────────────────────────────────────────
+
+/// A traveler following a route.
+model Enrollment {
+  id          String           @id @default(uuid(7)) @db.Uuid
+  routeId     String           @map("route_id") @db.Uuid
+  travelerId  String           @map("traveler_id") @db.Uuid
+  inviteId    String?          @unique @map("invite_id") @db.Uuid
+  status      EnrollmentStatus @default(ACTIVE)
+  startedAt   DateTime         @default(now()) @map("started_at") @db.Timestamptz(3)
+  completedAt DateTime?        @map("completed_at") @db.Timestamptz(3)
+
+  route    Route          @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  traveler User           @relation(fields: [travelerId], references: [id], onDelete: Cascade)
+  invite   RouteInvite?   @relation(fields: [inviteId], references: [id], onDelete: SetNull)
+  progress StepProgress[]
+
+  @@unique([routeId, travelerId])
+  @@index([travelerId])
+  @@map("enrollments")
+}
+
+/// One row per (enrollment, step) once the traveler touches the step.
+/// startedAt = "I'm starting it now"; watchedAt = confirmed as watched.
+model StepProgress {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  enrollmentId String    @map("enrollment_id") @db.Uuid
+  stepId       String    @map("step_id") @db.Uuid
+  startedAt    DateTime? @map("started_at") @db.Timestamptz(3)
+  watchedAt    DateTime? @map("watched_at") @db.Timestamptz(3)
+  emotion      Emotion?
+  /// Short private note; only the traveler and the route author can read it.
+  comment      String?   @db.VarChar(280)
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  step       RouteStep  @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
+  @@unique([enrollmentId, stepId])
+  @@index([stepId])
+  @@map("step_progress")
+}
