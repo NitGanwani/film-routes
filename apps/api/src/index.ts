@@ -4,7 +4,15 @@ import { createPrismaClient } from './db.js';
 
 const config = loadConfig();
 const db = createPrismaClient(config.DATABASE_URL);
-const app = createApp({ corsOrigins: config.CORS_ORIGINS });
+const app = createApp({
+  corsOrigins: config.CORS_ORIGINS,
+  db,
+  auth: {
+    accessSecret: config.JWT_ACCESS_SECRET,
+    accessTtlSeconds: config.ACCESS_TOKEN_TTL_SECONDS,
+    refreshTtlDays: config.REFRESH_TOKEN_TTL_DAYS,
+  },
+});
 
 const server = app.listen(config.PORT, () => {
   console.log(`API listening on http://localhost:${config.PORT}`);

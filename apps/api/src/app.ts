@@ -4,10 +4,17 @@ import express, {
   type RequestHandler,
 } from 'express';
 import helmet from 'helmet';
+import { createAuthRouter } from './auth/routes.js';
+import { createAuthService, type AuthSettings } from './auth/service.js';
+import type { Db } from './db.js';
 import { HttpError } from './errors.js';
 
 export type AppOptions = {
   corsOrigins: string[];
+  db: Db;
+  auth: AuthSettings;
+  /** Override in tests; the default is deliberately strict. */
+  authAttemptsPer15Min?: number;
 };
 
 const notFound: RequestHandler = (_req, res) => {
@@ -37,7 +44,12 @@ const errorHandler: ErrorRequestHandler = (error, _req, res, next) => {
   });
 };
 
-export function createApp({ corsOrigins }: AppOptions) {
+export function createApp({
+  corsOrigins,
+  db,
+  auth,
+  authAttemptsPer15Min = 20,
+}: AppOptions) {
   const app = express();
 
   app.use(helmet());
@@ -47,6 +59,15 @@ export function createApp({ corsOrigins }: AppOptions) {
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok' });
   });
+
+  app.use(
+    '/auth',
+    createAuthRouter({
+      service: createAuthService(db, auth),
+      settings: auth,
+      attemptsPer15Min: authAttemptsPer15Min,
+    }),
+  );
 
   app.use(notFound);
   app.use(errorHandler);

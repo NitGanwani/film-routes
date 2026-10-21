@@ -1,8 +1,9 @@
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
-import { createApp } from './app.js';
+import { createTestApp, createTestDb } from './test/helpers.js';
 
-const app = createApp({ corsOrigins: ['http://localhost:5173'] });
+// Prisma connects lazily, so these tests never touch the database.
+const app = createTestApp(createTestDb());
 
 describe('app', () => {
   it('answers the health check', async () => {

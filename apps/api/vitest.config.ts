@@ -4,5 +4,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],
+    // Integration tests share one test database, so files must not overlap.
+    fileParallelism: false,
   },
 });
