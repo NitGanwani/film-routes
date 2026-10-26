@@ -10,6 +10,8 @@ import type { Db } from './db.js';
 import { HttpError } from './errors.js';
 import { createFilmsRouter } from './films/routes.js';
 import { createFilmService } from './films/service.js';
+import { createRoutesRouter } from './routes/router.js';
+import { createRouteService } from './routes/service.js';
 import type { TmdbClient } from './tmdb/client.js';
 
 export type AppOptions = {
@@ -76,12 +78,22 @@ export function createApp({
     }),
   );
 
+  const filmService = createFilmService(db, tmdb);
+
   app.use(
     '/films',
     createFilmsRouter({
-      service: createFilmService(db, tmdb),
+      service: filmService,
       accessSecret: auth.accessSecret,
       requestsPerMinute: filmRequestsPerMinute,
+    }),
+  );
+
+  app.use(
+    '/routes',
+    createRoutesRouter({
+      service: createRouteService(db, filmService),
+      accessSecret: auth.accessSecret,
     }),
   );
 

@@ -27,7 +27,7 @@ export type FilmSearchPage = {
   results: FilmSummary[];
 };
 
-const posterUrl = (path: string | null) =>
+export const posterUrl = (path: string | null) =>
   path ? `${IMAGE_BASE_URL}${path}` : null;
 
 const toSummary = (movie: TmdbMovie): FilmSummary => ({

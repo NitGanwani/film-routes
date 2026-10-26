@@ -36,6 +36,7 @@ export const ROUTE_LIMITS = {
   minSteps: 2,
   maxSteps: 12,
   titleMaxLength: 120,
+  descriptionMaxLength: 1000,
   noteMaxLength: 1000,
   commentMaxLength: 280,
 } as const;

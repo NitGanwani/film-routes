@@ -50,7 +50,19 @@ export const matrix = (locale: Locale): TmdbMovieDetail => ({
   imdbId: 'tt0133093',
 });
 
-/** A TMDB stand-in that only knows film 603; every call is recorded. */
+/** Filler films 1..50, enough to fill a route (the limit is 12 steps). */
+const filler = (tmdbId: number, locale: Locale): TmdbMovieDetail => ({
+  tmdbId,
+  title: locale === 'es' ? `Película ${tmdbId}` : `Film ${tmdbId}`,
+  originalTitle: `Film ${tmdbId}`,
+  overview: null,
+  releaseYear: 2000,
+  posterPath: null,
+  runtimeMinutes: 90,
+  imdbId: null,
+});
+
+/** A TMDB stand-in that knows film 603 and fillers 1..50; calls are recorded. */
 export function createFakeTmdb() {
   return {
     searchMovies: vi.fn<TmdbClient['searchMovies']>(async (_query, locale) => ({
@@ -59,10 +71,13 @@ export function createFakeTmdb() {
       results: [matrix(locale)],
     })),
     getMovie: vi.fn<TmdbClient['getMovie']>(async (tmdbId, locale) => {
-      if (tmdbId !== 603) {
-        throw new HttpError(404, 'film_not_found', 'Film not found');
+      if (tmdbId === 603) {
+        return matrix(locale);
       }
-      return matrix(locale);
+      if (tmdbId >= 1 && tmdbId <= 50) {
+        return filler(tmdbId, locale);
+      }
+      throw new HttpError(404, 'film_not_found', 'Film not found');
     }),
   };
 }
