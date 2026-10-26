@@ -4,6 +4,7 @@ services:
   postgres:
     image: postgres:17-alpine
     container_name: film-routes-db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: film_routes
       POSTGRES_PASSWORD: film_routes
