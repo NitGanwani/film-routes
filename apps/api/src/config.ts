@@ -8,6 +8,8 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   // HS256 needs a secret at least as long as the hash output (32 bytes).
   JWT_ACCESS_SECRET: z.string().min(32),
+  // TMDB "API Read Access Token" (a long JWT), sent as a Bearer header.
+  TMDB_ACCESS_TOKEN: z.string().min(1),
   ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(900),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
   CORS_ORIGINS: z

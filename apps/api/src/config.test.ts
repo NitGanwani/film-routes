@@ -4,6 +4,7 @@ import { loadConfig } from './config.js';
 const validEnv = {
   DATABASE_URL: 'postgresql://u:p@localhost:5432/db',
   JWT_ACCESS_SECRET: 'x'.repeat(32),
+  TMDB_ACCESS_TOKEN: 'fake-tmdb-token',
 };
 
 describe('loadConfig', () => {
