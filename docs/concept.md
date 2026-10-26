@@ -18,7 +18,7 @@ or tells the recommender what happened.
 
 ## Core idea
 
-A **route** is an ordered sequence of 2 to 12 films with the author's notes.
+A **route** is an ordered sequence of 3 to 10 films with the author's notes.
 
 - The **guide** (author) picks the films and writes, for each step:
   - a spoiler-free **note before** ("watch for how the silence is used"),

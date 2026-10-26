@@ -1,3 +1,4 @@
+import { ROUTE_LIMITS } from '@film-routes/shared';
 import request from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import {
@@ -179,9 +180,13 @@ describe('PATCH /routes/:id', () => {
     expect(stranger.status).toBe(404);
   });
 
-  it('only lets a route with at least two films be shared', async () => {
+  it('only lets a route with enough films be shared', async () => {
     const { auth } = await signUp('ada');
-    const { routeId } = await routeWith(auth, [603]);
+    // One film short of the minimum.
+    const { routeId } = await routeWith(
+      auth,
+      Array.from({ length: ROUTE_LIMITS.minSteps - 1 }, (_, i) => i + 1),
+    );
     const publish = () =>
       request(app)
         .patch(`/routes/${routeId}`)
@@ -189,7 +194,7 @@ describe('PATCH /routes/:id', () => {
         .send({ visibility: 'unlisted' });
 
     const tooShort = await publish();
-    await addStep(auth, routeId, { tmdbId: 1 });
+    await addStep(auth, routeId, { tmdbId: 603 });
     const shared = await publish();
 
     expect(tooShort.status).toBe(409);
@@ -259,17 +264,19 @@ describe('POST /routes/:id/steps', () => {
     expect(longNote.status).toBe(400);
   });
 
-  it('stops at 12 films', async () => {
+  it('stops at the maximum number of films', async () => {
     const { auth } = await signUp('ada');
     const { routeId } = await routeWith(
       auth,
-      Array.from({ length: 12 }, (_, i) => i + 1),
+      Array.from({ length: ROUTE_LIMITS.maxSteps }, (_, i) => i + 1),
     );
 
-    const thirteenth = await addStep(auth, routeId, { tmdbId: 13 });
+    const oneTooMany = await addStep(auth, routeId, {
+      tmdbId: ROUTE_LIMITS.maxSteps + 1,
+    });
 
-    expect(thirteenth.status).toBe(409);
-    expect(thirteenth.body.error.code).toBe('route_full');
+    expect(oneTooMany.status).toBe(409);
+    expect(oneTooMany.body.error.code).toBe('route_full');
   });
 
   it('does not contact TMDB for a route that is not yours', async () => {
@@ -288,7 +295,7 @@ describe('POST /routes/:id/steps', () => {
     const { auth } = await signUp('ada');
     const full = await routeWith(
       auth,
-      Array.from({ length: 11 }, (_, i) => i + 1),
+      Array.from({ length: ROUTE_LIMITS.maxSteps - 1 }, (_, i) => i + 1),
     );
     const empty = await createRoute(auth);
 
@@ -432,13 +439,18 @@ describe('DELETE /routes/:id/steps/:stepId', () => {
     ).toEqual([1, 2]);
   });
 
-  it('will not leave a shared route with fewer than two films', async () => {
+  it('will not leave a shared route below the minimum number of films', async () => {
     const { auth } = await signUp('ada');
-    const { routeId, steps } = await routeWith(auth, [1, 2]);
-    await request(app)
+    // Exactly the minimum, so removing one film would go under it.
+    const { routeId, steps } = await routeWith(
+      auth,
+      Array.from({ length: ROUTE_LIMITS.minSteps }, (_, i) => i + 1),
+    );
+    const published = await request(app)
       .patch(`/routes/${routeId}`)
       .set(auth)
       .send({ visibility: 'public' });
+    expect(published.status).toBe(200);
 
     const response = await request(app)
       .delete(`/routes/${routeId}/steps/${steps[0]!.id}`)

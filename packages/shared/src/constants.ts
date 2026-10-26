@@ -33,8 +33,8 @@ export type EnrollmentStatus = (typeof ENROLLMENT_STATUSES)[number];
 
 /** Route size limits: a route is a short, curated path, not a long list. */
 export const ROUTE_LIMITS = {
-  minSteps: 2,
-  maxSteps: 12,
+  minSteps: 3,
+  maxSteps: 10,
   titleMaxLength: 120,
   descriptionMaxLength: 1000,
   noteMaxLength: 1000,

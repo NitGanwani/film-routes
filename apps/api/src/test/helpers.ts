@@ -50,7 +50,7 @@ export const matrix = (locale: Locale): TmdbMovieDetail => ({
   imdbId: 'tt0133093',
 });
 
-/** Filler films 1..50, enough to fill a route (the limit is 12 steps). */
+/** Filler films 1..50, enough to fill a route up to its maximum size. */
 const filler = (tmdbId: number, locale: Locale): TmdbMovieDetail => ({
   tmdbId,
   title: locale === 'es' ? `Película ${tmdbId}` : `Film ${tmdbId}`,
