@@ -1,12 +1,14 @@
 import { createApp } from './app.js';
 import { loadConfig } from './config.js';
 import { createPrismaClient } from './db.js';
+import { createTmdbClient } from './tmdb/client.js';
 
 const config = loadConfig();
 const db = createPrismaClient(config.DATABASE_URL);
 const app = createApp({
   corsOrigins: config.CORS_ORIGINS,
   db,
+  tmdb: createTmdbClient({ accessToken: config.TMDB_ACCESS_TOKEN }),
   auth: {
     accessSecret: config.JWT_ACCESS_SECRET,
     accessTtlSeconds: config.ACCESS_TOKEN_TTL_SECONDS,

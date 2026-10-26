@@ -1,6 +1,10 @@
+import type { Locale } from '@film-routes/shared';
+import { vi } from 'vitest';
 import { createApp, type AppOptions } from '../app.js';
 import type { AuthSettings } from '../auth/service.js';
 import { createPrismaClient } from '../db.js';
+import { HttpError } from '../errors.js';
+import type { TmdbClient, TmdbMovieDetail } from '../tmdb/client.js';
 
 export const testAuthSettings: AuthSettings = {
   accessSecret: 'test-secret-test-secret-test-secret-0123',
@@ -32,13 +36,46 @@ export async function resetDb(db: TestDb) {
   await db.$executeRaw`TRUNCATE TABLE users, films CASCADE`;
 }
 
+export const matrix = (locale: Locale): TmdbMovieDetail => ({
+  tmdbId: 603,
+  title: locale === 'es' ? 'Matrix' : 'The Matrix',
+  originalTitle: 'The Matrix',
+  overview:
+    locale === 'es'
+      ? 'Un hacker descubre la verdad.'
+      : 'A hacker learns the truth.',
+  releaseYear: 1999,
+  posterPath: '/matrix.jpg',
+  runtimeMinutes: 136,
+  imdbId: 'tt0133093',
+});
+
+/** A TMDB stand-in that only knows film 603; every call is recorded. */
+export function createFakeTmdb() {
+  return {
+    searchMovies: vi.fn<TmdbClient['searchMovies']>(async (_query, locale) => ({
+      page: 1,
+      totalPages: 1,
+      results: [matrix(locale)],
+    })),
+    getMovie: vi.fn<TmdbClient['getMovie']>(async (tmdbId, locale) => {
+      if (tmdbId !== 603) {
+        throw new HttpError(404, 'film_not_found', 'Film not found');
+      }
+      return matrix(locale);
+    }),
+  };
+}
+
 export function createTestApp(db: TestDb, overrides: Partial<AppOptions> = {}) {
   return createApp({
     corsOrigins: ['http://localhost:5173'],
     db,
     auth: testAuthSettings,
-    // High enough that unrelated tests never trip the limiter.
+    tmdb: createFakeTmdb(),
+    // High enough that unrelated tests never trip the limiters.
     authAttemptsPer15Min: 1000,
+    filmRequestsPerMinute: 1000,
     ...overrides,
   });
 }

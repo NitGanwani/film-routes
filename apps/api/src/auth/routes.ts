@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { HttpError } from '../errors.js';
-import { parseBody } from '../validate.js';
+import { parseInput } from '../validate.js';
 import { authenticate } from './middleware.js';
 import { loginSchema, refreshTokenSchema, registerSchema } from './schemas.js';
 import type { AuthService, AuthSettings } from './service.js';
@@ -37,22 +37,22 @@ export function createAuthRouter({
   });
 
   router.post('/register', limiter, async (req, res) => {
-    const input = parseBody(registerSchema, req.body);
+    const input = parseInput(registerSchema, req.body);
     res.status(201).json(await service.register(input));
   });
 
   router.post('/login', limiter, async (req, res) => {
-    const input = parseBody(loginSchema, req.body);
+    const input = parseInput(loginSchema, req.body);
     res.json(await service.login(input));
   });
 
   router.post('/refresh', limiter, async (req, res) => {
-    const { refreshToken } = parseBody(refreshTokenSchema, req.body);
+    const { refreshToken } = parseInput(refreshTokenSchema, req.body);
     res.json(await service.refresh(refreshToken));
   });
 
   router.post('/logout', async (req, res) => {
-    const { refreshToken } = parseBody(refreshTokenSchema, req.body);
+    const { refreshToken } = parseInput(refreshTokenSchema, req.body);
     await service.logout(refreshToken);
     res.status(204).end();
   });

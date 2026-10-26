@@ -8,13 +8,18 @@ import { createAuthRouter } from './auth/routes.js';
 import { createAuthService, type AuthSettings } from './auth/service.js';
 import type { Db } from './db.js';
 import { HttpError } from './errors.js';
+import { createFilmsRouter } from './films/routes.js';
+import { createFilmService } from './films/service.js';
+import type { TmdbClient } from './tmdb/client.js';
 
 export type AppOptions = {
   corsOrigins: string[];
   db: Db;
   auth: AuthSettings;
+  tmdb: TmdbClient;
   /** Override in tests; the default is deliberately strict. */
   authAttemptsPer15Min?: number;
+  filmRequestsPerMinute?: number;
 };
 
 const notFound: RequestHandler = (_req, res) => {
@@ -48,7 +53,9 @@ export function createApp({
   corsOrigins,
   db,
   auth,
+  tmdb,
   authAttemptsPer15Min = 20,
+  filmRequestsPerMinute = 60,
 }: AppOptions) {
   const app = express();
 
@@ -66,6 +73,15 @@ export function createApp({
       service: createAuthService(db, auth),
       settings: auth,
       attemptsPer15Min: authAttemptsPer15Min,
+    }),
+  );
+
+  app.use(
+    '/films',
+    createFilmsRouter({
+      service: createFilmService(db, tmdb),
+      accessSecret: auth.accessSecret,
+      requestsPerMinute: filmRequestsPerMinute,
     }),
   );
 
