@@ -61,6 +61,24 @@ const detailInclude = {
 
 type RouteRow = Prisma.RouteGetPayload<{ include: typeof detailInclude }>;
 
+export type FilmRow = Prisma.FilmGetPayload<{
+  include: { translations: true };
+}>;
+
+/** A film as clients see it, titled in the language the route was written in. */
+export function toFilm(film: FilmRow, locale: DbLocale) {
+  return {
+    tmdbId: film.tmdbId,
+    title:
+      film.translations.find((item) => item.locale === locale)?.title ??
+      film.originalTitle,
+    originalTitle: film.originalTitle,
+    releaseYear: film.releaseYear,
+    runtimeMinutes: film.runtimeMinutes,
+    posterUrl: posterUrl(film.posterPath),
+  };
+}
+
 function toDetail(route: RouteRow) {
   return {
     id: route.id,
@@ -79,17 +97,7 @@ function toDetail(route: RouteRow) {
       noteAfter: step.noteAfter,
       authorEmotion: (step.authorEmotion?.toLowerCase() ??
         null) as Emotion | null,
-      film: {
-        tmdbId: step.film.tmdbId,
-        // Shown in the language the author wrote the route in.
-        title:
-          step.film.translations.find((item) => item.locale === route.locale)
-            ?.title ?? step.film.originalTitle,
-        originalTitle: step.film.originalTitle,
-        releaseYear: step.film.releaseYear,
-        runtimeMinutes: step.film.runtimeMinutes,
-        posterUrl: posterUrl(step.film.posterPath),
-      },
+      film: toFilm(step.film, route.locale),
     })),
   };
 }

@@ -14,6 +14,8 @@ import { createEnrollmentsRouter } from './enrollments/router.js';
 import { createEnrollmentService } from './enrollments/service.js';
 import { createInvitesRouter } from './invites/router.js';
 import { createInviteService } from './invites/service.js';
+import { createProgressRouter } from './progress/router.js';
+import { createProgressService } from './progress/service.js';
 import { createRoutesRouter } from './routes/router.js';
 import { createRouteService } from './routes/service.js';
 import type { TmdbClient } from './tmdb/client.js';
@@ -114,6 +116,13 @@ export function createApp({
   app.use(
     createEnrollmentsRouter({
       service: createEnrollmentService(db),
+      accessSecret: auth.accessSecret,
+    }),
+  );
+
+  app.use(
+    createProgressRouter({
+      service: createProgressService(db),
       accessSecret: auth.accessSecret,
     }),
   );

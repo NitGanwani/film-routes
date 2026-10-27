@@ -34,13 +34,13 @@ A **route** is an ordered sequence of 3 to 10 films with the author's notes.
 
 ### What the traveler sees, and when
 
-| Item                       | Visible                                            |
-| -------------------------- | -------------------------------------------------- |
-| Title, description, author | Always                                             |
-| Full list of films         | From the moment they join (and before, if public)  |
-| Note before (step N)       | When it is their turn to watch film N              |
-| Note after (step N)        | When they close film N (emotion registered)        |
-| Guide's emotion (step N)   | When they register their own emotion for film N    |
+| Item                       | Visible                                           |
+| -------------------------- | ------------------------------------------------- |
+| Title, description, author | Always                                            |
+| Full list of films         | From the moment they join (and before, if public) |
+| Note before (step N)       | When it is their turn to watch film N             |
+| Note after (step N)        | When they close film N (emotion registered)       |
+| Guide's emotion (step N)   | When they register their own emotion for film N   |
 
 ### Progress rules
 
@@ -87,7 +87,7 @@ A **route** is an ordered sequence of 3 to 10 films with the author's notes.
 | Watch a step        | Traveler | "Start now" → reminder → confirm watched → emotion (+ comment). |
 | Already seen        | Traveler | Mark a film as seen before, then record the emotion.            |
 | Read the aftermath  | Both     | The note after unlocks; the guide sees the emotion comparison.  |
-| Rate a route        | Traveler | After completing it: one rating from 1 to 5.                    |
+| Rate a route        | Traveler | After completing it: one rating from 1 to 10.                   |
 | Browse public paths | Anyone   | Public routes can be listed and started without an invitation.  |
 
 ## Editing rules for the author
@@ -108,9 +108,14 @@ A **route** is an ordered sequence of 3 to 10 films with the author's notes.
 - A public route can be listed and started **without an invitation**. Before
   starting, anyone sees the title, description, author, film list, rating and
   number of completions. **No notes.**
-- **Only people who completed a route can rate it**, with a single 1 to 5 score
-  on the route as a whole (not on films, not on emotions). This avoids drive-by
-  votes and review bombing.
+- **Only people who completed a route can rate it**, with a single whole-number
+  score from 1 to 10 on the route as a whole (not on films, not on emotions).
+  This avoids drive-by votes and review bombing. One vote per person and route,
+  which they can change later.
+- The route's **overall score is the average of its votes, shown with one
+  decimal** (e.g. 7.2) and recalculated as votes come in. It is not shown until
+  the route has a minimum number of votes, so a single 10 does not look like a
+  masterpiece.
 - Rankings (later): best rated with a minimum number of votes, most completed,
   newest. Completion rate is a quality signal as well.
 - Deferred: genre filter / author tags, reports and moderation, "this note

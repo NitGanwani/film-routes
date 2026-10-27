@@ -9,14 +9,17 @@ type TravelerRow = {
   startedAt: Date;
   completedAt: Date | null;
   traveler: { username: string };
+  _count: { progress: number };
 };
 
-const toTraveler = (row: TravelerRow) => ({
+const toTraveler = (row: TravelerRow, stepCount: number) => ({
   id: row.id,
   username: row.traveler.username,
   status: row.status.toLowerCase() as EnrollmentStatus,
   startedAt: row.startedAt,
   completedAt: row.completedAt,
+  closedSteps: row._count.progress,
+  stepCount,
 });
 
 export function createEnrollmentService(db: Db) {
@@ -30,12 +33,20 @@ export function createEnrollmentService(db: Db) {
       if (!route) {
         throw new HttpError(404, 'route_not_found', 'Route not found');
       }
-      const rows = await db.enrollment.findMany({
-        where: { routeId },
-        orderBy: { startedAt: 'asc' },
-        include: { traveler: { select: { username: true } } },
-      });
-      return rows.map(toTraveler);
+      const [rows, stepCount] = await Promise.all([
+        db.enrollment.findMany({
+          where: { routeId },
+          orderBy: { startedAt: 'asc' },
+          include: {
+            traveler: { select: { username: true } },
+            _count: {
+              select: { progress: { where: { emotion: { not: null } } } },
+            },
+          },
+        }),
+        db.routeStep.count({ where: { routeId } }),
+      ]);
+      return rows.map((row) => toTraveler(row, stepCount));
     },
 
     /**
