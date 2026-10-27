@@ -230,6 +230,8 @@ model StepProgress {
   stepId       String    @map("step_id") @db.Uuid
   startedAt    DateTime? @map("started_at") @db.Timestamptz(3)
   watchedAt    DateTime? @map("watched_at") @db.Timestamptz(3)
+  /// The traveler had already seen this film before the route; no "start now".
+  seenBefore   Boolean   @default(false) @map("seen_before")
   emotion      Emotion?
   /// Short private note; only the traveler and the route author can read it.
   comment      String?   @db.VarChar(280)
