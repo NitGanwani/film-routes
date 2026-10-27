@@ -52,7 +52,7 @@ A **route** is an ordered sequence of 3 to 10 films with the author's notes.
 | Flow                | Who      | Summary                                                         |
 | ------------------- | -------- | --------------------------------------------------------------- |
 | Create a route      | Guide    | Search films (TMDB), order them, write notes, set visibility.   |
-| Invite someone      | Guide    | Generate a personal, single-use link.                           |
+| Invite people       | Guide    | Generate a link with an optional use cap and expiry.            |
 | Accept and follow   | Traveler | Open the link, sign up or log in, start the route.              |
 | Watch a step        | Traveler | "Start now" → reminder → confirm watched → emotion (+ comment). |
 | Read the aftermath  | Both     | The note after unlocks; the guide sees the emotion comparison.  |

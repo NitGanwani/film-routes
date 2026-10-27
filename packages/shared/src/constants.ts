@@ -28,6 +28,7 @@ export const ENROLLMENT_STATUSES = [
   'active',
   'completed',
   'abandoned',
+  'removed',
 ] as const;
 export type EnrollmentStatus = (typeof ENROLLMENT_STATUSES)[number];
 

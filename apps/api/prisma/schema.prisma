@@ -53,7 +53,10 @@ enum Emotion {
 enum EnrollmentStatus {
   ACTIVE
   COMPLETED
+  /// The traveler left on their own.
   ABANDONED
+  /// The route author removed the traveler.
+  REMOVED
 
   @@map("enrollment_status")
 }
@@ -138,7 +141,7 @@ model Route {
   createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  author      User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author      User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
   steps       RouteStep[]
   invites     RouteInvite[]
   enrollments Enrollment[]
@@ -171,20 +174,24 @@ model RouteStep {
   @@map("route_steps")
 }
 
-/// Personal, single-use invitation link. Only a hash of the token is stored.
+/// Invitation link that several people can use. Only a hash of the token is
+/// stored. `maxUses` caps how many people can join with it (null = no cap) and
+/// `usesCount` is incremented atomically when someone joins.
 model RouteInvite {
   id          String    @id @default(uuid(7)) @db.Uuid
   routeId     String    @map("route_id") @db.Uuid
   createdById String    @map("created_by_id") @db.Uuid
   tokenHash   String    @unique @map("token_hash")
+  maxUses     Int?      @map("max_uses")
+  usesCount   Int       @default(0) @map("uses_count")
   expiresAt   DateTime? @map("expires_at") @db.Timestamptz(3)
   revokedAt   DateTime? @map("revoked_at") @db.Timestamptz(3)
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  route      Route       @relation(fields: [routeId], references: [id], onDelete: Cascade)
-  createdBy  User        @relation(fields: [createdById], references: [id], onDelete: Cascade)
-  /// Single use: the unique inviteId on Enrollment guarantees it.
-  enrollment Enrollment?
+  route       Route        @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  createdBy   User         @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  /// Everyone who joined through this link.
+  enrollments Enrollment[]
 
   @@index([routeId])
   @@map("route_invites")
@@ -197,7 +204,7 @@ model Enrollment {
   id          String           @id @default(uuid(7)) @db.Uuid
   routeId     String           @map("route_id") @db.Uuid
   travelerId  String           @map("traveler_id") @db.Uuid
-  inviteId    String?          @unique @map("invite_id") @db.Uuid
+  inviteId    String?          @map("invite_id") @db.Uuid
   status      EnrollmentStatus @default(ACTIVE)
   startedAt   DateTime         @default(now()) @map("started_at") @db.Timestamptz(3)
   completedAt DateTime?        @map("completed_at") @db.Timestamptz(3)
@@ -207,8 +214,11 @@ model Enrollment {
   invite   RouteInvite?   @relation(fields: [inviteId], references: [id], onDelete: SetNull)
   progress StepProgress[]
 
+  /// One enrollment per person and route, whatever its status: a removed
+  /// traveler keeps their row (REMOVED) so the same link cannot bring them back.
   @@unique([routeId, travelerId])
   @@index([travelerId])
+  @@index([inviteId])
   @@map("enrollments")
 }
 
