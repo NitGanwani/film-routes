@@ -24,11 +24,37 @@ A **route** is an ordered sequence of 3 to 10 films with the author's notes.
   - a spoiler-free **note before** ("watch for how the silence is used"),
   - a **note after**, locked until the traveler marks the film as watched,
   - their own **emotion** for that film.
-- The **traveler** (follower) opens a link on their phone, sees only the
-  current step, and moves forward at their own pace.
+- The **traveler** (follower) opens a link on their phone, sees the **whole
+  list of films** from the start (they may have already seen some), and moves
+  forward at their own pace. What is revealed progressively are the _notes_
+  and the _emotions_, not the films.
 - At each step the traveler records one **emotion** with a single tap
   (optionally a 280-character comment). The guide then sees their feeling
   next to their own ("you: sadness, them: joy").
+
+### What the traveler sees, and when
+
+| Item                       | Visible                                            |
+| -------------------------- | -------------------------------------------------- |
+| Title, description, author | Always                                             |
+| Full list of films         | From the moment they join (and before, if public)  |
+| Note before (step N)       | When it is their turn to watch film N              |
+| Note after (step N)        | When they close film N (emotion registered)        |
+| Guide's emotion (step N)   | When they register their own emotion for film N    |
+
+### Progress rules
+
+1. A film can be **watched through the route** ("Start now" → confirm watched)
+   or marked **already seen before**.
+2. **Closing a film always requires one emotion** (comment optional), including
+   films the traveler had already seen. The emotion is the point of the
+   product, so it is never optional.
+3. **Order is a recommendation, not an obligation.** The app suggests following
+   the order and highlights the next film, but does not block the others. The
+   notes are written to be read in order, so the UI nudges, the API allows.
+4. The route is **completed** when every film is closed.
+5. A traveler can leave a route (progress is kept and they can come back).
+   The author can remove a traveler; a removed traveler cannot rejoin.
 
 ## Principles
 
@@ -40,8 +66,11 @@ A **route** is an ordered sequence of 3 to 10 films with the author's notes.
    Trakt or similar integrations could be optional extras, never requirements.
 3. **Private by default.** Reactions are visible only to the traveler and the
    route's author. This also removes most moderation needs.
-4. **Spoiler-aware.** Notes unlock progressively; nothing about step N+1 is
-   revealed before step N is done.
+4. **Spoiler-aware.** Notes unlock progressively: the note before appears on the
+   traveler's turn and the note after only once the film is closed. The film
+   list itself is not a secret. Spoilers cannot be detected automatically (and
+   TMDB forbids AI use of its content), so the answer is UI guidance for
+   authors plus a "this note spoiled me" report later.
 5. **Bilingual from day one.** Interface in Spanish and English. Emotions and
    statuses are stored as neutral enum values and translated in the client.
 6. **Mobile first.** A responsive web app that installs as a PWA. A native
@@ -53,10 +82,39 @@ A **route** is an ordered sequence of 3 to 10 films with the author's notes.
 | ------------------- | -------- | --------------------------------------------------------------- |
 | Create a route      | Guide    | Search films (TMDB), order them, write notes, set visibility.   |
 | Invite people       | Guide    | Generate a link with an optional use cap and expiry.            |
+| Unpublish           | Guide    | Back to private: no new travelers; those inside can finish.     |
 | Accept and follow   | Traveler | Open the link, sign up or log in, start the route.              |
 | Watch a step        | Traveler | "Start now" → reminder → confirm watched → emotion (+ comment). |
+| Already seen        | Traveler | Mark a film as seen before, then record the emotion.            |
 | Read the aftermath  | Both     | The note after unlocks; the guide sees the emotion comparison.  |
+| Rate a route        | Traveler | After completing it: one rating from 1 to 5.                    |
 | Browse public paths | Anyone   | Public routes can be listed and started without an invitation.  |
+
+## Editing rules for the author
+
+- While **nobody has joined**, the route is fully editable (films, order, notes).
+- From the moment **someone joins**, films cannot be added, removed or
+  reordered: the traveler already sees the list and changing it would move
+  the ground under them. Title, description and notes stay editable.
+  Travelers the author removes do not count.
+- The author is **warned before publishing or inviting**: "Once someone joins,
+  you can no longer change the films."
+- Escape hatch: **unpublishing**. A route with an error can stop being offered
+  (it leaves listings and links stop working) while people already inside keep
+  going. "New version of a route" is deferred until it is really needed.
+
+## Public routes and ratings
+
+- A public route can be listed and started **without an invitation**. Before
+  starting, anyone sees the title, description, author, film list, rating and
+  number of completions. **No notes.**
+- **Only people who completed a route can rate it**, with a single 1 to 5 score
+  on the route as a whole (not on films, not on emotions). This avoids drive-by
+  votes and review bombing.
+- Rankings (later): best rated with a minimum number of votes, most completed,
+  newest. Completion rate is a quality signal as well.
+- Deferred: genre filter / author tags, reports and moderation, "this note
+  spoiled me" button.
 
 ## MVP scope
 
@@ -65,9 +123,14 @@ In:
 - Registration and login (access token + rotating refresh token).
 - Film search and caching from TMDB, in Spanish and English.
 - Create, edit and publish routes with ordered steps and notes.
-- Personal invitation links, enrollments and per-step progress.
+- Reusable invitation links, enrollments and per-step progress (including
+  "already seen").
 - One-tap emotion + optional comment, and the guide's comparison view.
+- Unpublishing a route.
 - Responsive PWA, i18n (es/en).
+
+Next (after the progress feature): public route listing, ratings by people who
+completed a route, reports/moderation.
 
 Out (for now):
 
@@ -110,9 +173,9 @@ TypeScript is pinned to 6.0.x because `typescript-eslint` does not yet support
 - Should a step's `StepProgress` carry the route id so the database itself
   guarantees a progress row cannot point at a step of a different route
   (composite foreign keys)? Currently enforced in the application layer.
-- Reordering steps with the `(route_id, position)` unique constraint needs a
-  two-phase update inside a transaction; decide the approach when building the
-  edit endpoint.
 - Public routes: how to avoid abuse without heavy moderation (rate limits,
   report button, author reputation)?
+- Should "already seen" films count towards the completion rate and the
+  guide's comparison the same as films watched through the route?
+- Revisit the locking rule if real use shows authors need new versions.
 - Final product name and domain.

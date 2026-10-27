@@ -296,8 +296,8 @@ export function createInviteService(
           startedAt: result.enrollment.startedAt,
           completedAt: result.enrollment.completedAt,
         },
-        // Only what the traveler needs to know they joined. The films come
-        // later, one step at a time.
+        // Only what the traveler needs to know they joined. The film list and
+        // the notes come from the route view.
         route: {
           id: invite.route.id,
           title: invite.route.title,
