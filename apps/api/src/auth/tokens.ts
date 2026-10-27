@@ -46,17 +46,21 @@ export async function verifyAccessToken(
 }
 
 /**
- * Refresh tokens are opaque random strings, not JWTs: the server can revoke
- * them because it keeps their hash in the database.
+ * Opaque random tokens (refresh tokens, invitation links): not JWTs. The
+ * server can revoke them because it keeps only their hash in the database, so
+ * a leaked database cannot be used to rebuild a working token.
  */
-export function generateRefreshToken(): { token: string; hash: string } {
+export function generateOpaqueToken(): { token: string; hash: string } {
   const token = randomBytes(32).toString('base64url');
-  return { token, hash: hashRefreshToken(token) };
+  return { token, hash: hashOpaqueToken(token) };
 }
 
 // A fast hash is fine here (unlike passwords): the token already has 256 bits
 // of entropy, so it cannot be brute-forced, and the database needs a quick,
 // deterministic value to look it up by.
-export function hashRefreshToken(token: string): string {
+export function hashOpaqueToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
 }
+
+export const generateRefreshToken = generateOpaqueToken;
+export const hashRefreshToken = hashOpaqueToken;

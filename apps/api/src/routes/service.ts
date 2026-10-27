@@ -13,14 +13,17 @@ import type {
 import type { Db } from '../db.js';
 import { HttpError } from '../errors.js';
 import { posterUrl, type FilmService } from '../films/service.js';
+import {
+  countsAsTraveler,
+  withRouteLock as lockRoute,
+  type Tx,
+} from './locking.js';
 import type {
   AddStepInput,
   CreateRouteInput,
   UpdateRouteInput,
   UpdateStepInput,
 } from './schemas.js';
-
-type Tx = Prisma.TransactionClient;
 
 // Parked positions must not collide with any real one (1..maxSteps).
 const PARK_OFFSET = 100;
@@ -53,7 +56,7 @@ const detailInclude = {
     orderBy: { position: 'asc' },
     include: { film: { include: { translations: true } } },
   },
-  _count: { select: { enrollments: true } },
+  _count: { select: { enrollments: { where: countsAsTraveler } } },
 } satisfies Prisma.RouteInclude;
 
 type RouteRow = Prisma.RouteGetPayload<{ include: typeof detailInclude }>;
@@ -106,31 +109,17 @@ export function createRouteService(
       }),
     );
 
-  /**
-   * Runs `work` in a transaction holding a lock on the route row, so two edits
-   * to the same route (and, later, a traveler joining) cannot interleave. The
-   * query also checks ownership: someone else's route looks like it does not
-   * exist.
-   */
-  function withRouteLock<T>(
+  const withRouteLock = <T>(
     userId: string,
     routeId: string,
     work: (tx: Tx) => Promise<T>,
-  ): Promise<T> {
-    return db.$transaction(async (tx) => {
-      const rows = await tx.$queryRaw<{ id: string }[]>`
-        SELECT id FROM routes
-        WHERE id = ${routeId}::uuid AND author_id = ${userId}::uuid
-        FOR UPDATE`;
-      if (rows.length === 0) {
-        throw routeNotFound();
-      }
-      return work(tx);
-    });
-  }
+  ) => lockRoute(db, userId, routeId, work);
 
   async function assertNoTravelers(tx: Tx, routeId: string) {
-    if ((await tx.enrollment.count({ where: { routeId } })) > 0) {
+    const travelers = await tx.enrollment.count({
+      where: { routeId, ...countsAsTraveler },
+    });
+    if (travelers > 0) {
       throw routeLocked();
     }
   }
@@ -182,7 +171,11 @@ export function createRouteService(
       const routes = await db.route.findMany({
         where: { authorId: userId },
         orderBy: { updatedAt: 'desc' },
-        include: { _count: { select: { steps: true, enrollments: true } } },
+        include: {
+          _count: {
+            select: { steps: true, enrollments: { where: countsAsTraveler } },
+          },
+        },
       });
       return routes.map((route) => ({
         id: route.id,

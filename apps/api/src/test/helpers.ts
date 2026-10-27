@@ -91,6 +91,7 @@ export function createTestApp(db: TestDb, overrides: Partial<AppOptions> = {}) {
     // High enough that unrelated tests never trip the limiters.
     authAttemptsPer15Min: 1000,
     filmRequestsPerMinute: 1000,
+    inviteAcceptAttemptsPer15Min: 1000,
     ...overrides,
   });
 }
