@@ -111,7 +111,11 @@ A **route** is an ordered sequence of 3 to 10 films with the author's notes.
 - **Only people who completed a route can rate it**, with a single whole-number
   score from 1 to 10 on the route as a whole (not on films, not on emotions).
   This avoids drive-by votes and review bombing. One vote per person and route,
-  which they can change later.
+  which they can change later. Removing a traveler never erases their vote or
+  their completion (both are decided by what happened, not by the current
+  status), so an author cannot get rid of a bad vote by removing who gave it;
+  a removed traveler just cannot vote or change their vote any more. The
+  average needs 5 votes to be shown.
 - The route's **overall score is the average of its votes, shown with one
   decimal** (e.g. 7.2) and recalculated as votes come in. It is not shown until
   the route has a minimum number of votes, so a single 10 does not look like a

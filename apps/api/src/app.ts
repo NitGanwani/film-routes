@@ -18,6 +18,8 @@ import { createProgressRouter } from './progress/router.js';
 import { createProgressService } from './progress/service.js';
 import { createPublicRouter } from './public/router.js';
 import { createPublicService } from './public/service.js';
+import { createRatingsRouter } from './ratings/router.js';
+import { createRatingService } from './ratings/service.js';
 import { createRoutesRouter } from './routes/router.js';
 import { createRouteService } from './routes/service.js';
 import type { TmdbClient } from './tmdb/client.js';
@@ -136,6 +138,13 @@ export function createApp({
   app.use(
     createProgressRouter({
       service: createProgressService(db),
+      accessSecret: auth.accessSecret,
+    }),
+  );
+
+  app.use(
+    createRatingsRouter({
+      service: createRatingService(db),
       accessSecret: auth.accessSecret,
     }),
   );

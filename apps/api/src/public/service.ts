@@ -7,6 +7,11 @@ import {
   toEnrollmentView,
 } from '../enrollments/join.js';
 import { HttpError } from '../errors.js';
+import {
+  ratingSummaries,
+  summaryOf,
+  type RatingSummary,
+} from '../ratings/stats.js';
 import { lockRouteForJoin } from '../routes/locking.js';
 import { toFilm } from '../routes/service.js';
 import type { ListQuery } from './schemas.js';
@@ -14,7 +19,9 @@ import type { ListQuery } from './schemas.js';
 const routeNotFound = () =>
   new HttpError(404, 'route_not_found', 'Route not found');
 
-const completedOnly = { status: 'COMPLETED' } as const;
+// "Completed" is decided by the completion date, not the status: removing a
+// traveler changes their status but must not erase the fact that they finished.
+const completedOnly = { completedAt: { not: null } } as const;
 
 // Nothing here may ever select the notes or the author's emotions: those are
 // the traveler's to discover. Choosing fields explicitly (instead of loading
@@ -33,7 +40,7 @@ const summarySelect = {
 
 type SummaryRow = Prisma.RouteGetPayload<{ select: typeof summarySelect }>;
 
-const toSummary = (route: SummaryRow) => ({
+const toSummary = (route: SummaryRow, rating: RatingSummary) => ({
   id: route.id,
   title: route.title,
   description: route.description,
@@ -41,6 +48,7 @@ const toSummary = (route: SummaryRow) => ({
   author: route.author.username,
   stepCount: route._count.steps,
   completions: route._count.enrollments,
+  rating,
   createdAt: route.createdAt,
 });
 
@@ -58,12 +66,12 @@ export function createPublicService(db: Db) {
       });
       return rows.map((row) => row.id);
     }
-    // Most completed first needs a count filtered by status, which Prisma
-    // cannot order by, so the ranking is done in SQL. Ties: the newest first.
+    // Most completed first needs a filtered count, which Prisma cannot order
+    // by, so the ranking is done in SQL. Ties: the newest first.
     const rows = await db.$queryRaw<{ id: string }[]>`
       SELECT r.id FROM routes r
       LEFT JOIN enrollments e
-        ON e.route_id = r.id AND e.status = 'COMPLETED'
+        ON e.route_id = r.id AND e.completed_at IS NOT NULL
       WHERE r.visibility = 'PUBLIC'
       GROUP BY r.id
       ORDER BY COUNT(e.id) DESC, r.created_at DESC, r.id DESC
@@ -89,8 +97,9 @@ export function createPublicService(db: Db) {
     if (!route) {
       throw routeNotFound();
     }
+    const ratings = await ratingSummaries(db, [route.id]);
     return {
-      ...toSummary(route),
+      ...toSummary(route, summaryOf(ratings, route.id)),
       steps: route.steps.map((step) => ({
         position: step.position,
         film: toFilm(step.film, route.locale),
@@ -110,12 +119,13 @@ export function createPublicService(db: Db) {
         where: { id: { in: ids } },
         select: summarySelect,
       });
+      const ratings = await ratingSummaries(db, ids);
       // The second query does not keep the order of the first.
       const byId = new Map(rows.map((row) => [row.id, row]));
       return {
         routes: ids.flatMap((id) => {
           const row = byId.get(id);
-          return row ? [toSummary(row)] : [];
+          return row ? [toSummary(row, summaryOf(ratings, id))] : [];
         }),
         page: query.page,
         pageSize: query.pageSize,
