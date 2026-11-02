@@ -92,6 +92,7 @@ export function createTestApp(db: TestDb, overrides: Partial<AppOptions> = {}) {
     authAttemptsPer15Min: 1000,
     filmRequestsPerMinute: 1000,
     inviteAcceptAttemptsPer15Min: 1000,
+    publicRequestsPerMinute: 1000,
     ...overrides,
   });
 }

@@ -16,6 +16,8 @@ import { createInvitesRouter } from './invites/router.js';
 import { createInviteService } from './invites/service.js';
 import { createProgressRouter } from './progress/router.js';
 import { createProgressService } from './progress/service.js';
+import { createPublicRouter } from './public/router.js';
+import { createPublicService } from './public/service.js';
 import { createRoutesRouter } from './routes/router.js';
 import { createRouteService } from './routes/service.js';
 import type { TmdbClient } from './tmdb/client.js';
@@ -29,6 +31,7 @@ export type AppOptions = {
   authAttemptsPer15Min?: number;
   filmRequestsPerMinute?: number;
   inviteAcceptAttemptsPer15Min?: number;
+  publicRequestsPerMinute?: number;
 };
 
 const notFound: RequestHandler = (_req, res) => {
@@ -66,6 +69,7 @@ export function createApp({
   authAttemptsPer15Min = 20,
   filmRequestsPerMinute = 60,
   inviteAcceptAttemptsPer15Min = 30,
+  publicRequestsPerMinute = 60,
 }: AppOptions) {
   const app = express();
 
@@ -117,6 +121,15 @@ export function createApp({
     createEnrollmentsRouter({
       service: createEnrollmentService(db),
       accessSecret: auth.accessSecret,
+    }),
+  );
+
+  app.use(
+    '/public',
+    createPublicRouter({
+      service: createPublicService(db),
+      accessSecret: auth.accessSecret,
+      requestsPerMinute: publicRequestsPerMinute,
     }),
   );
 

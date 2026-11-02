@@ -1,7 +1,12 @@
-import type { EnrollmentStatus, Locale } from '@film-routes/shared';
-import { Prisma } from '../../generated/prisma/client.js';
+import type { Locale } from '@film-routes/shared';
 import { generateOpaqueToken, hashOpaqueToken } from '../auth/tokens.js';
 import type { Db } from '../db.js';
+import {
+  resumeEnrollment,
+  retryOnDuplicate,
+  toEnrollmentView,
+  type JoinResult,
+} from '../enrollments/join.js';
 import { HttpError } from '../errors.js';
 import { lockRouteForJoin } from '../routes/locking.js';
 import {
@@ -77,16 +82,6 @@ export function createInviteService(
     }
     return route;
   }
-
-  type JoinResult = {
-    created: boolean;
-    enrollment: {
-      id: string;
-      status: string;
-      startedAt: Date;
-      completedAt: Date | null;
-    };
-  };
 
   return {
     /**
@@ -205,30 +200,9 @@ export function createInviteService(
             );
           }
 
-          const existing = await tx.enrollment.findUnique({
-            where: {
-              routeId_travelerId: {
-                routeId: invite.routeId,
-                travelerId: userId,
-              },
-            },
-          });
+          // Joining twice, or coming back after leaving, uses up no place.
+          const existing = await resumeEnrollment(tx, invite.routeId, userId);
           if (existing) {
-            if (existing.status === 'REMOVED') {
-              throw new HttpError(
-                403,
-                'removed_from_route',
-                'The author has removed you from this route',
-              );
-            }
-            if (existing.status === 'ABANDONED') {
-              // Coming back after leaving: progress is kept, no place used.
-              const resumed = await tx.enrollment.update({
-                where: { id: existing.id },
-                data: { status: 'ACTIVE' },
-              });
-              return { created: false, enrollment: resumed };
-            }
             return { created: false, enrollment: existing };
           }
 
@@ -272,30 +246,11 @@ export function createInviteService(
           return { created: true, enrollment };
         });
 
-      let result: JoinResult;
-      try {
-        result = await join();
-      } catch (error) {
-        // The same person joined twice at the same instant and lost the race
-        // on the unique (route, traveler) rule. Retrying finds the winner.
-        if (
-          error instanceof Prisma.PrismaClientKnownRequestError &&
-          error.code === 'P2002'
-        ) {
-          result = await join();
-        } else {
-          throw error;
-        }
-      }
+      const result = await retryOnDuplicate(join);
 
       return {
         created: result.created,
-        enrollment: {
-          id: result.enrollment.id,
-          status: result.enrollment.status.toLowerCase() as EnrollmentStatus,
-          startedAt: result.enrollment.startedAt,
-          completedAt: result.enrollment.completedAt,
-        },
+        enrollment: toEnrollmentView(result.enrollment),
         // Only what the traveler needs to know they joined. The film list and
         // the notes come from the route view.
         route: {
