@@ -78,6 +78,7 @@ model User {
   invitesIssued RouteInvite[]
   enrollments   Enrollment[]
   refreshTokens RefreshToken[]
+  ratings       RouteRating[]
 
   @@map("users")
 }
@@ -145,10 +146,30 @@ model Route {
   steps       RouteStep[]
   invites     RouteInvite[]
   enrollments Enrollment[]
+  ratings     RouteRating[]
 
   @@index([authorId])
   @@index([visibility, createdAt])
   @@map("routes")
+}
+
+/// One score per person and route, from 1 to 10, given after completing it.
+/// The route's overall score is the average of these; it is never stored, so
+/// it cannot drift out of sync with the votes.
+model RouteRating {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  routeId   String   @map("route_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  score     Int
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  route Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Changing your mind updates the row; it never adds a second vote.
+  @@unique([routeId, userId])
+  @@map("route_ratings")
 }
 
 model RouteStep {

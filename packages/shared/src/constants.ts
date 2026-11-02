@@ -32,6 +32,13 @@ export const ENROLLMENT_STATUSES = [
 ] as const;
 export type EnrollmentStatus = (typeof ENROLLMENT_STATUSES)[number];
 
+/**
+ * Route ratings: a whole number from 1 to 10. The overall score is the average
+ * of the votes, shown only once enough people have voted, so a single 10 does
+ * not look like a masterpiece.
+ */
+export const RATING = { min: 1, max: 10, minVotesToShowAverage: 5 } as const;
+
 /** Route size limits: a route is a short, curated path, not a long list. */
 export const ROUTE_LIMITS = {
   minSteps: 3,
