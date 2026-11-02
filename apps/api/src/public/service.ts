@@ -1,4 +1,4 @@
-import type { Locale } from '@film-routes/shared';
+import { RATING, type Locale } from '@film-routes/shared';
 import { Prisma } from '../../generated/prisma/client.js';
 import type { Db } from '../db.js';
 import {
@@ -56,6 +56,21 @@ export function createPublicService(db: Db) {
   /** Ids of one page of public routes, in the order asked for. */
   async function pageOfIds({ sort, page, pageSize }: ListQuery) {
     const offset = (page - 1) * pageSize;
+    if (sort === 'top') {
+      // Only routes with enough votes are ranked, and they are ordered by the
+      // score people actually see (rounded), then by how many voted, then the
+      // newest. Without the minimum, one lone 10 would top the list.
+      const rows = await db.$queryRaw<{ id: string }[]>`
+        SELECT r.id FROM routes r
+        JOIN route_ratings x ON x.route_id = r.id
+        WHERE r.visibility = 'PUBLIC'
+        GROUP BY r.id
+        HAVING COUNT(x.id) >= ${RATING.minVotesToShowAverage}
+        ORDER BY ROUND(AVG(x.score)::numeric, 1) DESC,
+                 COUNT(x.id) DESC, r.created_at DESC, r.id DESC
+        LIMIT ${pageSize} OFFSET ${offset}`;
+      return rows.map((row) => row.id);
+    }
     if (sort === 'new') {
       const rows = await db.route.findMany({
         where: { visibility: 'PUBLIC' },
@@ -77,6 +92,22 @@ export function createPublicService(db: Db) {
       ORDER BY COUNT(e.id) DESC, r.created_at DESC, r.id DESC
       LIMIT ${pageSize} OFFSET ${offset}`;
     return rows.map((row) => row.id);
+  }
+
+  /** How many routes the list has, so the pages add up for each ordering. */
+  async function totalRoutes(sort: ListQuery['sort']) {
+    if (sort !== 'top') {
+      return db.route.count({ where: { visibility: 'PUBLIC' } });
+    }
+    const [row] = await db.$queryRaw<{ total: number }[]>`
+      SELECT COUNT(*)::int AS total FROM (
+        SELECT r.id FROM routes r
+        JOIN route_ratings x ON x.route_id = r.id
+        WHERE r.visibility = 'PUBLIC'
+        GROUP BY r.id
+        HAVING COUNT(x.id) >= ${RATING.minVotesToShowAverage}
+      ) ranked`;
+    return row?.total ?? 0;
   }
 
   /** What anyone sees before starting: the films, but none of the notes. */
@@ -113,7 +144,7 @@ export function createPublicService(db: Db) {
     async listRoutes(query: ListQuery) {
       const [ids, total] = await Promise.all([
         pageOfIds(query),
-        db.route.count({ where: { visibility: 'PUBLIC' } }),
+        totalRoutes(query.sort),
       ]);
       const rows = await db.route.findMany({
         where: { id: { in: ids } },

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const PUBLIC_SORTS = ['new', 'popular'] as const;
+export const PUBLIC_SORTS = ['new', 'popular', 'top'] as const;
 export type PublicSort = (typeof PUBLIC_SORTS)[number];
 
 export const MAX_PAGE_SIZE = 50;

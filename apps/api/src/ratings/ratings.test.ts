@@ -415,3 +415,128 @@ describe('database rules', () => {
     expect(await db.routeRating.count()).toBe(0);
   });
 });
+
+describe('the list ordered by best rated', () => {
+  type Voter = Awaited<ReturnType<typeof signUp>>;
+
+  const signUpVoters = (count: number) =>
+    Promise.all(
+      Array.from({ length: count }, (_, index) => signUp(`voter${index}`)),
+    );
+
+  /** The same people finish and rate each route, one score each. */
+  async function voteWith(voters: Voter[], routeId: string, scores: number[]) {
+    for (const [index, score] of scores.entries()) {
+      const voter = voters[index]!;
+      await join(voter.auth, routeId);
+      await complete(voter.auth, routeId);
+      await rate(voter.auth, routeId, { score });
+    }
+  }
+
+  const top = (query = '') =>
+    request(app).get(`/public/routes?sort=top${query}`);
+  const ids = (body: { routes: { id: string }[] }) =>
+    body.routes.map((route) => route.id);
+
+  it('is empty while no route has enough votes', async () => {
+    const ada = await signUp('ada');
+    const routeId = await publicRoute(ada.auth);
+    await voteAll(routeId, [10, 10, 10, 10]);
+
+    const response = await top();
+
+    expect(response.status).toBe(200);
+    expect(response.body.routes).toEqual([]);
+    expect(response.body.total).toBe(0);
+  });
+
+  it('ranks by score, then by votes, then newest, leaving out routes with too few votes', async () => {
+    const ada = await signUp('ada');
+    const voters = await signUpVoters(6);
+    const high = await publicRoute(ada.auth); // 9.0 from 5 votes
+    const twin = await publicRoute(ada.auth); // same as high, but newer
+    const many = await publicRoute(ada.auth); // 9.0 from 6 votes
+    const low = await publicRoute(ada.auth); // 5.0
+    const few = await publicRoute(ada.auth); // a perfect 10, but 4 votes
+    await publicRoute(ada.auth); // no votes at all
+    await voteWith(voters, high, [9, 9, 9, 9, 9]);
+    await voteWith(voters, twin, [9, 9, 9, 9, 9]);
+    await voteWith(voters, many, [9, 9, 9, 9, 9, 9]);
+    await voteWith(voters, low, [5, 5, 5, 5, 5]);
+    await voteWith(voters, few, [10, 10, 10, 10]);
+
+    const response = await top();
+
+    expect(ids(response.body)).toEqual([many, twin, high, low]);
+    expect(response.body.total).toBe(4);
+    expect(response.body.routes[0].rating).toEqual({ average: 9, votes: 6 });
+  });
+
+  it('puts a better score above one with more votes', async () => {
+    const ada = await signUp('ada');
+    const voters = await signUpVoters(6);
+    const popular = await publicRoute(ada.auth);
+    const better = await publicRoute(ada.auth);
+    await voteWith(voters, popular, [7, 7, 7, 7, 7, 7]);
+    await voteWith(voters, better, [8, 8, 8, 8, 8]);
+
+    const response = await top();
+
+    expect(ids(response.body)).toEqual([better, popular]);
+  });
+
+  it('orders by the score people see, not the unrounded average', async () => {
+    const ada = await signUp('ada');
+    const voters = await signUpVoters(6);
+    const exact = await publicRoute(ada.auth); // 41 / 5 = 8.2
+    const rounded = await publicRoute(ada.auth); // 49 / 6 = 8.1666..., shown 8.2
+    await voteWith(voters, exact, [9, 8, 8, 8, 8]);
+    await voteWith(voters, rounded, [9, 8, 8, 8, 8, 8]);
+
+    const response = await top();
+
+    expect(
+      response.body.routes.map((route: { rating: object }) => route.rating),
+    ).toEqual([
+      { average: 8.2, votes: 6 },
+      { average: 8.2, votes: 5 },
+    ]);
+    // Same score on screen, so the one with more votes comes first.
+    expect(ids(response.body)).toEqual([rounded, exact]);
+  });
+
+  it('paginates with a total that matches the ranking', async () => {
+    const ada = await signUp('ada');
+    const voters = await signUpVoters(5);
+    const first = await publicRoute(ada.auth);
+    const second = await publicRoute(ada.auth);
+    const third = await publicRoute(ada.auth);
+    await publicRoute(ada.auth); // unrated: not part of the ranking
+    await voteWith(voters, first, [9, 9, 9, 9, 9]);
+    await voteWith(voters, second, [8, 8, 8, 8, 8]);
+    await voteWith(voters, third, [7, 7, 7, 7, 7]);
+
+    const page1 = await top('&pageSize=2');
+    const page2 = await top('&pageSize=2&page=2');
+
+    expect(ids(page1.body)).toEqual([first, second]);
+    expect(ids(page2.body)).toEqual([third]);
+    expect(page1.body.total).toBe(3);
+  });
+
+  it('only ranks public routes', async () => {
+    const ada = await signUp('ada');
+    const routeId = await publicRoute(ada.auth);
+    await voteAll(routeId, [9, 9, 9, 9, 9]);
+    await request(app)
+      .patch(`/routes/${routeId}`)
+      .set(ada.auth)
+      .send({ visibility: 'private' });
+
+    const response = await top();
+
+    expect(response.body.routes).toEqual([]);
+    expect(response.body.total).toBe(0);
+  });
+});
