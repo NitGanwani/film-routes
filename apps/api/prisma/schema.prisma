@@ -61,24 +61,36 @@ enum EnrollmentStatus {
   @@map("enrollment_status")
 }
 
+/// What a single-use emailed link is for.
+enum UserTokenPurpose {
+  VERIFY_EMAIL
+  PASSWORD_RESET
+
+  @@map("user_token_purpose")
+}
+
 // ─── Identity ───────────────────────────────────────────────────────────
 
 model User {
-  id           String   @id @default(uuid(7)) @db.Uuid
+  id              String    @id @default(uuid(7)) @db.Uuid
   /// Stored lowercase; the API normalises before writing.
-  username     String   @unique @db.VarChar(30)
+  username        String    @unique @db.VarChar(30)
   /// Stored lowercase; the API normalises before writing.
-  email        String   @unique @db.VarChar(254)
-  passwordHash String   @map("password_hash")
-  locale       Locale   @default(ES)
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  email           String    @unique @db.VarChar(254)
+  passwordHash    String    @map("password_hash")
+  locale          Locale    @default(ES)
+  /// Set when the person opens the link sent to their address. Until then they
+  /// can browse and follow routes, but not share, invite, rate or report.
+  emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(3)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   routes        Route[]
   invitesIssued RouteInvite[]
   enrollments   Enrollment[]
   refreshTokens RefreshToken[]
   ratings       RouteRating[]
+  tokens        UserToken[]
 
   @@map("users")
 }
@@ -96,6 +108,25 @@ model RefreshToken {
 
   @@index([userId])
   @@map("refresh_tokens")
+}
+
+/// Single-use links sent by email (verify the address, reset the password).
+/// Like refresh tokens and invitations, only a hash is stored, never the token.
+model UserToken {
+  id        String           @id @default(uuid(7)) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  purpose   UserTokenPurpose
+  tokenHash String           @unique @map("token_hash")
+  expiresAt DateTime         @map("expires_at") @db.Timestamptz(3)
+  /// Set when the link is used, so it cannot be used twice.
+  usedAt    DateTime?        @map("used_at") @db.Timestamptz(3)
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Looking up the latest link of a person for a purpose (resend cooldown).
+  @@index([userId, purpose, createdAt])
+  @@map("user_tokens")
 }
 
 // ─── Film catalogue (cache of TMDB data) ────────────────────────────────
