@@ -69,6 +69,35 @@ enum UserTokenPurpose {
   @@map("user_token_purpose")
 }
 
+/// Admins are set by hand in the database and checked there on every request,
+/// never read from a token: removing the role takes effect immediately.
+enum UserRole {
+  USER
+  ADMIN
+
+  @@map("user_role")
+}
+
+enum ReportReason {
+  SPOILER
+  OFFENSIVE
+  SPAM
+  OTHER
+
+  @@map("report_reason")
+}
+
+enum ReportStatus {
+  /// Waiting for an admin.
+  OPEN
+  /// An admin looked at it and left the route as it was.
+  DISMISSED
+  /// An admin hid the route because of it.
+  UPHELD
+
+  @@map("report_status")
+}
+
 // ─── Identity ───────────────────────────────────────────────────────────
 
 model User {
@@ -82,15 +111,19 @@ model User {
   /// Set when the person opens the link sent to their address. Until then they
   /// can browse and follow routes, but not share, invite, rate or report.
   emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(3)
+  role            UserRole  @default(USER)
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  routes        Route[]
+  routes        Route[]        @relation("RouteAuthor")
+  routesHidden  Route[]        @relation("RouteHiddenBy")
   invitesIssued RouteInvite[]
   enrollments   Enrollment[]
   refreshTokens RefreshToken[]
   ratings       RouteRating[]
   tokens        UserToken[]
+  reportsFiled  RouteReport[]  @relation("ReportReporter")
+  reportsClosed RouteReport[]  @relation("ReportResolver")
 
   @@map("users")
 }
@@ -173,15 +206,49 @@ model Route {
   createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  author      User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  /// Set when an admin takes the route down. While set, nobody can find, join
+  /// or follow it, and the author cannot publish it again; only an admin can
+  /// lift it. It is separate from `visibility` so the author's choice survives.
+  hiddenAt     DateTime? @map("hidden_at") @db.Timestamptz(3)
+  /// Why it was hidden; shown to the author. Required whenever hiddenAt is set.
+  hiddenReason String?   @map("hidden_reason") @db.VarChar(500)
+  hiddenById   String?   @map("hidden_by_id") @db.Uuid
+
+  author      User          @relation("RouteAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  hiddenBy    User?         @relation("RouteHiddenBy", fields: [hiddenById], references: [id], onDelete: SetNull)
   steps       RouteStep[]
   invites     RouteInvite[]
   enrollments Enrollment[]
   ratings     RouteRating[]
+  reports     RouteReport[]
 
   @@index([authorId])
   @@index([visibility, createdAt])
   @@map("routes")
+}
+
+/// A complaint about a route. One per person and route: asking again would
+/// only let one person pile up the count.
+model RouteReport {
+  id           String       @id @default(uuid(7)) @db.Uuid
+  routeId      String       @map("route_id") @db.Uuid
+  reporterId   String       @map("reporter_id") @db.Uuid
+  reason       ReportReason
+  /// Optional context from the reporter.
+  note         String?      @db.VarChar(500)
+  status       ReportStatus @default(OPEN)
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  resolvedAt   DateTime?    @map("resolved_at") @db.Timestamptz(3)
+  resolvedById String?      @map("resolved_by_id") @db.Uuid
+
+  route      Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  reporter   User  @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  resolvedBy User? @relation("ReportResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@unique([routeId, reporterId])
+  /// The admin queue: open reports, oldest first.
+  @@index([status, createdAt])
+  @@map("route_reports")
 }
 
 /// One score per person and route, from 1 to 10, given after completing it.
