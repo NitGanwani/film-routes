@@ -13,6 +13,7 @@ export function createRatingService(db: Db) {
   async function enrollmentOf(userId: string, routeId: string) {
     const enrollment = await db.enrollment.findUnique({
       where: { routeId_travelerId: { routeId, travelerId: userId } },
+      include: { route: { select: { hiddenAt: true } } },
     });
     if (!enrollment) {
       throw new HttpError(404, 'route_not_found', 'Route not found');
@@ -23,6 +24,10 @@ export function createRatingService(db: Db) {
         'removed_from_route',
         'The author has removed you from this route',
       );
+    }
+    // A hidden route is closed to everyone, votes included.
+    if (enrollment.route.hiddenAt) {
+      throw new HttpError(410, 'route_hidden', 'This route has been hidden');
     }
     return enrollment;
   }

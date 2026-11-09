@@ -15,6 +15,8 @@ import { createEnrollmentsRouter } from './enrollments/router.js';
 import { createEnrollmentService } from './enrollments/service.js';
 import { createInvitesRouter } from './invites/router.js';
 import { createInviteService } from './invites/service.js';
+import { createModerationRouter } from './moderation/router.js';
+import { createModerationService } from './moderation/service.js';
 import { createProgressRouter } from './progress/router.js';
 import { createProgressService } from './progress/service.js';
 import { createPublicRouter } from './public/router.js';
@@ -37,6 +39,7 @@ export type AppOptions = {
   filmRequestsPerMinute?: number;
   inviteAcceptAttemptsPer15Min?: number;
   publicRequestsPerMinute?: number;
+  reportsPer15Min?: number;
 };
 
 const notFound: RequestHandler = (_req, res) => {
@@ -76,6 +79,7 @@ export function createApp({
   filmRequestsPerMinute = 60,
   inviteAcceptAttemptsPer15Min = 30,
   publicRequestsPerMinute = 60,
+  reportsPer15Min = 10,
 }: AppOptions) {
   const app = express();
 
@@ -150,6 +154,15 @@ export function createApp({
     createRatingsRouter({
       service: createRatingService(db),
       accessSecret: auth.accessSecret,
+    }),
+  );
+
+  app.use(
+    createModerationRouter({
+      service: createModerationService(db),
+      db,
+      accessSecret: auth.accessSecret,
+      reportsPer15Min,
     }),
   );
 

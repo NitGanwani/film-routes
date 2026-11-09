@@ -63,7 +63,7 @@ export function createPublicService(db: Db) {
       const rows = await db.$queryRaw<{ id: string }[]>`
         SELECT r.id FROM routes r
         JOIN route_ratings x ON x.route_id = r.id
-        WHERE r.visibility = 'PUBLIC'
+        WHERE r.visibility = 'PUBLIC' AND r.hidden_at IS NULL
         GROUP BY r.id
         HAVING COUNT(x.id) >= ${RATING.minVotesToShowAverage}
         ORDER BY ROUND(AVG(x.score)::numeric, 1) DESC,
@@ -73,7 +73,7 @@ export function createPublicService(db: Db) {
     }
     if (sort === 'new') {
       const rows = await db.route.findMany({
-        where: { visibility: 'PUBLIC' },
+        where: { visibility: 'PUBLIC', hiddenAt: null },
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         skip: offset,
         take: pageSize,
@@ -87,7 +87,7 @@ export function createPublicService(db: Db) {
       SELECT r.id FROM routes r
       LEFT JOIN enrollments e
         ON e.route_id = r.id AND e.completed_at IS NOT NULL
-      WHERE r.visibility = 'PUBLIC'
+      WHERE r.visibility = 'PUBLIC' AND r.hidden_at IS NULL
       GROUP BY r.id
       ORDER BY COUNT(e.id) DESC, r.created_at DESC, r.id DESC
       LIMIT ${pageSize} OFFSET ${offset}`;
@@ -97,13 +97,15 @@ export function createPublicService(db: Db) {
   /** How many routes the list has, so the pages add up for each ordering. */
   async function totalRoutes(sort: ListQuery['sort']) {
     if (sort !== 'top') {
-      return db.route.count({ where: { visibility: 'PUBLIC' } });
+      return db.route.count({
+        where: { visibility: 'PUBLIC', hiddenAt: null },
+      });
     }
     const [row] = await db.$queryRaw<{ total: number }[]>`
       SELECT COUNT(*)::int AS total FROM (
         SELECT r.id FROM routes r
         JOIN route_ratings x ON x.route_id = r.id
-        WHERE r.visibility = 'PUBLIC'
+        WHERE r.visibility = 'PUBLIC' AND r.hidden_at IS NULL
         GROUP BY r.id
         HAVING COUNT(x.id) >= ${RATING.minVotesToShowAverage}
       ) ranked`;
@@ -113,7 +115,7 @@ export function createPublicService(db: Db) {
   /** What anyone sees before starting: the films, but none of the notes. */
   async function getRoute(routeId: string) {
     const route = await db.route.findFirst({
-      where: { id: routeId, visibility: 'PUBLIC' },
+      where: { id: routeId, visibility: 'PUBLIC', hiddenAt: null },
       select: {
         ...summarySelect,
         steps: {
@@ -170,7 +172,7 @@ export function createPublicService(db: Db) {
      */
     async joinRoute(userId: string, routeId: string) {
       const route = await db.route.findFirst({
-        where: { id: routeId, visibility: 'PUBLIC' },
+        where: { id: routeId, visibility: 'PUBLIC', hiddenAt: null },
         select: { authorId: true },
       });
       if (!route) {
@@ -191,9 +193,9 @@ export function createPublicService(db: Db) {
           await lockRouteForJoin(tx, routeId);
           const current = await tx.route.findUnique({
             where: { id: routeId },
-            select: { visibility: true },
+            select: { visibility: true, hiddenAt: true },
           });
-          if (current?.visibility !== 'PUBLIC') {
+          if (current?.visibility !== 'PUBLIC' || current.hiddenAt) {
             throw routeNotFound();
           }
 

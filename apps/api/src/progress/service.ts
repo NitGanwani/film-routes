@@ -11,6 +11,8 @@ export type StepState = 'pending' | 'started' | 'closed';
 
 const routeNotFound = () =>
   new HttpError(404, 'route_not_found', 'Route not found');
+const routeHidden = () =>
+  new HttpError(410, 'route_hidden', 'This route has been hidden');
 const stepAlreadyClosed = () =>
   new HttpError(409, 'step_already_closed', 'This film is already closed');
 
@@ -57,10 +59,16 @@ export function createProgressService(
    * time (a double click, or two devices) are handled one after the other.
    */
   async function lockOwnEnrollment(tx: Tx, userId: string, routeId: string) {
-    const rows = await tx.$queryRaw<{ id: string; status: string }[]>`
-      SELECT id, status::text AS status FROM enrollments
-      WHERE route_id = ${routeId}::uuid AND traveler_id = ${userId}::uuid
-      FOR UPDATE`;
+    // Locks only the enrollment row (FOR UPDATE OF e); the join just reads
+    // whether an admin has hidden the route.
+    const rows = await tx.$queryRaw<
+      { id: string; status: string; hiddenAt: Date | null }[]
+    >`
+      SELECT e.id, e.status::text AS status, r.hidden_at AS "hiddenAt"
+      FROM enrollments e
+      JOIN routes r ON r.id = e.route_id
+      WHERE e.route_id = ${routeId}::uuid AND e.traveler_id = ${userId}::uuid
+      FOR UPDATE OF e`;
     const enrollment = rows[0];
     if (!enrollment) {
       // Not following it (or it does not exist): the same answer either way.
@@ -74,6 +82,13 @@ export function createProgressService(
       );
     }
     return enrollment;
+  }
+
+  /** A hidden route stops for everyone inside it, until an admin lifts it. */
+  function assertNotHidden(enrollment: { hiddenAt: Date | null }) {
+    if (enrollment.hiddenAt) {
+      throw routeHidden();
+    }
   }
 
   function assertFollowing(enrollment: { status: string }) {
@@ -114,6 +129,9 @@ export function createProgressService(
       where: { id: routeId },
       include: journeyInclude(enrollment.id),
     });
+    if (route.hiddenAt) {
+      throw routeHidden();
+    }
     return toJourney(route, enrollment);
   }
 
@@ -192,6 +210,7 @@ export function createProgressService(
               id: true,
               title: true,
               locale: true,
+              hiddenAt: true,
               author: { select: { username: true } },
               _count: { select: { steps: true } },
             },
@@ -211,6 +230,8 @@ export function createProgressService(
           locale: lower(row.route.locale) as Locale,
           author: row.route.author.username,
           stepCount: row.route._count.steps,
+          /** Hidden by an admin: it cannot be followed until it is lifted. */
+          hidden: row.route.hiddenAt !== null,
         },
       }));
     },
@@ -223,6 +244,7 @@ export function createProgressService(
     startStep(userId: string, routeId: string, stepId: string) {
       return db.$transaction(async (tx) => {
         const enrollment = await lockOwnEnrollment(tx, userId, routeId);
+        assertNotHidden(enrollment);
         assertFollowing(enrollment);
         await stepOfRoute(tx, routeId, stepId);
 
@@ -261,6 +283,7 @@ export function createProgressService(
     ) {
       return db.$transaction(async (tx) => {
         const enrollment = await lockOwnEnrollment(tx, userId, routeId);
+        assertNotHidden(enrollment);
         assertFollowing(enrollment);
         await stepOfRoute(tx, routeId, stepId);
 

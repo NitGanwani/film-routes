@@ -44,6 +44,11 @@ export async function markVerified(db: TestDb, userId: string) {
   });
 }
 
+/** Admins are made by hand in the database; tests do the same. */
+export async function makeAdmin(db: TestDb, userId: string) {
+  await db.user.update({ where: { id: userId }, data: { role: 'ADMIN' } });
+}
+
 const DEFAULT_TEST_DATABASE_URL =
   'postgresql://film_routes:film_routes@localhost:5432/film_routes_test';
 
@@ -126,6 +131,7 @@ export function createTestApp(db: TestDb, overrides: Partial<AppOptions> = {}) {
     filmRequestsPerMinute: 1000,
     inviteAcceptAttemptsPer15Min: 1000,
     publicRequestsPerMinute: 1000,
+    reportsPer15Min: 1000,
     ...overrides,
   });
 }

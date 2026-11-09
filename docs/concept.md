@@ -122,8 +122,36 @@ A **route** is an ordered sequence of 3 to 10 films with the author's notes.
   masterpiece.
 - Rankings (later): best rated with a minimum number of votes, most completed,
   newest. Completion rate is a quality signal as well.
-- Deferred: genre filter / author tags, reports and moderation, "this note
-  spoiled me" button.
+- Deferred: genre filter / author tags, "this note spoiled me" button.
+
+## Moderation
+
+Public routes are written by strangers, so there must be a way to report and
+take down a route before the site is opened to everyone.
+
+- **Reporting.** Anyone with a confirmed email can report a route they can
+  legitimately see (a shared route, or one they are following), with a reason
+  (spoiler, offensive, spam, other) and an optional note of up to 500
+  characters. One report per person and route. Reporting your own route is not
+  possible. The author is never told who reported.
+- **Admins.** A role set by hand in the database (`UPDATE users SET role =
+'ADMIN' ...`) and checked in the database on every request, never read from
+  the token, so removing it takes effect at once. There is no sign-up path to
+  becoming an admin.
+- **The queue.** Open reports are grouped by route (most reported first, then
+  the one waiting longest). Reports never hide anything by themselves: a person
+  decides, because counting reports would let a group take down any route.
+- **Hiding.** An admin hides a route with a mandatory reason. A hidden route
+  leaves every list and page, cannot be joined, and stops for people already
+  inside (they can still leave and keep their progress). It also blocks
+  voting. The author still sees it, flagged with the reason, can still edit it
+  and read their travelers' journeys, but cannot share it again; only an admin
+  can lift the hiding, and then everyone gets back to where they were.
+  Hiding is separate from the author's visibility setting, so lifting it
+  restores what the author chose.
+- **Closing reports.** Hiding marks the open reports as upheld; an admin can
+  also dismiss all the open reports of a route, or a single bad-faith one.
+  Reports are kept as history.
 
 ## MVP scope
 
@@ -142,8 +170,8 @@ In:
 - Unpublishing a route.
 - Responsive PWA, i18n (es/en).
 
-Next (after the progress feature): public route listing, ratings by people who
-completed a route, reports/moderation.
+Also in (done in the API): public route listing, ratings by people who
+completed a route, and reports/moderation.
 
 Out (for now):
 

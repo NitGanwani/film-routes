@@ -39,6 +39,21 @@ export type EnrollmentStatus = (typeof ENROLLMENT_STATUSES)[number];
  */
 export const RATING = { min: 1, max: 10, minVotesToShowAverage: 5 } as const;
 
+export const REPORT_REASONS = [
+  'spoiler',
+  'offensive',
+  'spam',
+  'other',
+] as const;
+export type ReportReason = (typeof REPORT_REASONS)[number];
+
+export const MODERATION_LIMITS = {
+  /** Optional context from the person reporting. */
+  reportNoteMaxLength: 500,
+  /** Why an admin hid a route; the author reads it. */
+  hideReasonMaxLength: 500,
+} as const;
+
 /** Route size limits: a route is a short, curated path, not a long list. */
 export const ROUTE_LIMITS = {
   minSteps: 3,

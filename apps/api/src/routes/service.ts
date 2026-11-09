@@ -39,6 +39,12 @@ const routeLocked = () =>
     'route_locked',
     'Travelers have already joined this route, so its films can no longer be changed',
   );
+const routeHidden = () =>
+  new HttpError(
+    403,
+    'route_hidden',
+    'An administrator hid this route, so it cannot be shared again',
+  );
 const routeTooShort = () =>
   new HttpError(
     409,
@@ -52,7 +58,7 @@ const toDbEmotion = (emotion: Emotion) => emotion.toUpperCase() as DbEmotion;
 const toDbVisibility = (visibility: RouteVisibility) =>
   visibility.toUpperCase() as DbVisibility;
 
-const detailInclude = {
+export const detailInclude = {
   steps: {
     orderBy: { position: 'asc' },
     include: { film: { include: { translations: true } } },
@@ -60,7 +66,9 @@ const detailInclude = {
   _count: { select: { enrollments: { where: countsAsTraveler } } },
 } satisfies Prisma.RouteInclude;
 
-type RouteRow = Prisma.RouteGetPayload<{ include: typeof detailInclude }>;
+export type RouteRow = Prisma.RouteGetPayload<{
+  include: typeof detailInclude;
+}>;
 
 export type FilmRow = Prisma.FilmGetPayload<{
   include: { translations: true };
@@ -80,7 +88,7 @@ export function toFilm(film: FilmRow, locale: DbLocale) {
   };
 }
 
-function toDetail(route: RouteRow) {
+export function toDetail(route: RouteRow) {
   return {
     id: route.id,
     title: route.title,
@@ -89,6 +97,12 @@ function toDetail(route: RouteRow) {
     visibility: route.visibility.toLowerCase() as RouteVisibility,
     /** True once a traveler has joined: films can no longer be changed. */
     locked: route._count.enrollments > 0,
+    /** Set when an admin took the route down; the author can read why. */
+    moderation: {
+      hidden: route.hiddenAt !== null,
+      hiddenAt: route.hiddenAt,
+      reason: route.hiddenReason,
+    },
     createdAt: route.createdAt,
     updatedAt: route.updatedAt,
     steps: route.steps.map((step) => ({
@@ -194,6 +208,7 @@ export function createRouteService(
         visibility: route.visibility.toLowerCase() as RouteVisibility,
         stepCount: route._count.steps,
         locked: route._count.enrollments > 0,
+        hidden: route.hiddenAt !== null,
         createdAt: route.createdAt,
         updatedAt: route.updatedAt,
       }));
@@ -220,8 +235,17 @@ export function createRouteService(
         await assertEmailVerified(db, userId);
       }
       return withRouteLock(userId, routeId, async (tx) => {
-        // Sharing a route (anything but private) needs a complete path.
+        // Sharing a route (anything but private) needs a complete path, and a
+        // route an admin hid stays down until an admin lifts it. Checked under
+        // the lock, so it sees a hide that landed a moment ago.
         if (patch.visibility && patch.visibility !== 'private') {
+          const current = await tx.route.findUniqueOrThrow({
+            where: { id: routeId },
+            select: { hiddenAt: true },
+          });
+          if (current.hiddenAt) {
+            throw routeHidden();
+          }
           const steps = await tx.routeStep.count({ where: { routeId } });
           if (steps < ROUTE_LIMITS.minSteps) {
             throw routeTooShort();

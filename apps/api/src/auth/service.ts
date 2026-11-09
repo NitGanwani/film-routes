@@ -35,6 +35,8 @@ export type PublicUser = {
   email: string;
   locale: Locale;
   emailVerified: boolean;
+  /** Lets the web app show the moderation screens; the API checks again. */
+  isAdmin: boolean;
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -77,6 +79,7 @@ export function createAuthService(
     email: string;
     locale: 'ES' | 'EN';
     emailVerifiedAt: Date | null;
+    role: 'USER' | 'ADMIN';
   }): PublicUser {
     return {
       id: user.id,
@@ -84,6 +87,7 @@ export function createAuthService(
       email: user.email,
       locale: user.locale === 'ES' ? 'es' : 'en',
       emailVerified: user.emailVerifiedAt !== null,
+      isAdmin: user.role === 'ADMIN',
     };
   }
 

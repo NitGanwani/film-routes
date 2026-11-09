@@ -76,7 +76,7 @@ export function createInviteService(
   async function ownedRoute(userId: string, routeId: string) {
     const route = await db.route.findFirst({
       where: { id: routeId, authorId: userId },
-      select: { id: true, visibility: true },
+      select: { id: true, visibility: true, hiddenAt: true },
     });
     if (!route) {
       throw routeNotFound();
@@ -96,6 +96,13 @@ export function createInviteService(
     ) {
       await assertEmailVerified(db, userId);
       const route = await ownedRoute(userId, routeId);
+      if (route.hiddenAt) {
+        throw new HttpError(
+          403,
+          'route_hidden',
+          'An administrator hid this route, so it cannot be shared',
+        );
+      }
       if (route.visibility === 'PRIVATE') {
         throw new HttpError(
           409,
@@ -193,13 +200,18 @@ export function createInviteService(
 
           const route = await tx.route.findUniqueOrThrow({
             where: { id: invite.routeId },
-            select: { visibility: true },
+            select: { visibility: true, hiddenAt: true },
           });
           if (route.visibility === 'PRIVATE') {
             throw gone(
               'invite_unavailable',
               'The author is no longer sharing this route',
             );
+          }
+          // Also closes the door on people already inside: a hidden route
+          // cannot be resumed through its link either.
+          if (route.hiddenAt) {
+            throw gone('route_hidden', 'This route has been hidden');
           }
 
           // Joining twice, or coming back after leaving, uses up no place.
