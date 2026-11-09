@@ -1,3 +1,4 @@
+import { EMOTIONS } from '@film-routes/shared';
 import { describe, expect, it } from 'vitest';
 import { en } from './en.js';
 import { es } from './es.js';
@@ -14,6 +15,12 @@ function keysOf(value: object, prefix = ''): string[] {
 describe('translations', () => {
   it('have the same keys in Spanish and English', () => {
     expect(keysOf(en).sort()).toEqual(keysOf(es).sort());
+  });
+
+  it('name every emotion of the shared catalogue, and only those', () => {
+    for (const texts of [es.emotions, en.emotions]) {
+      expect(Object.keys(texts).sort()).toEqual([...EMOTIONS].sort());
+    }
   });
 
   it('use the same placeholders in both languages', () => {

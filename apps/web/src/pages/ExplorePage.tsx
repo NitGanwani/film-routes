@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router';
 import { api } from '../api/instance.js';
 import type { PublicRoutesPage } from '../api/types.js';
 import { errorMessage } from '../components/errorMessage.js';
@@ -50,7 +51,7 @@ export function ExplorePage() {
       <ul>
         {routes.data?.routes.map((route) => (
           <li key={route.id}>
-            <strong>{route.title}</strong> —{' '}
+            <Link to={`/routes/${route.id}`}>{route.title}</Link> —{' '}
             {t('explore.by', { author: route.author })} ·{' '}
             {t('explore.films', { count: route.stepCount })} ·{' '}
             {t('explore.completions', { count: route.completions })} ·{' '}

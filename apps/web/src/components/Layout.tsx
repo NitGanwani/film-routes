@@ -16,6 +16,7 @@ export function Layout() {
           <Link to="/">{t('nav.explore')}</Link>{' '}
           {session.status === 'authenticated' ? (
             <>
+              <Link to="/journeys">{t('nav.journeys')}</Link>{' '}
               <span>{session.user.username}</span>{' '}
               <button type="button" onClick={() => void session.logout()}>
                 {t('nav.logout')}
@@ -46,6 +47,10 @@ export function Layout() {
       <main>
         <Outlet />
       </main>
+      {/* TMDB's terms require this notice wherever its data is shown. */}
+      <footer>
+        <small>{t('footer.tmdb')}</small>
+      </footer>
     </>
   );
 }

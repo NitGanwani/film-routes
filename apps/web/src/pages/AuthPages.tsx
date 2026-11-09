@@ -1,13 +1,21 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Navigate, useNavigate } from 'react-router';
+import { Navigate, useNavigate, useSearchParams } from 'react-router';
 import { errorMessage } from '../components/errorMessage.js';
+import { safeNextPath } from '../session/nextPath.js';
 import { useSession } from '../session/SessionProvider.js';
+
+/** Where to go once signed in: the page they came from, or the home page. */
+function useNextPath() {
+  const [params] = useSearchParams();
+  return safeNextPath(params.get('next'));
+}
 
 /** Runs a submit, tracking "sending" and the error to show. */
 function useSubmit(action: () => Promise<void>) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const next = useNextPath();
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,7 +25,7 @@ function useSubmit(action: () => Promise<void>) {
     setError(null);
     try {
       await action();
-      void navigate('/');
+      void navigate(next, { replace: true });
     } catch (failure) {
       setError(errorMessage(t, failure));
       setSending(false);
@@ -32,8 +40,9 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const form = useSubmit(() => session.login({ email, password }));
+  const next = useNextPath();
 
-  if (session.status === 'authenticated') return <Navigate to="/" replace />;
+  if (session.status === 'authenticated') return <Navigate to={next} replace />;
 
   return (
     <form onSubmit={(event) => void form.onSubmit(event)}>
@@ -80,8 +89,9 @@ export function RegisterPage() {
       locale: i18n.language === 'en' ? 'en' : 'es',
     }),
   );
+  const next = useNextPath();
 
-  if (session.status === 'authenticated') return <Navigate to="/" replace />;
+  if (session.status === 'authenticated') return <Navigate to={next} replace />;
 
   return (
     <form onSubmit={(event) => void form.onSubmit(event)}>
