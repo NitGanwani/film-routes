@@ -130,6 +130,10 @@ A **route** is an ordered sequence of 3 to 10 films with the author's notes.
 In:
 
 - Registration and login (access token + rotating refresh token).
+- Email confirmation, password recovery and account deletion. Until the
+  address is confirmed a person can browse and follow routes, but not share,
+  invite, rate or report. Deleting an account deletes everything of theirs,
+  including the routes they wrote.
 - Film search and caching from TMDB, in Spanish and English.
 - Create, edit and publish routes with ordered steps and notes.
 - Reusable invitation links, enrollments and per-step progress (including

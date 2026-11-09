@@ -12,6 +12,12 @@ const envSchema = z.object({
   TMDB_ACCESS_TOKEN: z.string().min(1),
   ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(900),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
+  // Where the web app lives: the links in emails (confirm address, reset
+  // password) point here. A trailing slash is dropped so links stay clean.
+  WEB_URL: z
+    .url()
+    .default('http://localhost:5173')
+    .transform((value) => value.replace(/\/+$/, '')),
   CORS_ORIGINS: z
     .string()
     .default('http://localhost:5173')

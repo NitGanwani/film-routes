@@ -8,6 +8,7 @@ import { createAuthRouter } from './auth/routes.js';
 import { createAuthService, type AuthSettings } from './auth/service.js';
 import type { Db } from './db.js';
 import { HttpError } from './errors.js';
+import type { Mailer } from './mail/mailer.js';
 import { createFilmsRouter } from './films/routes.js';
 import { createFilmService } from './films/service.js';
 import { createEnrollmentsRouter } from './enrollments/router.js';
@@ -29,6 +30,8 @@ export type AppOptions = {
   db: Db;
   auth: AuthSettings;
   tmdb: TmdbClient;
+  /** Sends the emails (confirm address, reset password). */
+  mailer: Mailer;
   /** Override in tests; the default is deliberately strict. */
   authAttemptsPer15Min?: number;
   filmRequestsPerMinute?: number;
@@ -68,6 +71,7 @@ export function createApp({
   db,
   auth,
   tmdb,
+  mailer,
   authAttemptsPer15Min = 20,
   filmRequestsPerMinute = 60,
   inviteAcceptAttemptsPer15Min = 30,
@@ -86,7 +90,7 @@ export function createApp({
   app.use(
     '/auth',
     createAuthRouter({
-      service: createAuthService(db, auth),
+      service: createAuthService(db, auth, mailer),
       settings: auth,
       attemptsPer15Min: authAttemptsPer15Min,
     }),

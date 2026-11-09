@@ -4,13 +4,45 @@ import { createApp, type AppOptions } from '../app.js';
 import type { AuthSettings } from '../auth/service.js';
 import { createPrismaClient } from '../db.js';
 import { HttpError } from '../errors.js';
+import type { MailMessage, Mailer } from '../mail/mailer.js';
 import type { TmdbClient, TmdbMovieDetail } from '../tmdb/client.js';
 
 export const testAuthSettings: AuthSettings = {
   accessSecret: 'test-secret-test-secret-test-secret-0123',
   accessTtlSeconds: 900,
   refreshTtlDays: 30,
+  webUrl: 'http://localhost:5173',
 };
+
+/** A mailer that keeps the emails in memory so tests can read them. */
+export function createMemoryMailer() {
+  const outbox: MailMessage[] = [];
+  const mailer: Mailer = {
+    // Runs up to its first await when called, so the email is in the outbox
+    // the moment `send` is started, even if nobody waits for it.
+    async send(message) {
+      outbox.push(message);
+    },
+  };
+  return { ...mailer, outbox };
+}
+
+/** The token inside the link of an email. */
+export function tokenFrom(message: MailMessage) {
+  const token = /token=([\w-]+)/.exec(message.text)?.[1];
+  if (!token) {
+    throw new Error(`No link in the email: ${message.text}`);
+  }
+  return token;
+}
+
+/** Most tests need a user who can share, invite and vote right away. */
+export async function markVerified(db: TestDb, userId: string) {
+  await db.user.update({
+    where: { id: userId },
+    data: { emailVerifiedAt: new Date() },
+  });
+}
 
 const DEFAULT_TEST_DATABASE_URL =
   'postgresql://film_routes:film_routes@localhost:5432/film_routes_test';
@@ -88,6 +120,7 @@ export function createTestApp(db: TestDb, overrides: Partial<AppOptions> = {}) {
     db,
     auth: testAuthSettings,
     tmdb: createFakeTmdb(),
+    mailer: createMemoryMailer(),
     // High enough that unrelated tests never trip the limiters.
     authAttemptsPer15Min: 1000,
     filmRequestsPerMinute: 1000,

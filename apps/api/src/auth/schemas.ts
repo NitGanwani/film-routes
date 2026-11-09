@@ -30,5 +30,18 @@ export const refreshTokenSchema = z.object({
   refreshToken: z.string().min(1).max(256),
 });
 
+// Opaque tokens are 43 characters; the bound only keeps absurd input out.
+const emailedToken = z.string().min(1).max(256);
+
+export const verifyEmailSchema = z.object({ token: emailedToken });
+export const forgotPasswordSchema = z.object({ email });
+export const resetPasswordSchema = z.object({
+  token: emailedToken,
+  password: newPassword,
+});
+export const deleteAccountSchema = z.object({
+  password: z.string().min(1).max(128),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;

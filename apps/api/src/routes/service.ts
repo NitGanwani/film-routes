@@ -10,6 +10,7 @@ import type {
   Locale as DbLocale,
   Visibility as DbVisibility,
 } from '../../generated/prisma/enums.js';
+import { assertEmailVerified } from '../auth/verified.js';
 import type { Db } from '../db.js';
 import { HttpError } from '../errors.js';
 import { posterUrl, type FilmService } from '../films/service.js';
@@ -209,7 +210,15 @@ export function createRouteService(
       return toDetail(route);
     },
 
-    updateRoute(userId: string, routeId: string, patch: UpdateRouteInput) {
+    async updateRoute(
+      userId: string,
+      routeId: string,
+      patch: UpdateRouteInput,
+    ) {
+      // Sharing needs a confirmed email; going back to private never does.
+      if (patch.visibility && patch.visibility !== 'private') {
+        await assertEmailVerified(db, userId);
+      }
       return withRouteLock(userId, routeId, async (tx) => {
         // Sharing a route (anything but private) needs a complete path.
         if (patch.visibility && patch.visibility !== 'private') {

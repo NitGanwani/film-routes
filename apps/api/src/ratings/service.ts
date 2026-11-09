@@ -1,3 +1,4 @@
+import { assertEmailVerified } from '../auth/verified.js';
 import type { Db } from '../db.js';
 import { HttpError } from '../errors.js';
 import { ratingSummaries, summaryOf } from './stats.js';
@@ -35,6 +36,7 @@ export function createRatingService(db: Db) {
      * route can vote, and each person has exactly one vote per route.
      */
     async rate(userId: string, routeId: string, score: number) {
+      await assertEmailVerified(db, userId);
       const enrollment = await enrollmentOf(userId, routeId);
       if (!enrollment.completedAt) {
         throw new HttpError(

@@ -1,6 +1,11 @@
 import request from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { createTestApp, createTestDb, resetDb } from '../test/helpers.js';
+import {
+  createTestApp,
+  createTestDb,
+  resetDb,
+  markVerified,
+} from '../test/helpers.js';
 
 // Integration tests: they need the Postgres test database (see README).
 const db = createTestDb();
@@ -20,6 +25,7 @@ async function signUp(username: string) {
       email: `${username}@example.com`,
       password: 'correct horse battery staple',
     });
+  await markVerified(db, body.user.id as string);
   return {
     userId: body.user.id as string,
     auth: { Authorization: `Bearer ${body.tokens.accessToken}` },

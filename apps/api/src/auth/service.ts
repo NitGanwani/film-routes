@@ -2,6 +2,9 @@ import type { Locale } from '@film-routes/shared';
 import { Prisma } from '../../generated/prisma/client.js';
 import type { Db } from '../db.js';
 import { HttpError } from '../errors.js';
+import { sendSafely, type Mailer } from '../mail/mailer.js';
+import { passwordResetEmail, verificationEmail } from '../mail/messages.js';
+import { createEmailTokens } from './emailTokens.js';
 import { hashPassword, verifyPassword } from './passwords.js';
 import type { LoginInput, RegisterInput } from './schemas.js';
 import {
@@ -14,6 +17,8 @@ export type AuthSettings = {
   accessSecret: string;
   accessTtlSeconds: number;
   refreshTtlDays: number;
+  /** Where the web app lives, without a trailing slash: emailed links go here. */
+  webUrl: string;
 };
 
 export type Tokens = {
@@ -29,6 +34,7 @@ export type PublicUser = {
   username: string;
   email: string;
   locale: Locale;
+  emailVerified: boolean;
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -36,14 +42,28 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const invalidCredentials = () =>
   new HttpError(401, 'invalid_credentials', 'Incorrect email or password');
 
+const invalidLink = () =>
+  new HttpError(
+    400,
+    'invalid_token',
+    'This link is not valid or has expired. Ask for a new one.',
+  );
+
+const accountGone = () =>
+  new HttpError(401, 'unauthorized', 'Account no longer exists');
+
 const invalidRefreshToken = () =>
   new HttpError(401, 'invalid_refresh_token', 'Invalid or expired session');
 
 export function createAuthService(
   db: Db,
   settings: AuthSettings,
+  mailer: Mailer,
   now: () => Date = () => new Date(),
 ) {
+  const emailTokens = createEmailTokens(db, now);
+  const linkTo = (page: string, token: string) =>
+    `${settings.webUrl}/${page}?token=${token}`;
   // Verified against when the email does not exist, so a missing account takes
   // as long to reject as a wrong password and login does not reveal which
   // emails are registered.
@@ -56,13 +76,34 @@ export function createAuthService(
     username: string;
     email: string;
     locale: 'ES' | 'EN';
+    emailVerifiedAt: Date | null;
   }): PublicUser {
     return {
       id: user.id,
       username: user.username,
       email: user.email,
       locale: user.locale === 'ES' ? 'es' : 'en',
+      emailVerified: user.emailVerifiedAt !== null,
     };
+  }
+
+  type Recipient = { id: string; email: string; locale: 'ES' | 'EN' };
+
+  /** Emails the confirmation link. False when one went out a moment ago. */
+  async function sendVerification(user: Recipient) {
+    const token = await emailTokens.issue(user.id, 'VERIFY_EMAIL');
+    if (!token) {
+      return false;
+    }
+    sendSafely(
+      mailer,
+      verificationEmail(
+        user.email,
+        user.locale === 'ES' ? 'es' : 'en',
+        linkTo('verify-email', token),
+      ),
+    );
+    return true;
   }
 
   async function issueTokens(userId: string): Promise<Tokens> {
@@ -128,6 +169,12 @@ export function createAuthService(
         throw error;
       }
 
+      // The account exists either way: if the email cannot be prepared, the
+      // person can ask for it again from the app.
+      await sendVerification(user).catch((error: unknown) => {
+        console.error('Could not prepare the verification email', error);
+      });
+
       return { user: toPublicUser(user), tokens: await issueTokens(user.id) };
     },
 
@@ -189,6 +236,131 @@ export function createAuthService(
     async getUser(userId: string): Promise<PublicUser | null> {
       const user = await db.user.findUnique({ where: { id: userId } });
       return user ? toPublicUser(user) : null;
+    },
+
+    /** Opening the emailed link proves the address is theirs. */
+    async verifyEmail(token: string) {
+      const stored = await emailTokens.find(token, 'VERIFY_EMAIL');
+      if (!stored) {
+        throw invalidLink();
+      }
+      await db.$transaction(async (tx) => {
+        if (!(await emailTokens.claim(tx, stored.id))) {
+          throw invalidLink();
+        }
+        await tx.user.updateMany({
+          where: { id: stored.userId, emailVerifiedAt: null },
+          data: { emailVerifiedAt: now() },
+        });
+      });
+    },
+
+    async resendVerification(userId: string) {
+      const user = await db.user.findUnique({ where: { id: userId } });
+      if (!user) {
+        throw accountGone();
+      }
+      if (user.emailVerifiedAt) {
+        throw new HttpError(
+          409,
+          'already_verified',
+          'Your email is already confirmed',
+        );
+      }
+      if (!(await sendVerification(user))) {
+        throw new HttpError(
+          429,
+          'too_soon',
+          'An email was just sent: wait a minute before asking for another',
+        );
+      }
+    },
+
+    /**
+     * Always looks the same from outside, whether or not the address has an
+     * account, so this cannot be used to find out who is registered.
+     */
+    async requestPasswordReset(email: string) {
+      const user = await db.user.findUnique({ where: { email } });
+      if (!user) {
+        return;
+      }
+      const token = await emailTokens.issue(user.id, 'PASSWORD_RESET');
+      if (!token) {
+        return;
+      }
+      sendSafely(
+        mailer,
+        passwordResetEmail(
+          user.email,
+          user.locale === 'ES' ? 'es' : 'en',
+          linkTo('reset-password', token),
+        ),
+      );
+    },
+
+    /**
+     * Sets a new password and signs out every device: whoever had the old
+     * password (or a stolen session) is shut out. Opening the link also proves
+     * the address, so it confirms the email too.
+     */
+    async resetPassword(token: string, newPassword: string) {
+      // Cheap checks first: a bogus link must not make us run argon2.
+      const stored = await emailTokens.find(token, 'PASSWORD_RESET');
+      if (!stored) {
+        throw invalidLink();
+      }
+      const passwordHash = await hashPassword(newPassword);
+
+      await db.$transaction(async (tx) => {
+        if (!(await emailTokens.claim(tx, stored.id))) {
+          throw invalidLink();
+        }
+        await tx.user.update({
+          where: { id: stored.userId },
+          data: { passwordHash },
+        });
+        await tx.user.updateMany({
+          where: { id: stored.userId, emailVerifiedAt: null },
+          data: { emailVerifiedAt: now() },
+        });
+        await tx.refreshToken.updateMany({
+          where: { userId: stored.userId, revokedAt: null },
+          data: { revokedAt: now() },
+        });
+        await tx.userToken.deleteMany({
+          where: { userId: stored.userId, usedAt: null },
+        });
+      });
+    },
+
+    /** What closing the account would take with it, to warn before asking. */
+    async deletionImpact(userId: string) {
+      const [routes, travelers] = await Promise.all([
+        db.route.count({ where: { authorId: userId } }),
+        db.$queryRaw<{ total: number }[]>`
+          SELECT COUNT(DISTINCT e.traveler_id)::int AS total
+          FROM enrollments e
+          JOIN routes r ON r.id = e.route_id
+          WHERE r.author_id = ${userId}::uuid AND e.status <> 'REMOVED'`,
+      ]);
+      return { routes, travelersAffected: travelers[0]?.total ?? 0 };
+    },
+
+    /**
+     * Deletes the account and everything that hangs from it (routes, progress,
+     * votes, sessions): every link to the user is ON DELETE CASCADE. It asks for
+     * the password again, so a stolen session alone cannot do it.
+     */
+    async deleteAccount(userId: string, password: string) {
+      const user = await db.user.findUnique({ where: { id: userId } });
+      if (!user) {
+        throw accountGone();
+      }
+      if (!(await verifyPassword(user.passwordHash, password))) {
+        throw new HttpError(403, 'incorrect_password', 'Incorrect password');
+      }
+      await db.user.delete({ where: { id: userId } });
     },
   };
 }

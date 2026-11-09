@@ -1,5 +1,6 @@
 import type { Locale } from '@film-routes/shared';
 import { generateOpaqueToken, hashOpaqueToken } from '../auth/tokens.js';
+import { assertEmailVerified } from '../auth/verified.js';
 import type { Db } from '../db.js';
 import {
   resumeEnrollment,
@@ -93,6 +94,7 @@ export function createInviteService(
       routeId: string,
       input: CreateInviteInput,
     ) {
+      await assertEmailVerified(db, userId);
       const route = await ownedRoute(userId, routeId);
       if (route.visibility === 'PRIVATE') {
         throw new HttpError(
