@@ -4,6 +4,7 @@ import { setLanguage } from '../i18n/index.js';
 import { useSession } from '../session/SessionProvider.js';
 import { Avatar } from './Avatar.js';
 import { IconSprite } from './Icon.js';
+import { ThemeToggle } from './ThemeToggle.js';
 
 /** The shell: top navigation, the page, and the TMDB notice. */
 export function Layout() {
@@ -35,6 +36,7 @@ export function Layout() {
             <option value="es">ES</option>
             <option value="en">EN</option>
           </select>
+          <ThemeToggle />
           {session.status === 'authenticated' && (
             <>
               <Avatar name={session.user.username} />

@@ -86,6 +86,20 @@
   background: var(--surface);
   font-size: var(--fs-sm);
 }
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.icon-btn:hover {
+  background: var(--surface-2);
+}
 @media (min-width: 720px) {
   .topnav {
     flex-wrap: nowrap;

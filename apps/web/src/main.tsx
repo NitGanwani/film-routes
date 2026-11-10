@@ -7,6 +7,10 @@ import { App } from './App.js';
 import { initI18n } from './i18n/index.js';
 import { SessionProvider } from './session/SessionProvider.js';
 import './styles/index.css';
+import { initTheme } from './theme/theme.js';
+
+// Before anything is drawn, so a saved choice never flashes the other theme.
+initTheme();
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -105,8 +105,13 @@
   }
 }
 
-/* An explicit choice wins over the system setting (for a future theme switch). */
+/* An explicit choice (the theme switch) wins over the system setting. The
+   colour-scheme keeps native controls (menus, scrollbars) in the same theme. */
+:root[data-theme='light'] {
+  color-scheme: light;
+}
 :root[data-theme='dark'] {
+  color-scheme: dark;
   --bg: #12131f;
   --surface: #1c1e2e;
   --surface-2: #242739;

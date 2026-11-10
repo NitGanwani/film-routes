@@ -9,6 +9,8 @@ export const es = {
     register: 'Crear cuenta',
     logout: 'Salir',
     language: 'Idioma',
+    themeToDark: 'Cambiar al tema oscuro',
+    themeToLight: 'Cambiar al tema claro',
   },
   explore: {
     title: 'Explorar rutas',

@@ -10,6 +10,8 @@ export const en: Translations = {
     register: 'Sign up',
     logout: 'Log out',
     language: 'Language',
+    themeToDark: 'Switch to dark theme',
+    themeToLight: 'Switch to light theme',
   },
   explore: {
     title: 'Explore routes',
