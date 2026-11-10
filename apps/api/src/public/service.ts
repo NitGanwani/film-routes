@@ -13,6 +13,7 @@ import {
   type RatingSummary,
 } from '../ratings/stats.js';
 import { lockRouteForJoin } from '../routes/locking.js';
+import { postersSelect, toPosters } from '../routes/posters.js';
 import { toFilm } from '../routes/service.js';
 import type { ListQuery } from './schemas.js';
 
@@ -40,7 +41,11 @@ const summarySelect = {
 
 type SummaryRow = Prisma.RouteGetPayload<{ select: typeof summarySelect }>;
 
-const toSummary = (route: SummaryRow, rating: RatingSummary) => ({
+const toSummary = (
+  route: SummaryRow,
+  rating: RatingSummary,
+  posters: (string | null)[],
+) => ({
   id: route.id,
   title: route.title,
   description: route.description,
@@ -49,6 +54,7 @@ const toSummary = (route: SummaryRow, rating: RatingSummary) => ({
   stepCount: route._count.steps,
   completions: route._count.enrollments,
   rating,
+  posters,
   createdAt: route.createdAt,
 });
 
@@ -132,7 +138,7 @@ export function createPublicService(db: Db) {
     }
     const ratings = await ratingSummaries(db, [route.id]);
     return {
-      ...toSummary(route, summaryOf(ratings, route.id)),
+      ...toSummary(route, summaryOf(ratings, route.id), toPosters(route.steps)),
       steps: route.steps.map((step) => ({
         position: step.position,
         film: toFilm(step.film, route.locale),
@@ -150,7 +156,7 @@ export function createPublicService(db: Db) {
       ]);
       const rows = await db.route.findMany({
         where: { id: { in: ids } },
-        select: summarySelect,
+        select: { ...summarySelect, ...postersSelect },
       });
       const ratings = await ratingSummaries(db, ids);
       // The second query does not keep the order of the first.
@@ -158,7 +164,9 @@ export function createPublicService(db: Db) {
       return {
         routes: ids.flatMap((id) => {
           const row = byId.get(id);
-          return row ? [toSummary(row, summaryOf(ratings, id))] : [];
+          return row
+            ? [toSummary(row, summaryOf(ratings, id), toPosters(row.steps))]
+            : [];
         }),
         page: query.page,
         pageSize: query.pageSize,

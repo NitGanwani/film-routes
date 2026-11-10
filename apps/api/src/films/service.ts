@@ -2,7 +2,7 @@ import type { Locale } from '@film-routes/shared';
 import type { Db } from '../db.js';
 import type { TmdbClient, TmdbMovie, TmdbMovieDetail } from '../tmdb/client.js';
 
-const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
+const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w185';
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 // TMDB's terms forbid caching its data for more than 6 months. We refresh well

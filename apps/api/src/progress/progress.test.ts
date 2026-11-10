@@ -703,6 +703,38 @@ describe('my routes', () => {
     });
   });
 
+  it('shows the posters of the first films of each route', async () => {
+    const ada = await signUp('ada');
+    const bob = await signUp('bob');
+    const created = await request(app)
+      .post('/routes')
+      .set(ada.auth)
+      .send({ title: 'With a poster' });
+    const routeId = created.body.route.id as string;
+    // Film 603 is the only stand-in film that has a poster.
+    for (const tmdbId of [603, 1, 2]) {
+      await request(app)
+        .post(`/routes/${routeId}/steps`)
+        .set(ada.auth)
+        .send({ tmdbId });
+    }
+    await request(app)
+      .patch(`/routes/${routeId}`)
+      .set(ada.auth)
+      .send({ visibility: 'unlisted' });
+    await join(bob.auth, ada.auth, routeId);
+
+    const response = await request(app).get('/journeys').set(bob.auth);
+
+    expect(response.body.journeys[0].route.posters).toEqual([
+      'https://image.tmdb.org/t/p/w185/matrix.jpg',
+      null,
+      null,
+    ]);
+    // Only posters: nothing from the notes comes along.
+    expect(JSON.stringify(response.body)).not.toContain('noteBefore');
+  });
+
   it('does not list routes from which I was removed, or other people routes', async () => {
     const { ada, bob, enrollmentId, routeId } = await followedRoute();
     const carol = await signUp('carol');

@@ -132,6 +132,56 @@ describe('the public list', () => {
     expect(text).not.toContain('ada@example.com');
   });
 
+  it('shows the first four posters of each route, in route order', async () => {
+    const ada = await signUp('ada');
+    const created = await request(app)
+      .post('/routes')
+      .set(ada.auth)
+      .send({ title: 'Many films' });
+    const routeId = created.body.route.id as string;
+    // Film 603 is the only stand-in film that has a poster.
+    let stepIds: string[] = [];
+    for (const tmdbId of [1, 603, 2, 3, 4]) {
+      const added = await request(app)
+        .post(`/routes/${routeId}/steps`)
+        .set(ada.auth)
+        .send({ tmdbId });
+      // Every answer is the whole route; the last one has all five films.
+      stepIds = (added.body.route.steps as { id: string }[]).map((s) => s.id);
+    }
+    await request(app)
+      .patch(`/routes/${routeId}`)
+      .set(ada.auth)
+      .send({ visibility: 'public' });
+    const matrixPoster = 'https://image.tmdb.org/t/p/w185/matrix.jpg';
+
+    const before = await request(app).get('/public/routes');
+    expect(before.body.routes[0].posters).toEqual([
+      null,
+      matrixPoster,
+      null,
+      null,
+    ]);
+
+    // Moving a film moves its poster: the order is the route's, not the database's.
+    await request(app)
+      .put(`/routes/${routeId}/steps/order`)
+      .set(ada.auth)
+      .send({ stepIds: [stepIds[1], stepIds[0], ...stepIds.slice(2)] });
+    const after = await request(app).get('/public/routes');
+    expect(after.body.routes[0].posters).toEqual([
+      matrixPoster,
+      null,
+      null,
+      null,
+    ]);
+
+    // The route page agrees, and still lists every film.
+    const detail = await request(app).get(`/public/routes/${routeId}`);
+    expect(detail.body.route.posters).toEqual(after.body.routes[0].posters);
+    expect(detail.body.route.steps).toHaveLength(5);
+  });
+
   it('puts the newest first by default', async () => {
     const ada = await signUp('ada');
     await publicRoute(ada.auth, 'First');

@@ -57,7 +57,7 @@ describe('GET /films/search', () => {
     expect(response.body.results[0]).toMatchObject({
       tmdbId: 603,
       title: 'Matrix',
-      posterUrl: 'https://image.tmdb.org/t/p/w500/matrix.jpg',
+      posterUrl: 'https://image.tmdb.org/t/p/w185/matrix.jpg',
     });
     expect(await db.film.count()).toBe(0);
   });
