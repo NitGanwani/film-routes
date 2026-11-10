@@ -1,4 +1,4 @@
-import { useId, useState, type FormEvent } from 'react';
+import { useId, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Link,
@@ -8,7 +8,7 @@ import {
   useSearchParams,
 } from 'react-router';
 import { errorMessage } from '../components/errorMessage.js';
-import { safeNextPath } from '../session/nextPath.js';
+import { safeNextPath, welcomePathFor } from '../session/nextPath.js';
 import { useSession } from '../session/SessionProvider.js';
 
 /** Where to go once signed in: the page they came from, or the home page. */
@@ -18,7 +18,7 @@ function useNextPath() {
 }
 
 /** Runs a submit, tracking "sending" and the error to show. */
-function useSubmit(action: () => Promise<void>) {
+function useSubmit(action: () => Promise<void>, destination?: string) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const next = useNextPath();
@@ -31,7 +31,7 @@ function useSubmit(action: () => Promise<void>) {
     setError(null);
     try {
       await action();
-      void navigate(next, { replace: true });
+      void navigate(destination ?? next, { replace: true });
     } catch (failure) {
       setError(errorMessage(t, failure));
       setSending(false);
@@ -117,17 +117,28 @@ export function RegisterPage() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const form = useSubmit(() =>
-    session.register({
-      username,
-      email,
-      password,
-      locale: i18n.language === 'en' ? 'en' : 'es',
-    }),
-  );
   const next = useNextPath();
+  // Someone who just signed up goes to the tutorial; someone who was already
+  // signed in and opened this page by hand goes straight on.
+  const justRegistered = useRef(false);
+  const form = useSubmit(async () => {
+    justRegistered.current = true;
+    try {
+      await session.register({
+        username,
+        email,
+        password,
+        locale: i18n.language === 'en' ? 'en' : 'es',
+      });
+    } catch (failure) {
+      justRegistered.current = false;
+      throw failure;
+    }
+  }, welcomePathFor(next));
 
-  if (session.status === 'authenticated') return <Navigate to={next} replace />;
+  if (session.status === 'authenticated' && !justRegistered.current) {
+    return <Navigate to={next} replace />;
+  }
 
   return (
     <div className="page narrow">

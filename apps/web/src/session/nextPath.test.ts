@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { loginPathFor, safeNextPath } from './nextPath.js';
+import { loginPathFor, safeNextPath, welcomePathFor } from './nextPath.js';
 
 describe('safeNextPath', () => {
   it('keeps a path inside the site, with its query and hash', () => {
@@ -52,5 +52,22 @@ describe('loginPathFor', () => {
       'http://site.invalid',
     ).searchParams.get('next');
     expect(safeNextPath(next)).toBe(path);
+  });
+});
+
+describe('welcomePathFor', () => {
+  it('is just the tutorial when heading to the home page', () => {
+    expect(welcomePathFor('/')).toBe('/welcome');
+  });
+
+  it('remembers where the person was heading, encoded', () => {
+    expect(welcomePathFor('/routes/abc?x=1')).toBe(
+      '/welcome?next=%2Froutes%2Fabc%3Fx%3D1',
+    );
+  });
+
+  it('round-trips through the same-site check', () => {
+    const url = new URL(welcomePathFor('/routes/abc?x=1'), 'http://x.invalid');
+    expect(safeNextPath(url.searchParams.get('next'))).toBe('/routes/abc?x=1');
   });
 });

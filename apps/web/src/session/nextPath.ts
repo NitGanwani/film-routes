@@ -22,3 +22,10 @@ export function safeNextPath(raw: string | null): string {
 export function loginPathFor(path: string): string {
   return `/login?next=${encodeURIComponent(path)}`;
 }
+
+/** The tutorial first, then on to `path` (where the person was heading). */
+export function welcomePathFor(path: string): string {
+  return path === '/'
+    ? '/welcome'
+    : `/welcome?next=${encodeURIComponent(path)}`;
+}

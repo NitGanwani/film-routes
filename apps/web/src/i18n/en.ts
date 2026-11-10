@@ -12,6 +12,40 @@ export const en: Translations = {
     language: 'Language',
     themeToDark: 'Switch to dark theme',
     themeToLight: 'Switch to light theme',
+    howItWorks: 'How it works',
+  },
+  home: {
+    welcomeTitle: 'Films in order, from one person to another',
+    welcomeText:
+      'A guide picks 3 to 10 films and writes a note for each. You watch them at your own pace and, as you close each one, find out what they felt.',
+  },
+  tutorial: {
+    title: 'How it works',
+    intro: 'Four quick steps. You can skip them any time.',
+    stepOf: 'Step {{current}} of {{total}}',
+    previous: 'Back',
+    next: 'Next',
+    skip: 'Skip the tutorial',
+    finish: 'Explore routes',
+    guide: 'The guide',
+    routes: {
+      title: 'Short routes through cinema',
+      text: 'One person, whom we call the guide, picks 3 to 10 films and puts them in order. You watch them at your own pace, in one night or over a month.',
+    },
+    noSpoilers: {
+      title: 'No spoilers',
+      text: 'Before watching a film you read a note from the guide that gives nothing away. The note for afterwards stays closed until you finish.',
+      sample:
+        'Watch the corridors. It is slow to start: stay with it for the first hour.',
+    },
+    emotion: {
+      title: 'Tell us what it left you with',
+      text: 'When you finish each film you pick an emotion: it is required, and it is what makes this special. If you like, add a comment of up to 280 characters for the guide.',
+    },
+    compare: {
+      title: 'Compare with the guide',
+      text: 'When you close the film you see the guide’s emotion next to yours. Do you match? No answer is the right one. The order is advice: start with any film you like and leave whenever you want.',
+    },
   },
   explore: {
     title: 'Explore routes',

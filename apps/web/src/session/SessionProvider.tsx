@@ -42,20 +42,37 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!api.hasSession()) return;
     let cancelled = false;
-    api
-      .request<{ user: User }>('/auth/me', { auth: true })
-      .then(({ user }) => {
-        if (!cancelled) setState({ status: 'authenticated', user });
-      })
-      .catch((error: unknown) => {
-        // Only a verdict from the server (the client already cleared the
-        // session) means "signed out"; a network failure should not.
-        const ended = !api.hasSession();
-        if (!cancelled && ended) setState({ status: 'anonymous', user: null });
-        else if (!cancelled) console.error(error);
-      });
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const attempt = (retryIn: number) => {
+      api
+        .request<{ user: User }>('/auth/me', { auth: true })
+        .then(({ user }) => {
+          if (!cancelled) setState({ status: 'authenticated', user });
+        })
+        .catch((error: unknown) => {
+          if (cancelled) return;
+          // Only a verdict from the server (the client already cleared the
+          // session) means "signed out"; a network failure should not.
+          if (!api.hasSession()) {
+            setState({ status: 'anonymous', user: null });
+            return;
+          }
+          // The server could not be reached: keep the session and try again,
+          // waiting a bit longer each time, so the page recovers on its own
+          // once the server is back instead of staying "loading" for ever.
+          console.error(error);
+          timer = setTimeout(
+            () => attempt(Math.min(retryIn * 2, 15_000)),
+            retryIn,
+          );
+        });
+    };
+    attempt(2_000);
+
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, []);
 

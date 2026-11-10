@@ -1266,3 +1266,104 @@ dialog.sheet::backdrop {
   flex-wrap: wrap;
   margin-bottom: var(--sp-1);
 }
+
+/* Invitation for visitors who are not signed in yet. */
+.hero {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--r-lg);
+  padding: var(--sp-5);
+  margin-bottom: var(--sp-6);
+  display: grid;
+  gap: var(--sp-3);
+}
+.hero p {
+  color: var(--text-muted);
+  max-width: 60ch;
+}
+
+/* The optional tutorial. */
+.tutorial {
+  display: grid;
+  gap: var(--sp-3);
+}
+.tutorial-figure {
+  background: var(--surface-2);
+  border-radius: var(--r-md);
+  padding: var(--sp-4);
+  min-height: 140px;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+}
+.tutorial-figure .poster-strip {
+  margin: 0;
+}
+.tutorial-notes {
+  display: grid;
+  gap: var(--sp-3);
+  width: 100%;
+}
+.tutorial-emotions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.tutorial-figure .compare {
+  width: 100%;
+}
+.dots {
+  display: flex;
+  gap: var(--sp-2);
+  list-style: none;
+  padding: 0;
+  margin: var(--sp-2) 0 0;
+}
+.dots li {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--border);
+}
+.dots li[data-active='true'] {
+  width: 24px;
+  background: var(--primary);
+}
+.tutorial-actions {
+  display: flex;
+  gap: var(--sp-2);
+  justify-content: flex-end;
+  margin-top: var(--sp-4);
+}
+.tutorial-skip {
+  text-align: right;
+  margin-top: var(--sp-2);
+}
+.site-footer .inner a {
+  margin-left: auto;
+  color: var(--primary);
+}
+.sample-list {
+  width: 100%;
+  margin: 0;
+}
+.sample-list .film-row:last-child {
+  border-bottom: 0;
+}
+.sample-list .bar {
+  height: 10px;
+  border-radius: var(--r-pill);
+  background: var(--border);
+}
+.sample-list .poster {
+  width: 28px;
+  height: 42px;
+  flex: none;
+}
+.sample-list .poster svg {
+  display: none;
+}
+.tutorial-notes .note-label {
+  display: block;
+}

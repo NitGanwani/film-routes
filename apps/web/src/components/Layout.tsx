@@ -74,6 +74,7 @@ export function Layout() {
             TMDB
           </span>
           <span>{t('footer.tmdb')}</span>
+          <Link to="/welcome">{t('nav.howItWorks')}</Link>
         </div>
       </footer>
     </div>

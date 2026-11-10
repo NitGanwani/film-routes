@@ -2,6 +2,7 @@ import { RATING } from '@film-routes/shared';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router';
 import { api } from '../api/instance.js';
 import type { PublicRouteSummary, PublicRoutesPage } from '../api/types.js';
 import { errorMessage } from '../components/errorMessage.js';
@@ -12,6 +13,7 @@ import {
   RouteListSkeleton,
 } from '../components/States.js';
 import { formatAverage } from '../i18n/format.js';
+import { useSession } from '../session/SessionProvider.js';
 
 const SORTS = ['new', 'popular', 'top'] as const;
 type Sort = (typeof SORTS)[number];
@@ -23,6 +25,7 @@ const SORT_LABELS = {
 
 export function ExplorePage() {
   const { t } = useTranslation();
+  const session = useSession();
   const [sort, setSort] = useState<Sort>('new');
   const routes = useQuery({
     queryKey: ['public-routes', sort],
@@ -31,6 +34,23 @@ export function ExplorePage() {
 
   return (
     <div className="page">
+      {session.status === 'anonymous' && (
+        <section className="hero">
+          <h2>{t('home.welcomeTitle')}</h2>
+          <p>{t('home.welcomeText')}</p>
+          <div className="actions">
+            <Link className="btn btn-primary" to="/register">
+              {t('nav.register')}
+            </Link>
+            <Link className="btn btn-ghost" to="/login">
+              {t('nav.login')}
+            </Link>
+            <Link className="btn btn-ghost" to="/welcome">
+              {t('nav.howItWorks')}
+            </Link>
+          </div>
+        </section>
+      )}
       <div className="page-head">
         <div>
           <h1>{t('explore.title')}</h1>

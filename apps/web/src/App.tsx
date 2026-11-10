@@ -7,6 +7,7 @@ import { JourneyPage } from './pages/JourneyPage.js';
 import { JourneysPage } from './pages/JourneysPage.js';
 import { NotFoundPage } from './pages/NotFoundPage.js';
 import { RoutePage } from './pages/RoutePage.js';
+import { WelcomePage } from './pages/WelcomePage.js';
 
 export function App() {
   return (
@@ -32,6 +33,7 @@ export function App() {
         />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
+        <Route path="welcome" element={<WelcomePage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

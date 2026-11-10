@@ -11,6 +11,40 @@ export const es = {
     language: 'Idioma',
     themeToDark: 'Cambiar al tema oscuro',
     themeToLight: 'Cambiar al tema claro',
+    howItWorks: 'Cómo funciona',
+  },
+  home: {
+    welcomeTitle: 'Películas en orden, de una persona para otra',
+    welcomeText:
+      'Una guía elige entre 3 y 10 películas y escribe una nota para cada una. Tú las ves a tu ritmo y, al cerrar cada una, descubres qué sintió ella.',
+  },
+  tutorial: {
+    title: 'Cómo funciona',
+    intro: 'Cuatro pasos rápidos. Puedes saltarlos cuando quieras.',
+    stepOf: 'Paso {{current}} de {{total}}',
+    previous: 'Anterior',
+    next: 'Siguiente',
+    skip: 'Saltar el tutorial',
+    finish: 'Explorar rutas',
+    guide: 'la guía',
+    routes: {
+      title: 'Rutas cortas de cine',
+      text: 'Una persona, a la que llamamos guía, elige entre 3 y 10 películas y las ordena. Tú las ves a tu ritmo, en una noche o a lo largo de un mes.',
+    },
+    noSpoilers: {
+      title: 'Sin destripes',
+      text: 'Antes de ver una película lees una nota de la guía que no cuenta nada. La nota de después sigue cerrada hasta que termines.',
+      sample:
+        'Fíjate en los pasillos. Tarda en arrancar: aguanta la primera hora.',
+    },
+    emotion: {
+      title: 'Dinos qué te ha dejado',
+      text: 'Al terminar cada película eliges una emoción: es obligatorio y es lo que hace especial esto. Si quieres, añades un comentario de hasta 280 caracteres para la guía.',
+    },
+    compare: {
+      title: 'Compara con la guía',
+      text: 'Al cerrar la película ves la emoción de la guía junto a la tuya. ¿Coincidís? Ninguna respuesta es la correcta. El orden es un consejo: empieza por la que quieras y sal cuando quieras.',
+    },
   },
   explore: {
     title: 'Explorar rutas',

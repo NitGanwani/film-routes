@@ -9,6 +9,7 @@ import { Avatar } from '../components/Avatar.js';
 import { EmotionBadge } from '../components/EmotionBadge.js';
 import { errorMessage } from '../components/errorMessage.js';
 import { Icon } from '../components/Icon.js';
+import { Locked } from '../components/Locked.js';
 import { Poster } from '../components/Poster.js';
 import { ProgressBar } from '../components/ProgressBar.js';
 import { ErrorBox } from '../components/States.js';
@@ -410,15 +411,5 @@ function StepItem({
         )}
       </div>
     </li>
-  );
-}
-
-/** Content that opens later: shown as deliberately locked, not as missing. */
-function Locked({ text }: { text: string }) {
-  return (
-    <div className="locked">
-      <Icon name="lock" size={18} />
-      <span>{text}</span>
-    </div>
   );
 }
