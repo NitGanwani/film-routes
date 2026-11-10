@@ -58,9 +58,23 @@ const toSummary = (
   createdAt: route.createdAt,
 });
 
+/** The language filter as a piece of SQL; nothing when no language is asked for. */
+const sqlInLanguage = (locale: ListQuery['locale']) =>
+  locale
+    ? Prisma.sql`AND r.locale = ${locale.toUpperCase()}::locale`
+    : Prisma.empty;
+
+/** Routes anyone can see, optionally only those written in one language. */
+const publicWhere = (locale: ListQuery['locale']) =>
+  ({
+    visibility: 'PUBLIC',
+    hiddenAt: null,
+    ...(locale ? { locale: locale === 'es' ? 'ES' : 'EN' } : {}),
+  }) satisfies Prisma.RouteWhereInput;
+
 export function createPublicService(db: Db) {
   /** Ids of one page of public routes, in the order asked for. */
-  async function pageOfIds({ sort, page, pageSize }: ListQuery) {
+  async function pageOfIds({ sort, page, pageSize, locale }: ListQuery) {
     const offset = (page - 1) * pageSize;
     if (sort === 'top') {
       // Only routes with enough votes are ranked, and they are ordered by the
@@ -70,6 +84,7 @@ export function createPublicService(db: Db) {
         SELECT r.id FROM routes r
         JOIN route_ratings x ON x.route_id = r.id
         WHERE r.visibility = 'PUBLIC' AND r.hidden_at IS NULL
+          ${sqlInLanguage(locale)}
         GROUP BY r.id
         HAVING COUNT(x.id) >= ${RATING.minVotesToShowAverage}
         ORDER BY ROUND(AVG(x.score)::numeric, 1) DESC,
@@ -79,7 +94,7 @@ export function createPublicService(db: Db) {
     }
     if (sort === 'new') {
       const rows = await db.route.findMany({
-        where: { visibility: 'PUBLIC', hiddenAt: null },
+        where: publicWhere(locale),
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         skip: offset,
         take: pageSize,
@@ -94,6 +109,7 @@ export function createPublicService(db: Db) {
       LEFT JOIN enrollments e
         ON e.route_id = r.id AND e.completed_at IS NOT NULL
       WHERE r.visibility = 'PUBLIC' AND r.hidden_at IS NULL
+        ${sqlInLanguage(locale)}
       GROUP BY r.id
       ORDER BY COUNT(e.id) DESC, r.created_at DESC, r.id DESC
       LIMIT ${pageSize} OFFSET ${offset}`;
@@ -101,17 +117,16 @@ export function createPublicService(db: Db) {
   }
 
   /** How many routes the list has, so the pages add up for each ordering. */
-  async function totalRoutes(sort: ListQuery['sort']) {
+  async function totalRoutes({ sort, locale }: ListQuery) {
     if (sort !== 'top') {
-      return db.route.count({
-        where: { visibility: 'PUBLIC', hiddenAt: null },
-      });
+      return db.route.count({ where: publicWhere(locale) });
     }
     const [row] = await db.$queryRaw<{ total: number }[]>`
       SELECT COUNT(*)::int AS total FROM (
         SELECT r.id FROM routes r
         JOIN route_ratings x ON x.route_id = r.id
         WHERE r.visibility = 'PUBLIC' AND r.hidden_at IS NULL
+          ${sqlInLanguage(locale)}
         GROUP BY r.id
         HAVING COUNT(x.id) >= ${RATING.minVotesToShowAverage}
       ) ranked`;
@@ -152,7 +167,7 @@ export function createPublicService(db: Db) {
     async listRoutes(query: ListQuery) {
       const [ids, total] = await Promise.all([
         pageOfIds(query),
-        totalRoutes(query.sort),
+        totalRoutes(query),
       ]);
       const rows = await db.route.findMany({
         where: { id: { in: ids } },

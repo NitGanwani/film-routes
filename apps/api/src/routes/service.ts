@@ -74,13 +74,19 @@ export type FilmRow = Prisma.FilmGetPayload<{
   include: { translations: true };
 }>;
 
-/** A film as clients see it, titled in the language the route was written in. */
+/**
+ * A film as clients see it. `title` is in the language the route was written
+ * in (its notes name the film that way); `titles` has both languages so each
+ * viewer can read it in their own.
+ */
 export function toFilm(film: FilmRow, locale: DbLocale) {
+  const titleIn = (wanted: DbLocale) =>
+    film.translations.find((item) => item.locale === wanted)?.title ??
+    film.originalTitle;
   return {
     tmdbId: film.tmdbId,
-    title:
-      film.translations.find((item) => item.locale === locale)?.title ??
-      film.originalTitle,
+    title: titleIn(locale),
+    titles: { es: titleIn('ES'), en: titleIn('EN') },
     originalTitle: film.originalTitle,
     releaseYear: film.releaseYear,
     runtimeMinutes: film.runtimeMinutes,

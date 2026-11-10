@@ -479,6 +479,29 @@ describe('the list ordered by best rated', () => {
     expect(response.body.routes[0].rating).toEqual({ average: 9, votes: 6 });
   });
 
+  it('can be limited to one language', async () => {
+    const ada = await signUp('ada');
+    const voters = await signUpVoters(5);
+    const spanish = await publicRoute(ada.auth);
+    const english = await publicRoute(ada.auth);
+    await db.route.update({ where: { id: english }, data: { locale: 'EN' } });
+    for (const routeId of [spanish, english]) {
+      for (const voter of voters) {
+        await db.routeRating.create({
+          data: { routeId, userId: voter.userId, score: 8 },
+        });
+      }
+    }
+
+    const en = await top('&locale=en');
+    const es = await top('&locale=es');
+
+    expect(ids(en.body)).toEqual([english]);
+    expect(en.body.total).toBe(1);
+    expect(ids(es.body)).toEqual([spanish]);
+    expect(es.body.total).toBe(1);
+  });
+
   it('puts a better score above one with more votes', async () => {
     const ada = await signUp('ada');
     const voters = await signUpVoters(6);

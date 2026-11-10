@@ -90,6 +90,39 @@ const titles = (body: { routes: Summary[] }) =>
   body.routes.map((route) => route.title);
 
 describe('the public list', () => {
+  /** Writes a route in English (routes are Spanish by default). */
+  const inEnglish = (routeId: string) =>
+    db.route.update({ where: { id: routeId }, data: { locale: 'EN' } });
+
+  it('can be limited to one language, in every ordering', async () => {
+    const ada = await signUp('ada');
+    await publicRoute(ada.auth, 'Ruta en español');
+    const english = await publicRoute(ada.auth, 'Route in English');
+    await inEnglish(english);
+
+    for (const sort of ['new', 'popular']) {
+      const en = await request(app).get(
+        `/public/routes?sort=${sort}&locale=en`,
+      );
+      const es = await request(app).get(
+        `/public/routes?sort=${sort}&locale=es`,
+      );
+      const all = await request(app).get(`/public/routes?sort=${sort}`);
+
+      expect(titles(en.body)).toEqual(['Route in English']);
+      expect(en.body.total).toBe(1);
+      expect(titles(es.body)).toEqual(['Ruta en español']);
+      expect(es.body.total).toBe(1);
+      expect(all.body.total).toBe(2);
+    }
+  });
+
+  it('refuses a language it does not know', async () => {
+    const response = await request(app).get('/public/routes?locale=fr');
+
+    expect(response.status).toBe(400);
+  });
+
   it('needs no account', async () => {
     const ada = await signUp('ada');
     await publicRoute(ada.auth);
@@ -314,6 +347,26 @@ describe('a public route before starting it', () => {
     expect(text).not.toContain('after-');
     expect(text).not.toContain('noteBefore');
     expect(text).not.toContain('authorEmotion');
+  });
+
+  it('gives every film title in both languages, plus one in the route language', async () => {
+    const ada = await signUp('ada');
+    const routeId = await publicRoute(ada.auth);
+
+    const spanish = await request(app).get(`/public/routes/${routeId}`);
+    await db.route.update({ where: { id: routeId }, data: { locale: 'EN' } });
+    const english = await request(app).get(`/public/routes/${routeId}`);
+
+    const film = (response: typeof spanish) =>
+      response.body.route.steps[0].film;
+    expect(film(spanish).title).toBe('Película 1');
+    expect(film(english).title).toBe('Film 1');
+    for (const response of [spanish, english]) {
+      expect(film(response).titles).toEqual({
+        es: 'Película 1',
+        en: 'Film 1',
+      });
+    }
   });
 
   it('does not exist unless the route is public', async () => {

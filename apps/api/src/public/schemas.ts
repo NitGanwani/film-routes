@@ -9,6 +9,8 @@ const MAX_PAGE = 100;
 
 export const listQuerySchema = z.object({
   sort: z.enum(PUBLIC_SORTS).default('new'),
+  /** Only routes written in this language; leave out for all of them. */
+  locale: z.enum(['es', 'en']).optional(),
   page: z.coerce.number().int().min(1).max(MAX_PAGE).default(1),
   pageSize: z.coerce.number().int().min(1).max(MAX_PAGE_SIZE).default(20),
 });
