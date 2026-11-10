@@ -17,32 +17,44 @@ import type { AuthService, AuthSettings } from './service.js';
 type AuthRouterOptions = {
   service: AuthService;
   settings: AuthSettings;
-  /** Max register / login / refresh attempts per IP in 15 minutes. */
+  /** Max register / login / password-reset style attempts per IP in 15 minutes. */
   attemptsPer15Min: number;
+  /**
+   * Max token renewals per IP in 15 minutes. Higher on purpose: the web renews
+   * on every page load, and a renewal needs a 256-bit secret that cannot be
+   * guessed, so there is nothing to slow down but plain abuse.
+   */
+  refreshesPer15Min: number;
 };
 
 export function createAuthRouter({
   service,
   settings,
   attemptsPer15Min,
+  refreshesPer15Min,
 }: AuthRouterOptions) {
   const router = Router();
 
+  // Each limiter keeps its own count, so one cannot use up the other.
+  const makeLimiter = (limit: number) =>
+    rateLimit({
+      windowMs: 15 * 60 * 1000,
+      limit,
+      standardHeaders: 'draft-8',
+      legacyHeaders: false,
+      handler: (_req, res) => {
+        res.status(429).json({
+          error: {
+            code: 'too_many_requests',
+            message: 'Too many attempts, try again later',
+          },
+        });
+      },
+    });
+
   // Slows down password guessing and account spam from a single address.
-  const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: attemptsPer15Min,
-    standardHeaders: 'draft-8',
-    legacyHeaders: false,
-    handler: (_req, res) => {
-      res.status(429).json({
-        error: {
-          code: 'too_many_requests',
-          message: 'Too many attempts, try again later',
-        },
-      });
-    },
-  });
+  const limiter = makeLimiter(attemptsPer15Min);
+  const refreshLimiter = makeLimiter(refreshesPer15Min);
 
   router.post('/register', limiter, async (req, res) => {
     const input = parseInput(registerSchema, req.body);
@@ -54,7 +66,7 @@ export function createAuthRouter({
     res.json(await service.login(input));
   });
 
-  router.post('/refresh', limiter, async (req, res) => {
+  router.post('/refresh', refreshLimiter, async (req, res) => {
     const { refreshToken } = parseInput(refreshTokenSchema, req.body);
     res.json(await service.refresh(refreshToken));
   });

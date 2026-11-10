@@ -128,6 +128,7 @@ export function createTestApp(db: TestDb, overrides: Partial<AppOptions> = {}) {
     mailer: createMemoryMailer(),
     // High enough that unrelated tests never trip the limiters.
     authAttemptsPer15Min: 1000,
+    authRefreshesPer15Min: 1000,
     filmRequestsPerMinute: 1000,
     inviteAcceptAttemptsPer15Min: 1000,
     publicRequestsPerMinute: 1000,

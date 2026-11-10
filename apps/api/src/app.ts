@@ -36,6 +36,7 @@ export type AppOptions = {
   mailer: Mailer;
   /** Override in tests; the default is deliberately strict. */
   authAttemptsPer15Min?: number;
+  authRefreshesPer15Min?: number;
   filmRequestsPerMinute?: number;
   inviteAcceptAttemptsPer15Min?: number;
   publicRequestsPerMinute?: number;
@@ -76,6 +77,7 @@ export function createApp({
   tmdb,
   mailer,
   authAttemptsPer15Min = 20,
+  authRefreshesPer15Min = 300,
   filmRequestsPerMinute = 60,
   inviteAcceptAttemptsPer15Min = 30,
   publicRequestsPerMinute = 60,
@@ -97,6 +99,7 @@ export function createApp({
       service: createAuthService(db, auth, mailer),
       settings: auth,
       attemptsPer15Min: authAttemptsPer15Min,
+      refreshesPer15Min: authRefreshesPer15Min,
     }),
   );
 

@@ -124,6 +124,41 @@ describe('POST /auth/login', () => {
     expect(blocked.status).toBe(429);
     expect(blocked.body.error.code).toBe('too_many_requests');
   });
+
+  it('limits token renewals on their own, with a separate count', async () => {
+    const limited = createTestApp(db, { authRefreshesPer15Min: 1 });
+    const loggedIn = await request(limited)
+      .post('/auth/login')
+      .send({ email: credentials.email, password: credentials.password });
+    const renew = (refreshToken: string) =>
+      request(limited).post('/auth/refresh').send({ refreshToken });
+
+    const first = await renew(loggedIn.body.tokens.refreshToken);
+    expect(first.status).toBe(200);
+    const blocked = await renew(first.body.tokens.refreshToken);
+
+    expect(blocked.status).toBe(429);
+    expect(blocked.body.error.code).toBe('too_many_requests');
+  });
+
+  it('does not let login attempts use up token renewals', async () => {
+    const limited = createTestApp(db, { authAttemptsPer15Min: 2 });
+    const loggedIn = await request(limited)
+      .post('/auth/login')
+      .send({ email: credentials.email, password: credentials.password });
+    const wrongLogin = () =>
+      request(limited)
+        .post('/auth/login')
+        .send({ email: 'ada@example.com', password: 'wrong password!!' });
+    await wrongLogin();
+    expect((await wrongLogin()).status).toBe(429);
+
+    const renewed = await request(limited)
+      .post('/auth/refresh')
+      .send({ refreshToken: loggedIn.body.tokens.refreshToken });
+
+    expect(renewed.status).toBe(200);
+  });
 });
 
 describe('GET /auth/me', () => {
