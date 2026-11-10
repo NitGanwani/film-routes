@@ -98,6 +98,9 @@ export function LoginPage() {
         >
           {form.sending ? t('auth.sending') : t('auth.submitLogin')}
         </button>
+        <p className="auth-forgot">
+          <Link to="/forgot-password">{t('auth.forgotLink')}</Link>
+        </p>
       </form>
       <p className="auth-switch">
         {t('auth.firstTime')}{' '}

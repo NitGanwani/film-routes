@@ -26,6 +26,8 @@ type SessionValue = SessionState & {
     locale: 'es' | 'en';
   }): Promise<void>;
   logout(): Promise<void>;
+  /** Asks the server who this is again (e.g. after confirming the email). */
+  reloadUser(): Promise<void>;
 };
 
 const SessionContext = createContext<SessionValue | null>(null);
@@ -92,6 +94,22 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     };
   }, [queryClient]);
 
+  const reloadUser = useCallback(async () => {
+    if (!api.hasSession()) return;
+    try {
+      const { user } = await api.request<{ user: User }>('/auth/me', {
+        auth: true,
+      });
+      setState((current) =>
+        current.status === 'authenticated'
+          ? { status: 'authenticated', user }
+          : current,
+      );
+    } catch {
+      // Keep what we had: the next request will say if the session ended.
+    }
+  }, []);
+
   const enter = useCallback((user: User) => {
     setLanguage(user.locale);
     setState({ status: 'authenticated', user });
@@ -111,8 +129,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         queryClient.clear();
         setState({ status: 'anonymous', user: null });
       },
+      reloadUser,
     }),
-    [state, enter, queryClient],
+    [state, enter, queryClient, reloadUser],
   );
 
   return (

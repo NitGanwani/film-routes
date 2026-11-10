@@ -142,7 +142,39 @@ export const en: Translations = {
   footer: {
     tmdb: 'This product uses the TMDB API but is not endorsed or certified by TMDB.',
   },
+  verify: {
+    working: 'Confirming your email…',
+    doneTitle: 'Email confirmed',
+    doneText: 'You can now share routes, invite people and vote.',
+    failedTitle: 'We could not confirm your email',
+    failedHelp: 'Log in and ask for a new link from the notice at the top.',
+    alreadyConfirmed:
+      'Your email is already confirmed: you do not need this link.',
+    toExplore: 'Explore routes',
+    toLogin: 'Log in',
+  },
+  banner: {
+    unverified:
+      'Confirm your email to share routes, invite people and vote. Check your spam folder too.',
+    resend: 'Resend link',
+    sending: 'Sending…',
+    sent: 'Link sent. It can take a minute.',
+  },
   auth: {
+    forgotLink: 'Forgot your password?',
+    forgotTitle: 'Recover your password',
+    forgotIntro:
+      'Enter your email and we will send you a link to choose a new one.',
+    sendLink: 'Send link',
+    forgotSent:
+      'If there is an account with that email, we have sent you a link. Check your spam folder too.',
+    backToLogin: 'Back to log in',
+    resetTitle: 'Choose a new password',
+    resetIntro: 'Changing it will sign you out on every device.',
+    newPassword: 'New password',
+    resetSubmit: 'Change password',
+    resetDone: 'Password changed. You can now log in with the new one.',
+    requestNewLink: 'Ask for a new link',
     email: 'Email',
     username: 'Username',
     password: 'Password',
@@ -167,6 +199,12 @@ export const en: Translations = {
     back: 'Back',
   },
   errors: {
+    invalid_token: 'This link is not valid or has expired. Ask for a new one.',
+    email_not_verified: 'Confirm your email to do this.',
+    too_soon:
+      'We just sent you an email. Wait a minute before asking for another.',
+    already_verified: 'Your email is already confirmed.',
+    incorrect_password: 'That password is not correct.',
     unknown: 'Something went wrong. Please try again.',
     network_error: 'Could not reach the server.',
     invalid_credentials: 'Incorrect email or password.',

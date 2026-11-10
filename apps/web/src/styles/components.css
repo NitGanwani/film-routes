@@ -1367,3 +1367,20 @@ dialog.sheet::backdrop {
 .tutorial-notes .note-label {
   display: block;
 }
+
+.verify-wrap {
+  width: 100%;
+  box-sizing: border-box;
+  max-width: var(--page-max);
+  margin: var(--sp-3) auto 0;
+  padding: 0 var(--sp-4);
+}
+.verify-wrap .banner p + p,
+.verify-wrap .banner p + button,
+.verify-wrap .banner .form-error {
+  margin-top: var(--sp-2);
+}
+.auth-forgot {
+  text-align: center;
+  font-size: var(--fs-sm);
+}

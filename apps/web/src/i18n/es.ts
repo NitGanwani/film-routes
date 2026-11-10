@@ -143,7 +143,39 @@ export const es = {
   footer: {
     tmdb: 'Este producto usa la API de TMDB, pero TMDB no lo respalda ni lo certifica.',
   },
+  verify: {
+    working: 'Confirmando tu correo…',
+    doneTitle: 'Correo confirmado',
+    doneText: 'Ya puedes compartir rutas, invitar y votar.',
+    failedTitle: 'No hemos podido confirmar tu correo',
+    failedHelp:
+      'Entra en tu cuenta y pide un enlace nuevo desde el aviso de arriba.',
+    alreadyConfirmed: 'Tu correo ya está confirmado: no necesitas este enlace.',
+    toExplore: 'Explorar rutas',
+    toLogin: 'Entrar',
+  },
+  banner: {
+    unverified:
+      'Confirma tu correo para poder compartir rutas, invitar y votar. Mira también la carpeta de spam.',
+    resend: 'Reenviar enlace',
+    sending: 'Enviando…',
+    sent: 'Enlace enviado. Puede tardar un minuto.',
+  },
   auth: {
+    forgotLink: '¿Has olvidado tu contraseña?',
+    forgotTitle: 'Recupera tu contraseña',
+    forgotIntro:
+      'Escribe tu correo y te enviaremos un enlace para elegir una nueva.',
+    sendLink: 'Enviar enlace',
+    forgotSent:
+      'Si hay una cuenta con ese correo, te hemos enviado un enlace. Mira también la carpeta de spam.',
+    backToLogin: 'Volver a entrar',
+    resetTitle: 'Elige una contraseña nueva',
+    resetIntro: 'Al cambiarla, se cerrará tu sesión en todos los dispositivos.',
+    newPassword: 'Contraseña nueva',
+    resetSubmit: 'Cambiar contraseña',
+    resetDone: 'Contraseña cambiada. Ya puedes entrar con la nueva.',
+    requestNewLink: 'Pedir un enlace nuevo',
     email: 'Correo electrónico',
     username: 'Nombre de usuario',
     password: 'Contraseña',
@@ -169,6 +201,12 @@ export const es = {
   },
   errors: {
     unknown: 'Algo ha salido mal. Inténtalo de nuevo.',
+    invalid_token: 'Este enlace no es válido o ha caducado. Pide uno nuevo.',
+    email_not_verified: 'Confirma tu correo para hacer esto.',
+    too_soon:
+      'Acabamos de enviarte un correo. Espera un minuto antes de pedir otro.',
+    already_verified: 'Tu correo ya está confirmado.',
+    incorrect_password: 'La contraseña no es correcta.',
     network_error: 'No se pudo conectar con el servidor.',
     invalid_credentials: 'Correo o contraseña incorrectos.',
     account_conflict: 'Ese usuario o correo ya está en uso.',

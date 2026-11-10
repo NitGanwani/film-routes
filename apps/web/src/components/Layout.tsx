@@ -1,10 +1,12 @@
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, NavLink, Outlet } from 'react-router';
+import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { setLanguage } from '../i18n/index.js';
 import { useSession } from '../session/SessionProvider.js';
 import { Avatar } from './Avatar.js';
 import { IconSprite } from './Icon.js';
 import { ThemeToggle } from './ThemeToggle.js';
+import { VerifyBanner } from './VerifyBanner.js';
 
 /** The shell: top navigation, the page, and the TMDB notice. */
 export function Layout() {
@@ -15,6 +17,7 @@ export function Layout() {
   return (
     <div className="site">
       <IconSprite />
+      <ScrollToTop />
       <header className="topnav">
         <Link className="brand" to="/">
           {t('app.name')}
@@ -62,6 +65,10 @@ export function Layout() {
         </div>
       </header>
 
+      {session.status === 'authenticated' && !session.user.emailVerified && (
+        <VerifyBanner />
+      )}
+
       <main>
         <Outlet />
       </main>
@@ -79,4 +86,13 @@ export function Layout() {
       </footer>
     </div>
   );
+}
+
+/** A new page starts at the top, as with a normal link (the router keeps the old scroll). */
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
 }
