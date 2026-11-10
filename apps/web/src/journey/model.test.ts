@@ -4,7 +4,6 @@ import {
   closeBody,
   closeFormProblem,
   compareEmotions,
-  filmLabel,
   progressPercent,
   stepActions,
   type CloseForm,
@@ -130,19 +129,5 @@ describe('closing a film', () => {
   it('passes on whether the film was seen before', () => {
     expect(closeBody(form({ seenBefore: true }))?.seenBefore).toBe(true);
     expect(closeBody(form({ seenBefore: false }))?.seenBefore).toBe(false);
-  });
-});
-
-describe('filmLabel', () => {
-  it('adds the year when known', () => {
-    expect(filmLabel({ title: 'Perfect Days', releaseYear: 2023 })).toBe(
-      'Perfect Days (2023)',
-    );
-  });
-
-  it('is just the title when the year is unknown', () => {
-    expect(filmLabel({ title: 'Perfect Days', releaseYear: null })).toBe(
-      'Perfect Days',
-    );
   });
 });

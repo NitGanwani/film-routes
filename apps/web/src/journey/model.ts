@@ -1,5 +1,5 @@
 import { ROUTE_LIMITS, type Emotion } from '@film-routes/shared';
-import type { CloseStepBody, Film, JourneyStep } from '../api/types.js';
+import type { CloseStepBody, JourneyStep } from '../api/types.js';
 
 export type StepActions = {
   /** "Start now": remembers it and unlocks the note before. */
@@ -77,11 +77,4 @@ export function closeBody(form: CloseForm): CloseStepBody | null {
     seenBefore: form.seenBefore,
     ...(comment === '' ? {} : { comment }),
   };
-}
-
-/** "Perfect Days (2023)"; just the title when the year is unknown. */
-export function filmLabel(film: Pick<Film, 'title' | 'releaseYear'>): string {
-  return film.releaseYear === null
-    ? film.title
-    : `${film.title} (${film.releaseYear})`;
 }

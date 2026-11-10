@@ -1,0 +1,130 @@
+/*
+ * Design tokens. This is the one place to change colours, type, spacing and
+ * radii: components only ever refer to these variables.
+ *
+ * Idea (from the design): a cinema at the moment the lights go down. Inky blue,
+ * one warm accent (the projector light) and eight emotions that always come
+ * with an icon and a name, never colour alone.
+ */
+:root {
+  color-scheme: light dark;
+
+  /* Base */
+  --bg: #eef0f4;
+  --surface: #ffffff;
+  --surface-2: #f6f7fa;
+  --text: #1b1d2e;
+  --text-muted: #5e6275;
+  --border: #d6d9e3;
+  --primary: #2e3192; /* inky blue */
+  --primary-ink: #ffffff;
+  --accent: #d98e04; /* projector light */
+  --accent-soft: #fbefd2;
+  --success: #1f7a4d;
+  --warning: #9a5b00;
+  --danger: #b3261e;
+  --overlay: rgba(27, 29, 46, 0.55);
+
+  /* Emotions. Chip text and background are derived with color-mix so they work
+     in light and dark. */
+  --emo-joy: #e8a317;
+  --emo-tenderness: #d96a8f;
+  --emo-awe: #7a5ae0;
+  --emo-thoughtful: #2a8c9a;
+  --emo-tension: #dc5a2a;
+  --emo-fear: #5a5e8c;
+  --emo-sadness: #3b78c8;
+  --emo-discomfort: #8b9a3a;
+  --emo-ink-base: #000; /* what the text darkens towards */
+  --emo-ink-amount: 62%;
+  --emo-bg-amount: 16%;
+
+  /* Type */
+  --font-display: 'Fraunces Variable', Georgia, serif;
+  --font-body: 'Instrument Sans Variable', system-ui, sans-serif;
+  --fs-xs: 0.75rem; /* 12 */
+  --fs-sm: 0.875rem; /* 14 */
+  --fs-md: 1rem; /* 16 */
+  --fs-lg: 1.125rem; /* 18 */
+  --fs-xl: 1.375rem; /* 22 */
+  --fs-2xl: 1.75rem; /* 28 */
+  --fs-3xl: 2.25rem; /* 36 */
+  --lh-tight: 1.15;
+  --lh-body: 1.5;
+
+  /* Spacing (base 4) */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.25rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-10: 2.5rem;
+  --sp-12: 3rem;
+
+  /* Radii: the smaller the element, the smaller the radius */
+  --r-sm: 6px;
+  --r-md: 12px;
+  --r-lg: 20px;
+  --r-pill: 999px;
+
+  /* Shadows */
+  --shadow-1:
+    0 1px 2px rgba(27, 29, 46, 0.06), 0 1px 1px rgba(27, 29, 46, 0.04);
+  --shadow-2:
+    0 6px 18px -6px rgba(27, 29, 46, 0.18), 0 2px 4px rgba(27, 29, 46, 0.06);
+  --shadow-sheet: 0 -12px 40px -12px rgba(27, 29, 46, 0.35);
+
+  --tap: 44px; /* minimum touch target */
+  --page-max: 1120px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #12131f;
+    --surface: #1c1e2e;
+    --surface-2: #242739;
+    --text: #eeeff6;
+    --text-muted: #a3a7bd;
+    --border: #353950;
+    --primary: #9fa3ff;
+    --primary-ink: #12131f;
+    --accent: #f2b544;
+    --accent-soft: #3a2e12;
+    --success: #5cc48e;
+    --warning: #f0b35c;
+    --danger: #ff7b72;
+    --overlay: rgba(0, 0, 0, 0.6);
+    --emo-ink-base: #fff;
+    --emo-ink-amount: 55%;
+    --emo-bg-amount: 22%;
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-2: 0 8px 24px -8px rgba(0, 0, 0, 0.6);
+    --shadow-sheet: 0 -12px 40px -12px rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* An explicit choice wins over the system setting (for a future theme switch). */
+:root[data-theme='dark'] {
+  --bg: #12131f;
+  --surface: #1c1e2e;
+  --surface-2: #242739;
+  --text: #eeeff6;
+  --text-muted: #a3a7bd;
+  --border: #353950;
+  --primary: #9fa3ff;
+  --primary-ink: #12131f;
+  --accent: #f2b544;
+  --accent-soft: #3a2e12;
+  --success: #5cc48e;
+  --warning: #f0b35c;
+  --danger: #ff7b72;
+  --overlay: rgba(0, 0, 0, 0.6);
+  --emo-ink-base: #fff;
+  --emo-ink-amount: 55%;
+  --emo-bg-amount: 22%;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 8px 24px -8px rgba(0, 0, 0, 0.6);
+  --shadow-sheet: 0 -12px 40px -12px rgba(0, 0, 0, 0.7);
+}

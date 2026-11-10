@@ -21,6 +21,8 @@ export type PublicRouteSummary = {
   stepCount: number;
   completions: number;
   rating: RatingSummary;
+  /** First films' posters in route order; null = TMDB has none. */
+  posters: (string | null)[];
   createdAt: string;
 };
 
@@ -114,6 +116,7 @@ export type JourneySummary = {
     locale: Locale;
     author: string;
     stepCount: number;
+    posters: (string | null)[];
     hidden: boolean;
   };
 };

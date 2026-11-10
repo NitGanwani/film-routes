@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@film-routes/shared": "*",
+    "@fontsource-variable/fraunces": "^5.3.0",
+    "@fontsource-variable/instrument-sans": "^5.3.0",
     "@tanstack/react-query": "^5.107.1",
     "i18next": "^27.1.0",
     "react": "^19.3.1",

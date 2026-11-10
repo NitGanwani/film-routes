@@ -3,14 +3,18 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
 import { api } from '../api/instance.js';
 import type { JoinResult, PublicRouteDetail } from '../api/types.js';
+import { Avatar } from '../components/Avatar.js';
 import { errorMessage } from '../components/errorMessage.js';
-import { filmLabel } from '../journey/model.js';
+import { Icon } from '../components/Icon.js';
+import { Poster } from '../components/Poster.js';
+import { ErrorBox } from '../components/States.js';
+import { formatAverage } from '../i18n/format.js';
 import { loginPathFor } from '../session/nextPath.js';
 import { useSession } from '../session/SessionProvider.js';
 
 /** What anyone sees of a public route: its films, none of the notes. */
 export function RoutePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { routeId = '' } = useParams();
   const session = useSession();
   const navigate = useNavigate();
@@ -36,15 +40,32 @@ export function RoutePage() {
     },
   });
 
-  if (route.isPending) return <p>{t('common.loading')}</p>;
+  const back = (
+    <Link className="back-link" to="/">
+      <Icon name="back" size={18} />
+      {t('nav.explore')}
+    </Link>
+  );
+
+  if (route.isPending) {
+    return (
+      <div className="page narrow">
+        {back}
+        <p className="note" role="status">
+          {t('common.loading')}
+        </p>
+      </div>
+    );
+  }
   if (route.isError) {
     return (
-      <p role="alert">
-        {errorMessage(t, route.error)}{' '}
-        <button type="button" onClick={() => void route.refetch()}>
-          {t('common.retry')}
-        </button>
-      </p>
+      <div className="page narrow">
+        {back}
+        <ErrorBox
+          message={errorMessage(t, route.error)}
+          onRetry={() => void route.refetch()}
+        />
+      </div>
     );
   }
 
@@ -53,50 +74,88 @@ export function RoutePage() {
     session.status === 'authenticated' && session.user.username === data.author;
 
   return (
-    <article>
-      <h1>{data.title}</h1>
-      <p>{t('route.by', { author: data.author })}</p>
-      {data.description && <p>{data.description}</p>}
-      <p>
-        {t('route.stats', {
-          films: data.stepCount,
-          completions: data.completions,
-        })}
-        {' · '}
-        {data.rating.average === null
-          ? t('explore.notEnoughVotes')
-          : t('explore.rating', {
-              average: data.rating.average.toFixed(1),
-              votes: data.rating.votes,
-            })}
+    <div className="page narrow">
+      {back}
+      <header className="route-head">
+        <h1>{data.title}</h1>
+        <div className="author">
+          <Avatar name={data.author} />
+          <span>
+            {t('route.by', { author: data.author })} · {data.stepCount}{' '}
+            {t('explore.filmsLabel', { count: data.stepCount })}
+          </span>
+        </div>
+        {data.description && (
+          <p style={{ marginTop: 'var(--sp-3)' }}>{data.description}</p>
+        )}
+        <div className="stats-line">
+          {data.rating.average === null ? (
+            <span>{t('explore.notEnoughVotes')}</span>
+          ) : (
+            <span>
+              <b>{formatAverage(data.rating.average, i18n.language)}</b>
+              {t('route.ratingOf', { count: data.rating.votes })}
+            </span>
+          )}
+          <span>
+            <b>{data.completions}</b>
+            {t('explore.completionsLabel', { count: data.completions })}
+          </span>
+        </div>
+      </header>
+
+      <div className="card card-pad">
+        <h2 className="visually-hidden">{t('route.films')}</h2>
+        <ol className="film-rows">
+          {data.steps.map((step) => (
+            <li key={step.position} className="film-row">
+              <span className="n">{step.position}</span>
+              <Poster url={step.film.posterUrl} />
+              <h3>
+                {step.film.title}
+                {step.film.releaseYear !== null && (
+                  <>
+                    {' '}
+                    <span className="year">{step.film.releaseYear}</span>
+                  </>
+                )}
+              </h3>
+            </li>
+          ))}
+        </ol>
+      </div>
+      <p className="note" style={{ marginTop: 'var(--sp-3)' }}>
+        {t('route.spoilerFree', { author: data.author })}
       </p>
 
-      <h2>{t('route.films')}</h2>
-      <ol>
-        {data.steps.map((step) => (
-          <li key={step.position}>{filmLabel(step.film)}</li>
-        ))}
-      </ol>
-      <p>{t('route.spoilerFree', { author: data.author })}</p>
-
-      {isAuthor ? (
-        <p>{t('route.own')}</p>
-      ) : session.status === 'anonymous' ? (
-        <Link to={loginPathFor(`/routes/${routeId}`)}>
-          {t('route.loginToJoin')}
-        </Link>
-      ) : (
-        <>
-          <button
-            type="button"
-            disabled={join.isPending || session.status === 'loading'}
-            onClick={() => join.mutate()}
+      <div className="sticky-cta">
+        {isAuthor ? (
+          <p className="note">{t('route.own')}</p>
+        ) : session.status === 'anonymous' ? (
+          <Link
+            className="btn btn-primary btn-block"
+            to={loginPathFor(`/routes/${routeId}`)}
           >
-            {join.isPending ? t('route.joining') : t('route.join')}
-          </button>
-          {join.isError && <p role="alert">{errorMessage(t, join.error)}</p>}
-        </>
-      )}
-    </article>
+            {t('route.loginToJoin')}
+          </Link>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="btn btn-primary btn-block"
+              disabled={join.isPending || session.status === 'loading'}
+              onClick={() => join.mutate()}
+            >
+              {join.isPending ? t('route.joining') : t('route.join')}
+            </button>
+            {join.isError && (
+              <p className="form-error" role="alert">
+                {errorMessage(t, join.error)}
+              </p>
+            )}
+          </>
+        )}
+      </div>
+    </div>
   );
 }

@@ -6,6 +6,7 @@ import { ApiError } from './api/client.js';
 import { App } from './App.js';
 import { initI18n } from './i18n/index.js';
 import { SessionProvider } from './session/SessionProvider.js';
+import './styles/index.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -4,6 +4,13 @@ import { Link } from 'react-router';
 import { api } from '../api/instance.js';
 import type { JourneySummary } from '../api/types.js';
 import { errorMessage } from '../components/errorMessage.js';
+import { ProgressBar } from '../components/ProgressBar.js';
+import { RouteCard } from '../components/RouteCard.js';
+import {
+  EmptyState,
+  ErrorBox,
+  RouteListSkeleton,
+} from '../components/States.js';
 
 /** The routes this person follows, and how far along they are. */
 export function JourneysPage() {
@@ -17,44 +24,74 @@ export function JourneysPage() {
   });
 
   return (
-    <section>
-      <h1>{t('journeys.title')}</h1>
+    <div className="page">
+      <div className="page-head">
+        <h1>{t('journeys.title')}</h1>
+      </div>
 
-      {journeys.isPending && <p>{t('common.loading')}</p>}
+      {journeys.isPending && <RouteListSkeleton rows={2} />}
       {journeys.isError && (
-        <p role="alert">
-          {errorMessage(t, journeys.error)}{' '}
-          <button type="button" onClick={() => void journeys.refetch()}>
-            {t('common.retry')}
-          </button>
-        </p>
+        <ErrorBox
+          message={errorMessage(t, journeys.error)}
+          onRetry={() => void journeys.refetch()}
+        />
       )}
-      {journeys.data?.length === 0 && <p>{t('journeys.empty')}</p>}
-      <ul>
-        {journeys.data?.map((journey) => (
-          <li key={journey.enrollmentId}>
-            {journey.route.hidden ? (
-              <strong>{journey.route.title}</strong>
-            ) : (
-              <Link to={`/journeys/${journey.route.id}`}>
-                {journey.route.title}
-              </Link>
-            )}{' '}
-            — {t('route.by', { author: journey.route.author })} ·{' '}
-            {t('journeys.progress', {
-              closed: journey.closedSteps,
-              total: journey.route.stepCount,
-            })}
-            {journey.route.hidden && <> · {t('journeys.hidden')}</>}
-            {journey.status === 'completed' && (
-              <> · {t('journeys.completed')}</>
-            )}
-            {journey.status === 'abandoned' && (
-              <> · {t('journeys.abandoned')}</>
-            )}
-          </li>
-        ))}
-      </ul>
-    </section>
+      {journeys.data?.length === 0 && (
+        <EmptyState title={t('journeys.empty')} text={t('journeys.emptyText')}>
+          <Link className="btn btn-secondary btn-sm" to="/">
+            {t('journeys.exploreCta')}
+          </Link>
+        </EmptyState>
+      )}
+      {journeys.data && journeys.data.length > 0 && (
+        <ul className="route-list grid">
+          {journeys.data.map((journey) => (
+            <JourneyCard key={journey.enrollmentId} journey={journey} />
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function JourneyCard({ journey }: { journey: JourneySummary }) {
+  const { t } = useTranslation();
+  const { route } = journey;
+  const badges = (
+    <>
+      {route.hidden && (
+        <span className="badge badge-hidden">{t('journeys.hidden')}</span>
+      )}
+      {journey.status === 'completed' && (
+        <span className="badge badge-ok">{t('journeys.completed')}</span>
+      )}
+      {journey.status === 'abandoned' && (
+        <span className="badge">{t('journeys.abandoned')}</span>
+      )}
+    </>
+  );
+  const hasBadge =
+    route.hidden ||
+    journey.status === 'completed' ||
+    journey.status === 'abandoned';
+
+  return (
+    <RouteCard
+      // A hidden route cannot be opened until an admin lifts it.
+      to={route.hidden ? null : `/journeys/${route.id}`}
+      title={route.title}
+      by={t('route.by', { author: route.author })}
+      posters={route.posters}
+      badges={hasBadge ? badges : undefined}
+    >
+      <ProgressBar
+        closed={journey.closedSteps}
+        total={route.stepCount}
+        label={t('journeys.progress', {
+          closed: journey.closedSteps,
+          total: route.stepCount,
+        })}
+      />
+    </RouteCard>
   );
 }
