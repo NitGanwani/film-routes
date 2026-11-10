@@ -6,6 +6,7 @@ import { Link } from 'react-router';
 import { api } from '../api/instance.js';
 import type { PublicRouteSummary, PublicRoutesPage } from '../api/types.js';
 import { errorMessage } from '../components/errorMessage.js';
+import { LanguageTag } from '../components/LanguageTag.js';
 import { RouteCard } from '../components/RouteCard.js';
 import {
   EmptyState,
@@ -24,12 +25,20 @@ const SORT_LABELS = {
 } as const;
 
 export function ExplorePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const session = useSession();
   const [sort, setSort] = useState<Sort>('new');
+  // By default only routes written in the language of the page; the person can
+  // widen it. Their own language is the one they can actually read.
+  const [allLanguages, setAllLanguages] = useState(false);
+  const language = i18n.language === 'en' ? 'en' : 'es';
+  const filter = allLanguages ? 'all' : language;
   const routes = useQuery({
-    queryKey: ['public-routes', sort],
-    queryFn: () => api.request<PublicRoutesPage>(`/public/routes?sort=${sort}`),
+    queryKey: ['public-routes', sort, filter],
+    queryFn: () =>
+      api.request<PublicRoutesPage>(
+        `/public/routes?sort=${sort}${allLanguages ? '' : `&locale=${language}`}`,
+      ),
   });
 
   return (
@@ -69,6 +78,14 @@ export function ExplorePage() {
           ))}
         </div>
       </div>
+      <label className="check-line">
+        <input
+          type="checkbox"
+          checked={allLanguages}
+          onChange={(event) => setAllLanguages(event.target.checked)}
+        />
+        {t('explore.allLanguages')}
+      </label>
 
       {routes.isPending && <RouteListSkeleton />}
       {routes.isError && (
@@ -77,9 +94,28 @@ export function ExplorePage() {
           onRetry={() => void routes.refetch()}
         />
       )}
-      {routes.data?.routes.length === 0 && (
-        <EmptyState title={t('explore.empty')} text={t('explore.emptyText')} />
-      )}
+      {routes.data?.routes.length === 0 &&
+        (allLanguages ? (
+          <EmptyState
+            title={t('explore.empty')}
+            text={t('explore.emptyText')}
+          />
+        ) : (
+          <EmptyState
+            title={t('explore.emptyLanguage', {
+              language: t(`languages.${language}`),
+            })}
+            text={t('explore.emptyLanguageText')}
+          >
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => setAllLanguages(true)}
+            >
+              {t('explore.showAll')}
+            </button>
+          </EmptyState>
+        ))}
       {routes.data && routes.data.routes.length > 0 && (
         <ul className="route-list grid">
           {routes.data.routes.map((route) => (
@@ -99,6 +135,7 @@ function ExploreCard({ route }: { route: PublicRouteSummary }) {
       title={route.title}
       by={t('route.by', { author: route.author })}
       posters={route.posters}
+      badges={<LanguageTag locale={route.locale} />}
     >
       <p className="stats">
         <span>

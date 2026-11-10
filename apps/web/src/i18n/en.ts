@@ -61,6 +61,14 @@ export const en: Translations = {
     completionsLabel_one: 'finished it',
     completionsLabel_other: 'finished it',
     notEnoughVotes: 'Few ratings so far',
+    allLanguages: 'Show routes in every language',
+    emptyLanguage: 'There are no routes in {{language}} yet',
+    emptyLanguageText: 'Try showing the ones in every language.',
+    showAll: 'Show every language',
+  },
+  languages: {
+    es: 'Spanish',
+    en: 'English',
   },
   emotions: {
     joy: 'Joy',
@@ -73,6 +81,7 @@ export const en: Translations = {
     discomfort: 'Discomfort',
   },
   route: {
+    writtenIn: 'Written in {{language}}',
     by: 'A route by {{author}}',
     films: 'Films',
     ratingOf_one: 'out of 10 · {{count}} vote',

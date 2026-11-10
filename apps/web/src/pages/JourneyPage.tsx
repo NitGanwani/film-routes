@@ -13,6 +13,7 @@ import { Locked } from '../components/Locked.js';
 import { Poster } from '../components/Poster.js';
 import { ProgressBar } from '../components/ProgressBar.js';
 import { ErrorBox } from '../components/States.js';
+import { filmTitle, originalTitleNote } from '../films/titles.js';
 import { CloseDialog } from '../journey/CloseDialog.js';
 import { compareEmotions, stepActions } from '../journey/model.js';
 
@@ -273,7 +274,9 @@ function StepItem({
   onStart,
   onOpenClose,
 }: StepItemProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const shown = filmTitle(step.film, i18n.language);
+  const original = originalTitleNote(step.film, shown);
   const actions = stepActions(step, following);
   const comparison = compareEmotions(step.myEmotion, step.authorEmotion);
   const chip =
@@ -298,13 +301,14 @@ function StepItem({
         <div className="main">
           <div className="head">
             <h2>
-              {step.film.title}
+              {shown}
               {step.film.releaseYear !== null && (
                 <>
                   {' '}
                   <span className="year">{step.film.releaseYear}</span>
                 </>
               )}
+              {original && <span className="orig">{original}</span>}
             </h2>
             {chip}
           </div>

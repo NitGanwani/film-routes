@@ -6,8 +6,10 @@ import type { JoinResult, PublicRouteDetail } from '../api/types.js';
 import { Avatar } from '../components/Avatar.js';
 import { errorMessage } from '../components/errorMessage.js';
 import { Icon } from '../components/Icon.js';
+import { LanguageTag } from '../components/LanguageTag.js';
 import { Poster } from '../components/Poster.js';
 import { ErrorBox } from '../components/States.js';
+import { filmTitle, originalTitleNote } from '../films/titles.js';
 import { formatAverage } from '../i18n/format.js';
 import { loginPathFor } from '../session/nextPath.js';
 import { useSession } from '../session/SessionProvider.js';
@@ -84,6 +86,7 @@ export function RoutePage() {
             {t('route.by', { author: data.author })} · {data.stepCount}{' '}
             {t('explore.filmsLabel', { count: data.stepCount })}
           </span>
+          <LanguageTag locale={data.locale} />
         </div>
         {data.description && (
           <p style={{ marginTop: 'var(--sp-3)' }}>{data.description}</p>
@@ -107,21 +110,26 @@ export function RoutePage() {
       <div className="card card-pad">
         <h2 className="visually-hidden">{t('route.films')}</h2>
         <ol className="film-rows">
-          {data.steps.map((step) => (
-            <li key={step.position} className="film-row">
-              <span className="n">{step.position}</span>
-              <Poster url={step.film.posterUrl} />
-              <h3>
-                {step.film.title}
-                {step.film.releaseYear !== null && (
-                  <>
-                    {' '}
-                    <span className="year">{step.film.releaseYear}</span>
-                  </>
-                )}
-              </h3>
-            </li>
-          ))}
+          {data.steps.map((step) => {
+            const shown = filmTitle(step.film, i18n.language);
+            const original = originalTitleNote(step.film, shown);
+            return (
+              <li key={step.position} className="film-row">
+                <span className="n">{step.position}</span>
+                <Poster url={step.film.posterUrl} />
+                <h3>
+                  {shown}
+                  {step.film.releaseYear !== null && (
+                    <>
+                      {' '}
+                      <span className="year">{step.film.releaseYear}</span>
+                    </>
+                  )}
+                  {original && <span className="orig">{original}</span>}
+                </h3>
+              </li>
+            );
+          })}
         </ol>
       </div>
       <p className="note" style={{ marginTop: 'var(--sp-3)' }}>

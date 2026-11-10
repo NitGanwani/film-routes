@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { CloseStepBody, JourneyStep } from '../api/types.js';
 import { Icon } from '../components/Icon.js';
 import { Poster } from '../components/Poster.js';
+import { filmTitle, originalTitleNote } from '../films/titles.js';
 import { closeBody, closeFormProblem, type CloseForm } from './model.js';
 
 type Props = {
@@ -33,7 +34,9 @@ export function CloseDialog({
   onSubmit,
   onCancel,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const shownTitle = filmTitle(step.film, i18n.language);
+  const originalTitle = originalTitleNote(step.film, shownTitle);
   const titleId = useId();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [form, setForm] = useState<CloseForm>({
@@ -89,7 +92,10 @@ export function CloseDialog({
         <div className="film">
           <Poster url={step.film.posterUrl} />
           <div>
-            <h2 id={titleId}>{step.film.title}</h2>
+            <h2 id={titleId}>
+              {shownTitle}
+              {originalTitle && <span className="orig">{originalTitle}</span>}
+            </h2>
             <p>
               {t('journey.closeForm.position', {
                 position: step.position,

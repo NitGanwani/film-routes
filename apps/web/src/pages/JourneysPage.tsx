@@ -5,6 +5,7 @@ import { api } from '../api/instance.js';
 import type { JourneySummary } from '../api/types.js';
 import { errorMessage } from '../components/errorMessage.js';
 import { ProgressBar } from '../components/ProgressBar.js';
+import { LanguageTag } from '../components/LanguageTag.js';
 import { RouteCard } from '../components/RouteCard.js';
 import {
   EmptyState,
@@ -59,6 +60,7 @@ function JourneyCard({ journey }: { journey: JourneySummary }) {
   const { route } = journey;
   const badges = (
     <>
+      <LanguageTag locale={route.locale} />
       {route.hidden && (
         <span className="badge badge-hidden">{t('journeys.hidden')}</span>
       )}
@@ -70,10 +72,6 @@ function JourneyCard({ journey }: { journey: JourneySummary }) {
       )}
     </>
   );
-  const hasBadge =
-    route.hidden ||
-    journey.status === 'completed' ||
-    journey.status === 'abandoned';
 
   return (
     <RouteCard
@@ -82,7 +80,7 @@ function JourneyCard({ journey }: { journey: JourneySummary }) {
       title={route.title}
       by={t('route.by', { author: route.author })}
       posters={route.posters}
-      badges={hasBadge ? badges : undefined}
+      badges={badges}
     >
       <ProgressBar
         closed={journey.closedSteps}

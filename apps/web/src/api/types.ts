@@ -35,7 +35,10 @@ export type PublicRoutesPage = {
 
 export type Film = {
   tmdbId: number;
+  /** In the language the route was written in. */
   title: string;
+  /** Both languages, so each viewer reads it in their own. */
+  titles: Record<Locale, string>;
   originalTitle: string;
   releaseYear: number | null;
   runtimeMinutes: number | null;

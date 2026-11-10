@@ -60,6 +60,14 @@ export const es = {
     completionsLabel_one: 'la terminó',
     completionsLabel_other: 'la terminaron',
     notEnoughVotes: 'Pocas valoraciones',
+    allLanguages: 'Mostrar rutas en todos los idiomas',
+    emptyLanguage: 'Todavía no hay rutas en {{language}}',
+    emptyLanguageText: 'Prueba a mostrar las de todos los idiomas.',
+    showAll: 'Ver todos los idiomas',
+  },
+  languages: {
+    es: 'español',
+    en: 'inglés',
   },
   emotions: {
     joy: 'Alegría',
@@ -72,6 +80,7 @@ export const es = {
     discomfort: 'Incomodidad',
   },
   route: {
+    writtenIn: 'Escrita en {{language}}',
     by: 'Una ruta de {{author}}',
     films: 'Películas',
     ratingOf_one: 'de 10 · {{count}} voto',

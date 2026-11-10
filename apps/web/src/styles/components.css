@@ -764,6 +764,23 @@ textarea.input {
   font-size: var(--fs-sm);
   font-weight: 400;
 }
+/* The film's original title, as a quiet second line */
+.orig {
+  display: block;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  font-style: italic;
+  font-weight: 400;
+}
+.check-line {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+}
 .film-rows {
   list-style: none;
   margin: 0;
