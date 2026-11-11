@@ -17,6 +17,20 @@ body {
   line-height: var(--lh-body);
 }
 
+/* Film grain: a fixed, very light layer of monochrome noise over the whole
+   screen. It is still (nothing animates), so reduced motion needs no change. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 240px 240px;
+}
+
 h1,
 h2,
 h3,
@@ -32,6 +46,10 @@ h1 {
 }
 h2 {
   font-size: var(--fs-xl);
+}
+h1,
+h2 {
+  font-variation-settings: 'opsz' var(--font-display-opsz);
 }
 h3 {
   font-size: var(--fs-lg);
