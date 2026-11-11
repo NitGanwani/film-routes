@@ -40,7 +40,7 @@ export function JourneysPage() {
       )}
       {journeys.data?.length === 0 && (
         <EmptyState title={t('journeys.empty')} text={t('journeys.emptyText')}>
-          <Link className="btn btn-secondary btn-sm" to="/">
+          <Link className="btn btn-secondary btn-sm" to="/explore">
             {t('journeys.exploreCta')}
           </Link>
         </EmptyState>

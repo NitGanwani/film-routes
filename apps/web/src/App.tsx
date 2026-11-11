@@ -1,4 +1,6 @@
+import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router';
+import { useSession } from './session/SessionProvider.js';
 import { Layout } from './components/Layout.js';
 import { RequireSession } from './components/RequireSession.js';
 import {
@@ -14,11 +16,32 @@ import { NotFoundPage } from './pages/NotFoundPage.js';
 import { RoutePage } from './pages/RoutePage.js';
 import { WelcomePage } from './pages/WelcomePage.js';
 
+// The landing page brings GSAP with it: load it only for visitors who see it.
+const LandingPage = lazy(() =>
+  import('./pages/LandingPage.js').then((module) => ({
+    default: module.LandingPage,
+  })),
+);
+
+/** `/`: the front door for visitors, Explore for people who are signed in. */
+function Home() {
+  const session = useSession();
+  // A stored session is being resumed: show neither until we know who this is.
+  if (session.status === 'loading') return null;
+  if (session.status === 'authenticated') return <ExplorePage />;
+  return (
+    <Suspense fallback={null}>
+      <LandingPage />
+    </Suspense>
+  );
+}
+
 export function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route index element={<ExplorePage />} />
+        <Route index element={<Home />} />
+        <Route path="explore" element={<ExplorePage />} />
         <Route path="routes/:routeId" element={<RoutePage />} />
         <Route
           path="journeys"

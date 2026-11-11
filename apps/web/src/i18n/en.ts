@@ -17,6 +17,39 @@ export const en: Translations = {
     welcomeText:
       'A guide picks 3 to 10 films and writes a note for each. You watch them at your own pace and, as you close each one, find out what they felt.',
   },
+  landing: {
+    heroTitle: 'A route of films. For that one person.',
+    heroText:
+      'Pick 3 to 10 films, leave a note on each one and find out what they felt.',
+    create: 'Create a route',
+    example: 'See an example route',
+    howTitle: 'How it works',
+    steps: {
+      choose: {
+        title: 'Choose',
+        text: '3 to 10 films, in the order you recommend them.',
+      },
+      notes: {
+        title: 'Write notes',
+        text: 'One spoiler-free note per film, and another that opens once it is watched.',
+      },
+      send: {
+        title: 'Send the link',
+        text: 'They watch it at their own pace, in one night or over a month.',
+      },
+      discover: {
+        title: 'Find out what they felt',
+        text: 'As they close each film they pick an emotion and compare it with yours.',
+      },
+    },
+    exampleTitle: 'One route, start to finish',
+    exampleBy: '“{{title}}”, by {{author}}',
+    exampleOpen: 'Open the route',
+    featuredTitle: 'Routes to start with',
+    featuredAll: 'See all',
+    quote: 'Some films are better when someone has prepared them for you.',
+    start: 'Start your route',
+  },
   tutorial: {
     title: 'How it works',
     intro: 'Four quick steps. You can skip them any time.',

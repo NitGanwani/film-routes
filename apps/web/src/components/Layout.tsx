@@ -22,9 +22,7 @@ export function Layout() {
           {t('app.name')}
         </Link>
         <nav aria-label={t('nav.main')}>
-          <NavLink to="/" end>
-            {t('nav.explore')}
-          </NavLink>
+          <NavLink to="/explore">{t('nav.explore')}</NavLink>
           {signedIn && <NavLink to="/journeys">{t('nav.journeys')}</NavLink>}
         </nav>
         <div className="me">

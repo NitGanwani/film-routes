@@ -71,7 +71,7 @@ export function VerifyEmailPage() {
               {t('verify.toLogin')}
             </Link>
           ) : (
-            <Link className="btn btn-primary" to="/">
+            <Link className="btn btn-primary" to="/explore">
               {t('verify.toExplore')}
             </Link>
           )}

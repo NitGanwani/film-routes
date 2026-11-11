@@ -1650,3 +1650,234 @@ dialog.sheet::backdrop {
   text-align: center;
   font-size: var(--fs-sm);
 }
+
+/* ---------- Landing ---------- */
+.landing-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  align-items: center;
+  /* The whole screen minus the top bar. */
+  min-height: calc(100svh - 3.75rem);
+}
+/* Two rows of real backdrops that drift in opposite directions, under a dark veil. */
+.mosaic {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: var(--sp-4);
+  padding: var(--sp-4) 0;
+}
+.mosaic::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* 70 % veil; darker on the side of the text so it reads over a bright
+     picture, and the bottom melts into the page. */
+  background:
+    linear-gradient(to bottom, transparent 70%, var(--bg)),
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--bg) 80%, transparent),
+      transparent 75%
+    ),
+    color-mix(in srgb, var(--bg) 70%, transparent);
+}
+@media (max-width: 719px) {
+  /* The text spans the whole width on a phone: a stronger veil everywhere. */
+  .mosaic::after {
+    background:
+      linear-gradient(to bottom, transparent 70%, var(--bg)),
+      color-mix(in srgb, var(--bg) 85%, transparent);
+  }
+}
+.mosaic-row {
+  min-height: 0;
+  overflow: hidden;
+}
+.mosaic-track {
+  display: flex;
+  width: max-content;
+  height: 100%;
+  animation: mosaic-drift 60s linear infinite;
+}
+.mosaic-row[data-reverse='true'] .mosaic-track {
+  animation-direction: reverse;
+}
+.mosaic-set {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--sp-4);
+  padding-right: var(--sp-4);
+}
+.mosaic-set img {
+  width: clamp(240px, 30vw, 460px);
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--r-md);
+}
+/* Two equal sets: moving by half of the track is one full turn, with no seam. */
+@keyframes mosaic-drift {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mosaic-track {
+    animation: none;
+  }
+}
+.landing-hero-copy {
+  width: 100%;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--sp-12) var(--sp-4);
+  display: grid;
+  gap: var(--sp-5);
+  justify-items: start;
+}
+.landing-hero-copy h1 {
+  max-width: 16ch;
+  font-size: var(--fs-3xl);
+}
+.landing-hero-copy p {
+  max-width: 44ch;
+  font-size: var(--fs-lg);
+}
+@media (min-width: 720px) {
+  .landing-hero-copy {
+    padding: var(--sp-12) var(--sp-8);
+  }
+  .landing-hero-copy h1 {
+    font-size: var(--fs-4xl);
+  }
+}
+.landing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+
+.landing-section {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--sp-10) var(--sp-4);
+}
+.landing-section > h2,
+.landing-head h2 {
+  font-size: var(--fs-2xl);
+  margin-bottom: var(--sp-5);
+}
+@media (min-width: 720px) {
+  .landing-section {
+    padding: var(--sp-12) var(--sp-8);
+  }
+  .landing-section > h2,
+  .landing-head h2 {
+    font-size: var(--fs-3xl);
+  }
+}
+.landing-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2) var(--sp-4);
+}
+
+/* How it works: four steps, side by side on a wide screen. */
+.landing-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-4);
+}
+@media (min-width: 560px) {
+  .landing-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 900px) {
+  .landing-steps {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.landing-step {
+  display: grid;
+  align-content: start;
+  gap: var(--sp-2);
+  padding: var(--sp-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+}
+.landing-step h3 {
+  font-size: var(--fs-xl);
+}
+.landing-step p {
+  color: var(--text-muted);
+}
+.landing-step-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  margin-bottom: var(--sp-2);
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* The example route's posters, sliding sideways as the page scrolls. */
+.landing-strip-section {
+  padding-bottom: var(--sp-8);
+}
+.landing-strip-head {
+  padding-bottom: var(--sp-5);
+}
+.landing-strip-head h2 {
+  margin-bottom: var(--sp-2);
+}
+.landing-strip-head p {
+  color: var(--text-muted);
+}
+.landing-strip-clip {
+  overflow: hidden;
+  padding: var(--sp-4) 0;
+}
+.landing-strip {
+  display: flex;
+  gap: var(--sp-4);
+  width: max-content;
+  margin: 0;
+  padding: 0 var(--sp-4);
+  list-style: none;
+}
+.landing-strip img {
+  width: clamp(130px, 18vw, 220px);
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  box-shadow: var(--shadow-2);
+}
+
+.landing-closing {
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-6);
+  padding: var(--sp-12) var(--sp-4);
+  text-align: center;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+.landing-closing blockquote {
+  margin: 0;
+  max-width: 28ch;
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-tight);
+}

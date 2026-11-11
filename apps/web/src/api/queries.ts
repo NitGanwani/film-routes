@@ -1,4 +1,4 @@
-import type { Journey, PublicRouteDetail } from './types.js';
+import type { Journey, PublicRouteDetail, PublicRoutesPage } from './types.js';
 import { api } from './instance.js';
 
 /**
@@ -22,4 +22,19 @@ export const journeyQuery = (routeId: string) => ({
         auth: true,
       })
       .then((response) => response.journey),
+});
+
+/**
+ * The public routes in one order. `locale` null = every language. The key keeps
+ * the shape Explore has always used, so the landing page and Explore share it.
+ */
+export const publicRoutesQuery = (
+  sort: 'new' | 'popular' | 'top',
+  locale: 'es' | 'en' | null,
+) => ({
+  queryKey: ['public-routes', sort, locale ?? 'all'],
+  queryFn: () =>
+    api.request<PublicRoutesPage>(
+      `/public/routes?sort=${sort}${locale ? `&locale=${locale}` : ''}`,
+    ),
 });

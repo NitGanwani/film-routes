@@ -1,20 +1,15 @@
-import { RATING } from '@film-routes/shared';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import { api } from '../api/instance.js';
-import { publicRouteQuery } from '../api/queries.js';
-import type { PublicRouteSummary, PublicRoutesPage } from '../api/types.js';
+import { publicRoutesQuery } from '../api/queries.js';
 import { errorMessage } from '../components/errorMessage.js';
-import { LanguageTag } from '../components/LanguageTag.js';
-import { RouteCard } from '../components/RouteCard.js';
+import { PublicRouteCard } from '../components/PublicRouteCard.js';
 import {
   EmptyState,
   ErrorBox,
   RouteListSkeleton,
 } from '../components/States.js';
-import { formatAverage } from '../i18n/format.js';
 import { useSession } from '../session/SessionProvider.js';
 
 const SORTS = ['new', 'popular', 'top'] as const;
@@ -33,14 +28,9 @@ export function ExplorePage() {
   // widen it. Their own language is the one they can actually read.
   const [allLanguages, setAllLanguages] = useState(false);
   const language = i18n.language === 'en' ? 'en' : 'es';
-  const filter = allLanguages ? 'all' : language;
-  const routes = useQuery({
-    queryKey: ['public-routes', sort, filter],
-    queryFn: () =>
-      api.request<PublicRoutesPage>(
-        `/public/routes?sort=${sort}${allLanguages ? '' : `&locale=${language}`}`,
-      ),
-  });
+  const routes = useQuery(
+    publicRoutesQuery(sort, allLanguages ? null : language),
+  );
 
   return (
     <div className="page">
@@ -126,7 +116,7 @@ export function ExplorePage() {
       {routes.data && routes.data.routes.length > 0 && (
         <ul className="route-list grid">
           {routes.data.routes.map((route, index) => (
-            <ExploreCard
+            <PublicRouteCard
               key={route.id}
               route={route}
               // In "Popular" the first route is the big one.
@@ -136,51 +126,5 @@ export function ExplorePage() {
         </ul>
       )}
     </div>
-  );
-}
-
-function ExploreCard({
-  route,
-  featured,
-}: {
-  route: PublicRouteSummary;
-  featured: boolean;
-}) {
-  const { t, i18n } = useTranslation();
-  const queryClient = useQueryClient();
-  return (
-    <RouteCard
-      to={`/routes/${route.id}`}
-      transitionId={route.id}
-      // Load the page a moment early, so it is ready when the card travels to it.
-      onIntent={() =>
-        void queryClient.prefetchQuery(publicRouteQuery(route.id))
-      }
-      title={route.title}
-      by={t('route.by', { author: route.author })}
-      posters={route.posters}
-      cover={route.coverUrl}
-      featured={featured}
-      badges={<LanguageTag locale={route.locale} />}
-    >
-      <p className="stats">
-        <span>
-          <b>{route.stepCount}</b>{' '}
-          {t('explore.filmsLabel', { count: route.stepCount })}
-        </span>
-        {route.rating.average === null ? (
-          <span className="few">{t('explore.notEnoughVotes')}</span>
-        ) : (
-          <span className="rating">
-            <b>{formatAverage(route.rating.average, i18n.language)}</b>/
-            {RATING.max}
-          </span>
-        )}
-        <span>
-          <b>{route.completions}</b>{' '}
-          {t('explore.completionsLabel', { count: route.completions })}
-        </span>
-      </p>
-    </RouteCard>
   );
 }

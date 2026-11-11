@@ -46,7 +46,7 @@ export function RoutePage() {
 
   // Over the backdrop it sits in a pill, so it stays readable on any image.
   const back = (
-    <Link className="back-link route-back" to="/">
+    <Link className="back-link route-back" to="/explore">
       <Icon name="back" size={18} />
       {t('nav.explore')}
     </Link>

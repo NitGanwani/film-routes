@@ -7,7 +7,7 @@ export function NotFoundPage() {
   return (
     <div className="page narrow">
       <EmptyState title={t('common.notFound')}>
-        <Link className="btn btn-secondary btn-sm" to="/">
+        <Link className="btn btn-secondary btn-sm" to="/explore">
           {t('nav.explore')}
         </Link>
       </EmptyState>

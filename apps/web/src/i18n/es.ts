@@ -16,6 +16,39 @@ export const es = {
     welcomeText:
       'Una guía elige entre 3 y 10 películas y escribe una nota para cada una. Tú las ves a tu ritmo y, al cerrar cada una, descubres qué sintió ella.',
   },
+  landing: {
+    heroTitle: 'Una ruta de películas. Para esa persona.',
+    heroText:
+      'Elige entre 3 y 10 películas, deja una nota en cada una y descubre qué sintió.',
+    create: 'Crear una ruta',
+    example: 'Ver una ruta de ejemplo',
+    howTitle: 'Cómo funciona',
+    steps: {
+      choose: {
+        title: 'Elige',
+        text: 'Entre 3 y 10 películas, en el orden que tú recomiendas.',
+      },
+      notes: {
+        title: 'Escribe notas',
+        text: 'Una nota por película que no cuente nada, y otra que se abre al terminarla.',
+      },
+      send: {
+        title: 'Envía el enlace',
+        text: 'La otra persona la ve a su ritmo, en una noche o en un mes.',
+      },
+      discover: {
+        title: 'Descubre qué sintió',
+        text: 'Al cerrar cada película elige una emoción y la compara con la tuya.',
+      },
+    },
+    exampleTitle: 'Una ruta, de principio a fin',
+    exampleBy: '«{{title}}», de {{author}}',
+    exampleOpen: 'Abrir la ruta',
+    featuredTitle: 'Rutas para empezar',
+    featuredAll: 'Ver todas',
+    quote: 'Hay películas que se ven mejor cuando alguien te las ha preparado.',
+    start: 'Empieza tu ruta',
+  },
   tutorial: {
     title: 'Cómo funciona',
     intro: 'Cuatro pasos rápidos. Puedes saltarlos cuando quieras.',
