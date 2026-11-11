@@ -13,7 +13,8 @@ import type {
 import { assertEmailVerified } from '../auth/verified.js';
 import type { Db } from '../db.js';
 import { HttpError } from '../errors.js';
-import { posterUrl, type FilmService } from '../films/service.js';
+import { filmImages } from '../films/images.js';
+import type { FilmService } from '../films/service.js';
 import {
   countsAsTraveler,
   withRouteLock as lockRoute,
@@ -90,7 +91,7 @@ export function toFilm(film: FilmRow, locale: DbLocale) {
     originalTitle: film.originalTitle,
     releaseYear: film.releaseYear,
     runtimeMinutes: film.runtimeMinutes,
-    posterUrl: posterUrl(film.posterPath),
+    ...filmImages(film),
   };
 }
 

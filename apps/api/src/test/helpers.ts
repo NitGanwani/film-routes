@@ -83,6 +83,7 @@ export const matrix = (locale: Locale): TmdbMovieDetail => ({
       : 'A hacker learns the truth.',
   releaseYear: 1999,
   posterPath: '/matrix.jpg',
+  backdropPath: '/matrix-backdrop.jpg',
   runtimeMinutes: 136,
   imdbId: 'tt0133093',
 });
@@ -95,6 +96,7 @@ const filler = (tmdbId: number, locale: Locale): TmdbMovieDetail => ({
   overview: null,
   releaseYear: 2000,
   posterPath: null,
+  backdropPath: null,
   runtimeMinutes: 90,
   imdbId: null,
 });

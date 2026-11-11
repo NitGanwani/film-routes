@@ -195,6 +195,8 @@ describe('the public list', () => {
       null,
       null,
     ]);
+    // The cover is the first film's backdrop, and that film has none.
+    expect(before.body.routes[0].coverUrl).toBeNull();
 
     // Moving a film moves its poster: the order is the route's, not the database's.
     await request(app)
@@ -208,10 +210,14 @@ describe('the public list', () => {
       null,
       null,
     ]);
+    // Now the first film is the Matrix, so the cover is its backdrop.
+    const cover = 'https://image.tmdb.org/t/p/w1280/matrix-backdrop.jpg';
+    expect(after.body.routes[0].coverUrl).toBe(cover);
 
     // The route page agrees, and still lists every film.
     const detail = await request(app).get(`/public/routes/${routeId}`);
     expect(detail.body.route.posters).toEqual(after.body.routes[0].posters);
+    expect(detail.body.route.coverUrl).toBe(cover);
     expect(detail.body.route.steps).toHaveLength(5);
   });
 

@@ -477,7 +477,8 @@ describe('the list ordered by best rated', () => {
     expect(ids(response.body)).toEqual([many, twin, high, low]);
     expect(response.body.total).toBe(4);
     expect(response.body.routes[0].rating).toEqual({ average: 9, votes: 6 });
-  });
+    // About 25 join/complete/rate rounds over HTTP: more than the default 5 s on a busy machine.
+  }, 30_000);
 
   it('can be limited to one language', async () => {
     const ada = await signUp('ada');

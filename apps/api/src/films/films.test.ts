@@ -57,7 +57,9 @@ describe('GET /films/search', () => {
     expect(response.body.results[0]).toMatchObject({
       tmdbId: 603,
       title: 'Matrix',
-      posterUrl: 'https://image.tmdb.org/t/p/w185/matrix.jpg',
+      posterUrl: 'https://image.tmdb.org/t/p/w342/matrix.jpg',
+      posterUrlSmall: 'https://image.tmdb.org/t/p/w185/matrix.jpg',
+      backdropUrl: 'https://image.tmdb.org/t/p/w1280/matrix-backdrop.jpg',
     });
     expect(await db.film.count()).toBe(0);
   });
@@ -174,6 +176,28 @@ describe('ensureFilm (storing a chosen film)', () => {
     await service.ensureFilm(603);
 
     expect(tmdb.getMovie).not.toHaveBeenCalled();
+  });
+
+  it('stores the backdrop, and force refreshes a fresh copy that lacks it', async () => {
+    const tmdb = createFakeTmdb();
+    let current = new Date('2026-01-01T00:00:00Z');
+    const service = createFilmService(db, tmdb, () => current);
+    // A film saved before backdrops existed: fresh, but with none.
+    const stored = await service.ensureFilm(603);
+    expect(stored.backdropPath).toBe('/matrix-backdrop.jpg');
+    await db.film.update({
+      where: { tmdbId: 603 },
+      data: { backdropPath: null },
+    });
+
+    // Without force a fresh copy is served as it is.
+    current = new Date(current.getTime() + DAY_MS);
+    expect((await service.ensureFilm(603)).backdropPath).toBeNull();
+
+    const refreshed = await service.ensureFilm(603, { force: true });
+
+    expect(refreshed.backdropPath).toBe('/matrix-backdrop.jpg');
+    expect(refreshed.updatedAt).toEqual(current);
   });
 
   it('refreshes a stale copy without creating duplicates', async () => {

@@ -23,6 +23,8 @@ export type PublicRouteSummary = {
   rating: RatingSummary;
   /** First films' posters in route order; null = TMDB has none. */
   posters: (string | null)[];
+  /** The first film's wide backdrop, the route's cover; null = none. */
+  coverUrl: string | null;
   createdAt: string;
 };
 
@@ -42,7 +44,12 @@ export type Film = {
   originalTitle: string;
   releaseYear: number | null;
   runtimeMinutes: number | null;
+  /** Poster at a normal size (w342). */
   posterUrl: string | null;
+  /** Poster for small thumbnails (w185). */
+  posterUrlSmall: string | null;
+  /** Wide backdrop (w1280); null when TMDB has none. */
+  backdropUrl: string | null;
 };
 
 /** A public route as anyone sees it: the films, never the notes. */

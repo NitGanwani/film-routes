@@ -172,6 +172,7 @@ model Film {
   releaseYear    Int?     @map("release_year")
   runtimeMinutes Int?     @map("runtime_minutes")
   posterPath     String?  @map("poster_path")
+  backdropPath   String?  @map("backdrop_path")
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 

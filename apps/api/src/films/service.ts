@@ -1,8 +1,10 @@
 import type { Locale } from '@film-routes/shared';
 import type { Db } from '../db.js';
 import type { TmdbClient, TmdbMovie, TmdbMovieDetail } from '../tmdb/client.js';
+import { filmImages } from './images.js';
 
-const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w185';
+export { imageUrl, type ImageSize } from './images.js';
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 // TMDB's terms forbid caching its data for more than 6 months. We refresh well
@@ -17,6 +19,8 @@ export type FilmSummary = {
   overview: string | null;
   releaseYear: number | null;
   posterUrl: string | null;
+  posterUrlSmall: string | null;
+  backdropUrl: string | null;
 };
 
 export type FilmDetail = FilmSummary & { runtimeMinutes: number | null };
@@ -27,16 +31,13 @@ export type FilmSearchPage = {
   results: FilmSummary[];
 };
 
-export const posterUrl = (path: string | null) =>
-  path ? `${IMAGE_BASE_URL}${path}` : null;
-
 const toSummary = (movie: TmdbMovie): FilmSummary => ({
   tmdbId: movie.tmdbId,
   title: movie.title,
   originalTitle: movie.originalTitle,
   overview: movie.overview,
   releaseYear: movie.releaseYear,
-  posterUrl: posterUrl(movie.posterPath),
+  ...filmImages(movie),
 });
 
 const toDetail = (movie: TmdbMovieDetail): FilmDetail => ({
@@ -74,7 +75,7 @@ export function createFilmService(
       originalTitle: film.originalTitle,
       overview: translation.overview,
       releaseYear: film.releaseYear,
-      posterUrl: posterUrl(film.posterPath),
+      ...filmImages(film),
       runtimeMinutes: film.runtimeMinutes,
     };
   }
@@ -84,9 +85,13 @@ export function createFilmService(
    * returns it. This is what "adding a film to a route" will call: only chosen
    * films ever reach our database.
    */
-  async function ensureFilm(tmdbId: number): Promise<CachedFilm> {
+  async function ensureFilm(
+    tmdbId: number,
+    { force = false }: { force?: boolean } = {},
+  ): Promise<CachedFilm> {
     const cached = await findCached(tmdbId);
     if (
+      !force &&
       cached &&
       hasBothLocales(cached) &&
       ageInDays(cached) < REFRESH_AFTER_DAYS
@@ -110,6 +115,7 @@ export function createFilmService(
           releaseYear: en.releaseYear,
           runtimeMinutes: en.runtimeMinutes,
           posterPath: en.posterPath,
+          backdropPath: en.backdropPath,
           updatedAt: fetchedAt,
         };
         const film = await tx.film.upsert({

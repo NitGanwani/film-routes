@@ -14,6 +14,7 @@ const movieSchema = z.object({
   overview: z.string().nullish(),
   release_date: z.string().nullish(),
   poster_path: z.string().nullable(),
+  backdrop_path: z.string().nullish(),
 });
 
 const searchSchema = z.object({
@@ -34,6 +35,7 @@ export type TmdbMovie = {
   overview: string | null;
   releaseYear: number | null;
   posterPath: string | null;
+  backdropPath: string | null;
 };
 
 export type TmdbMovieDetail = TmdbMovie & {
@@ -59,6 +61,7 @@ function toMovie(raw: RawMovie): TmdbMovie {
     overview: raw.overview || null,
     releaseYear: Number.isNaN(year) ? null : year,
     posterPath: raw.poster_path,
+    backdropPath: raw.backdrop_path ?? null,
   };
 }
 

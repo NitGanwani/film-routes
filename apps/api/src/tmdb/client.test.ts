@@ -15,6 +15,7 @@ const movie = {
   overview: 'Un hacker descubre la verdad.',
   release_date: '1999-03-31',
   poster_path: '/poster.jpg',
+  backdrop_path: '/backdrop.jpg',
 };
 
 function clientWith(fetchImpl: typeof fetch) {
@@ -54,7 +55,10 @@ describe('tmdb client', () => {
             overview: '',
             release_date: '',
             poster_path: null,
+            backdrop_path: null,
           },
+          // Some entries omit the field altogether.
+          { ...movie, id: 2, backdrop_path: undefined },
         ],
       }),
     );
@@ -69,12 +73,15 @@ describe('tmdb client', () => {
       overview: 'Un hacker descubre la verdad.',
       releaseYear: 1999,
       posterPath: '/poster.jpg',
+      backdropPath: '/backdrop.jpg',
     });
     expect(page.results[1]).toMatchObject({
       overview: null,
       releaseYear: null,
       posterPath: null,
+      backdropPath: null,
     });
+    expect(page.results[2]?.backdropPath).toBeNull();
   });
 
   it('returns runtime and IMDb id for a film', async () => {
