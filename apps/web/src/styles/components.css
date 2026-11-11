@@ -429,6 +429,10 @@
 .route-card-main {
   min-width: 0;
   flex: 1;
+  /* A column, so the stats or the progress can sit at the bottom: cards of one
+     row line them up whatever the length of their titles. */
+  display: flex;
+  flex-direction: column;
   padding: var(--sp-3) var(--sp-4) var(--sp-4);
 }
 .route-card h3 {
@@ -464,7 +468,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--sp-1) var(--sp-4);
-  margin-top: var(--sp-3);
+  margin-top: auto;
+  padding-top: var(--sp-3);
   font-size: var(--fs-sm);
   color: var(--text-muted);
 }
@@ -488,7 +493,8 @@
   font-style: italic;
 }
 .route-card .progress {
-  margin-top: var(--sp-2);
+  margin-top: auto;
+  padding-top: var(--sp-2);
 }
 /* Loading cards keep the footprint of the real ones. */
 .route-card .skel.route-card-media {
