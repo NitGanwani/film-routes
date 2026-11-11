@@ -116,6 +116,7 @@ export const es = {
     films: 'Películas',
     ratingOf_one: 'de 10 · {{count}} voto',
     ratingOf_other: 'de 10 · {{count}} votos',
+    noRatingsYet: 'Sin valoraciones aún',
     join: 'Empezar esta ruta',
     joining: 'Entrando…',
     loginToJoin: 'Entra para empezar esta ruta',

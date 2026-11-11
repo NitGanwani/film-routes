@@ -170,17 +170,25 @@ export function RoutePage() {
               <p className="route-desc">{data.description}</p>
             )}
             <div className="stats-line">
+              {/* Both figures have one shape: a big number, a small label below. */}
               {data.rating.average === null ? (
-                <span>{t('explore.notEnoughVotes')}</span>
+                <span>
+                  <b>—</b>
+                  <small>{t('route.noRatingsYet')}</small>
+                </span>
               ) : (
                 <span>
                   <b>{formatAverage(data.rating.average, i18n.language)}</b>
-                  {t('route.ratingOf', { count: data.rating.votes })}
+                  <small>
+                    {t('route.ratingOf', { count: data.rating.votes })}
+                  </small>
                 </span>
               )}
               <span>
                 <b>{data.completions}</b>
-                {t('explore.completionsLabel', { count: data.completions })}
+                <small>
+                  {t('explore.completionsLabel', { count: data.completions })}
+                </small>
               </span>
             </div>
             {/* Wide screens: the action belongs to the header. */}

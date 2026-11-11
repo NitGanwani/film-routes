@@ -4,8 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router';
 import { EmotionBadge } from '../components/EmotionBadge.js';
 import { Locked } from '../components/Locked.js';
-import { Poster } from '../components/Poster.js';
+import { FilmStrip } from '../components/FilmStrip.js';
 import { safeNextPath } from '../session/nextPath.js';
+import { SAMPLE_POSTERS } from '../tutorial/sample.js';
 import {
   isLastStep,
   moveStep,
@@ -42,7 +43,7 @@ export function WelcomePage() {
             total: TUTORIAL_STEPS.length,
           })}
         </p>
-        <div className="tutorial-figure">
+        <div className="tutorial-figure" aria-hidden="true">
           <Figure id={id} />
         </div>
         <h2>{t(`tutorial.${id}.title`)}</h2>
@@ -92,16 +93,15 @@ function Figure({ id }: { id: TutorialStepId }): ReactNode {
   const { t } = useTranslation();
   switch (id) {
     case 'routes':
+      // A strip of film with four posters in a row: the films of a route.
       return (
-        <ol className="film-rows sample-list" aria-hidden="true">
-          {[70, 55, 62].map((width, position) => (
-            <li key={width} className="film-row">
-              <span className="n">{position + 1}</span>
-              <Poster url={null} />
-              <span className="bar" style={{ width: `${width}%` }} />
-            </li>
-          ))}
-        </ol>
+        <FilmStrip
+          label=""
+          frames={SAMPLE_POSTERS.map((posterUrl) => ({
+            posterUrl,
+            state: 'closed' as const,
+          }))}
+        />
       );
     case 'noSpoilers':
       return (
@@ -116,10 +116,15 @@ function Figure({ id }: { id: TutorialStepId }): ReactNode {
         </div>
       );
     case 'emotion':
+      // One emotion is picked; the others wait, dimmed.
       return (
         <div className="tutorial-emotions">
           {EMOTIONS.map((emotion) => (
-            <EmotionBadge key={emotion} emotion={emotion} />
+            <EmotionBadge
+              key={emotion}
+              emotion={emotion}
+              state={emotion === 'tenderness' ? 'chosen' : 'dimmed'}
+            />
           ))}
         </div>
       );

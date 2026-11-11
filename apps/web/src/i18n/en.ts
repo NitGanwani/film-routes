@@ -117,6 +117,7 @@ export const en: Translations = {
     films: 'Films',
     ratingOf_one: 'out of 10 · {{count}} vote',
     ratingOf_other: 'out of 10 · {{count}} votes',
+    noRatingsYet: 'No ratings yet',
     join: 'Start this route',
     joining: 'Joining…',
     loginToJoin: 'Log in to start this route',

@@ -281,6 +281,13 @@
 .chip.emo svg {
   color: var(--c);
 }
+/* In a picture of a choice (the tutorial): the picked one stands out, the rest wait. */
+.chip.emo[data-state='chosen'] {
+  box-shadow: 0 0 0 2px var(--text);
+}
+.chip.emo[data-state='dimmed'] {
+  opacity: 0.4;
+}
 
 /* Emotion picker: native radios (keyboard and screen readers for free), drawn
    as tiles. The checked state is shown by border, tint AND a tick. */
@@ -670,6 +677,18 @@ textarea.input {
 .tabs button[aria-pressed='true'] {
   color: var(--bg);
 }
+/* Narrow phones: tighter, so the longest label (Mejor valoradas) is not cut. */
+@media (max-width: 480px) {
+  .tabs button {
+    padding: 0 var(--sp-1);
+    font-size: calc(var(--fs-sm) - 1px);
+  }
+}
+@media (max-width: 370px) {
+  .tabs button {
+    font-size: var(--fs-xs);
+  }
+}
 @media (min-width: 720px) {
   .tabs {
     width: auto;
@@ -773,7 +792,7 @@ textarea.input {
 .stats-line {
   display: flex;
   flex-wrap: wrap;
-  align-items: end;
+  align-items: start;
   gap: var(--sp-5);
   font-size: var(--fs-sm);
   color: var(--text-muted);
@@ -787,6 +806,9 @@ textarea.input {
 }
 .stats-line span {
   display: grid;
+}
+.stats-line small {
+  font-size: var(--fs-sm);
 }
 
 /* Route page */
@@ -985,29 +1007,6 @@ span.skel.route-step-n {
   border-radius: 50%;
 }
 
-.film-row {
-  display: flex;
-  gap: var(--sp-3);
-  align-items: center;
-  padding: var(--sp-2) 0;
-  border-bottom: 1px solid var(--border);
-  list-style: none;
-}
-.film-row:last-child {
-  border-bottom: 0;
-}
-.film-row .poster {
-  width: 40px;
-}
-.film-row .n {
-  width: 20px;
-  color: var(--text-muted);
-  font-size: var(--fs-sm);
-  font-variant-numeric: tabular-nums;
-}
-.film-row h3 {
-  font-size: var(--fs-md);
-}
 .year {
   color: var(--text-muted);
   font-size: var(--fs-sm);
@@ -1029,11 +1028,6 @@ span.skel.route-step-n {
   font-size: var(--fs-sm);
   color: var(--text-muted);
   cursor: pointer;
-}
-.film-rows {
-  list-style: none;
-  margin: 0;
-  padding: 0;
 }
 
 /* Call to action pinned to the bottom of the screen on phones */
@@ -1175,19 +1169,25 @@ span.skel.route-step-n {
   display: grid;
   gap: var(--sp-3);
 }
+/* One film is one card at every width: its poster inside, on the left. */
 .step {
   position: relative;
   display: grid;
   grid-template-columns: 56px minmax(0, 1fr);
   gap: var(--sp-3);
+  padding: var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
 }
 .step .poster {
   width: 56px;
 }
 .step .num {
   position: absolute;
-  left: -4px;
-  top: -4px;
+  left: var(--sp-2);
+  top: var(--sp-2);
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -1217,21 +1217,16 @@ span.skel.route-step-n {
 }
 .step .body {
   min-width: 0;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: var(--sp-3) var(--sp-4);
-  box-shadow: var(--shadow-1);
   display: grid;
   gap: var(--sp-3);
 }
-.step[data-next='true'] .body {
+.step[data-next='true'] {
   border-color: color-mix(in oklab, var(--accent) 60%, var(--border));
   box-shadow:
     0 0 0 3px var(--accent-soft),
     var(--shadow-1);
 }
-.step[data-state='pending'][data-next='false'] .body {
+.step[data-state='pending'][data-next='false'] {
   background: var(--surface-2);
   box-shadow: none;
 }
@@ -1281,19 +1276,16 @@ span.skel.route-step-n {
   quotes: '“' '”';
 }
 .compare {
-  display: grid;
-  /* minmax(0, …): a long username shortens instead of pushing the layout. */
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  gap: var(--sp-2);
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  gap: var(--sp-2) var(--sp-4);
   padding: var(--sp-1) 0;
 }
-/* On a phone the three columns do not fit beside the poster: stack them. */
-@media (max-width: 480px) {
-  .compare {
-    grid-template-columns: minmax(0, 1fr);
-    justify-items: start;
-  }
+.compare > div {
+  /* A long username shortens instead of pushing the layout. */
+  min-width: 0;
+  max-width: 100%;
 }
 .compare .who {
   font-size: var(--fs-xs);
@@ -1701,26 +1693,6 @@ dialog.sheet::backdrop {
 .site-footer .inner a {
   margin-left: auto;
   color: var(--primary);
-}
-.sample-list {
-  width: 100%;
-  margin: 0;
-}
-.sample-list .film-row:last-child {
-  border-bottom: 0;
-}
-.sample-list .bar {
-  height: 10px;
-  border-radius: var(--r-pill);
-  background: var(--border);
-}
-.sample-list .poster {
-  width: 28px;
-  height: 42px;
-  flex: none;
-}
-.sample-list .poster svg {
-  display: none;
 }
 .tutorial-notes .note-label {
   display: block;
