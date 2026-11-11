@@ -10,10 +10,13 @@ export function RouteListSkeleton({ rows = 3 }: { rows?: number }) {
       <ul className="route-list" aria-hidden="true">
         {Array.from({ length: rows }, (_, index) => (
           <li key={index} className="card route-card">
-            <div className="skel-block">
-              <div className="skel title" />
-              <div className="skel line" style={{ width: '40%' }} />
-              <div className="skel line" style={{ width: '80%' }} />
+            <div className="skel route-card-media" />
+            <div className="route-card-main">
+              <div className="skel-block">
+                <div className="skel title" />
+                <div className="skel line" style={{ width: '40%' }} />
+                <div className="skel line" style={{ width: '80%' }} />
+              </div>
             </div>
           </li>
         ))}

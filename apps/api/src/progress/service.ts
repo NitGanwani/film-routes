@@ -4,7 +4,7 @@ import type { Emotion as DbEmotion } from '../../generated/prisma/enums.js';
 import type { Db } from '../db.js';
 import { HttpError } from '../errors.js';
 import { countsAsTraveler, type Tx } from '../routes/locking.js';
-import { postersSelect, toPosters } from '../routes/posters.js';
+import { postersSelect, toCoverUrl, toPosters } from '../routes/posters.js';
 import { toFilm } from '../routes/service.js';
 import type { CloseStepInput } from './schemas.js';
 
@@ -233,6 +233,7 @@ export function createProgressService(
           author: row.route.author.username,
           stepCount: row.route._count.steps,
           posters: toPosters(row.route.steps),
+          coverUrl: toCoverUrl(row.route.steps),
           /** Hidden by an admin: it cannot be followed until it is lifted. */
           hidden: row.route.hiddenAt !== null,
         },

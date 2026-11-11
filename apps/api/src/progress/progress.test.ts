@@ -731,6 +731,10 @@ describe('my routes', () => {
       null,
       null,
     ]);
+    // The cover is the first film's backdrop (the Matrix is the first film here).
+    expect(response.body.journeys[0].route.coverUrl).toBe(
+      'https://image.tmdb.org/t/p/w1280/matrix-backdrop.jpg',
+    );
     // Only posters: nothing from the notes comes along.
     expect(JSON.stringify(response.body)).not.toContain('noteBefore');
   });

@@ -389,18 +389,50 @@
   margin: 0;
   padding: 0;
 }
+/* A route card: a 16:9 picture on top, the text below. */
 .route-card {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--sp-3);
-  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.route-card-media {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.route-card-media .cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* The picture fades into the card over its bottom third, where the posters sit. */
+.route-card-media.has-cover::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 40%;
+  background: linear-gradient(to bottom, transparent, var(--surface));
+}
+.route-card-media.has-cover .poster-strip {
+  position: absolute;
+  left: var(--sp-4);
+  bottom: var(--sp-3);
+  z-index: 1;
 }
 .route-card-main {
   min-width: 0;
+  flex: 1;
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
 }
 .route-card h3 {
-  font-size: var(--fs-lg);
+  font-size: var(--fs-xl);
   margin-bottom: 2px;
 }
 /* The whole card is the link: the title's link stretches over it. */
@@ -458,37 +490,45 @@
 .route-card .progress {
   margin-top: var(--sp-2);
 }
+/* Loading cards keep the footprint of the real ones. */
+.route-card .skel.route-card-media {
+  border-radius: 0;
+}
+/* Posters overlap, each with a shadow so it reads against the picture. */
 .poster-strip {
   display: flex;
-  align-self: start;
 }
 .poster-strip .poster {
-  width: 34px;
+  width: 48px;
   border-radius: 4px;
   border: 2px solid var(--surface);
-  margin-left: -10px;
-  box-shadow: var(--shadow-1);
+  margin-left: -14px;
+  box-shadow: var(--shadow-2);
 }
 .poster-strip .poster:first-child {
   margin-left: 0;
 }
 
-/* Wide screens: three cards across, posters on top. */
-@media (min-width: 900px) {
+/* One column on phones, two from 640 px, three from 1024 px. */
+@media (min-width: 640px) {
   .route-list.grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--sp-4);
   }
-  .route-list.grid .route-card {
-    grid-template-columns: minmax(0, 1fr);
-    align-content: start;
+}
+@media (min-width: 1024px) {
+  .route-list.grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .route-list.grid .poster-strip {
-    order: -1;
-    margin-bottom: var(--sp-2);
+  /* The first route of a list can take two columns: bigger title, wider picture. */
+  .route-card.featured {
+    grid-column: span 2;
   }
-  .route-list.grid .poster-strip .poster {
-    width: 48px;
+  .route-card.featured h3 {
+    font-size: var(--fs-2xl);
+  }
+  .route-card.featured .route-card-media {
+    aspect-ratio: 21 / 9;
   }
 }
 
@@ -579,29 +619,58 @@ textarea.input {
   outline-offset: 2px;
 }
 
-/* Sort tabs (they filter one list, so they are toggle buttons) */
+/* Sort control: a segmented pill. The indicator slides to the chosen option
+   (--i is its position); the buttons stay toggle buttons since they filter one
+   list. Equal columns keep the indicator one third wide. */
 .tabs {
-  display: flex;
-  gap: var(--sp-2);
-  overflow-x: auto;
-  scrollbar-width: none;
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  width: 100%;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+}
+.tabs::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc((100% - 6px) / 3);
+  border-radius: var(--r-pill);
+  background: var(--text);
+  transform: translateX(calc(var(--i, 0) * 100%));
+  transition: transform 0.25s ease;
 }
 .tabs button {
-  min-height: 36px;
-  padding: 0 var(--sp-4);
+  position: relative;
+  min-height: 34px;
+  padding: 0 var(--sp-2);
+  border: 0;
   border-radius: var(--r-pill);
-  border: 1px solid var(--border);
-  background: var(--surface);
+  background: transparent;
   font-size: var(--fs-sm);
   font-weight: 500;
   color: var(--text-muted);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   cursor: pointer;
+  transition: color 0.25s ease;
 }
 .tabs button[aria-pressed='true'] {
-  background: var(--text);
   color: var(--bg);
-  border-color: var(--text);
+}
+@media (min-width: 720px) {
+  .tabs {
+    width: auto;
+  }
+  .tabs button {
+    padding: 0 var(--sp-4);
+  }
 }
 
 /* ---------- Banners and locked content ---------- */

@@ -1,6 +1,6 @@
 import { RATING } from '@film-routes/shared';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { api } from '../api/instance.js';
@@ -65,7 +65,13 @@ export function ExplorePage() {
           <h1>{t('explore.title')}</h1>
           <p className="note">{t('explore.subtitle')}</p>
         </div>
-        <div className="tabs" role="group" aria-label={t('explore.sortLabel')}>
+        {/* A segmented control: the indicator slides to the chosen option. */}
+        <div
+          className="tabs"
+          role="group"
+          aria-label={t('explore.sortLabel')}
+          style={{ '--i': SORTS.indexOf(sort) } as CSSProperties}
+        >
           {SORTS.map((option) => (
             <button
               key={option}
@@ -118,8 +124,13 @@ export function ExplorePage() {
         ))}
       {routes.data && routes.data.routes.length > 0 && (
         <ul className="route-list grid">
-          {routes.data.routes.map((route) => (
-            <ExploreCard key={route.id} route={route} />
+          {routes.data.routes.map((route, index) => (
+            <ExploreCard
+              key={route.id}
+              route={route}
+              // In "Popular" the first route is the big one.
+              featured={sort === 'popular' && index === 0}
+            />
           ))}
         </ul>
       )}
@@ -127,7 +138,13 @@ export function ExplorePage() {
   );
 }
 
-function ExploreCard({ route }: { route: PublicRouteSummary }) {
+function ExploreCard({
+  route,
+  featured,
+}: {
+  route: PublicRouteSummary;
+  featured: boolean;
+}) {
   const { t, i18n } = useTranslation();
   return (
     <RouteCard
@@ -135,6 +152,8 @@ function ExploreCard({ route }: { route: PublicRouteSummary }) {
       title={route.title}
       by={t('route.by', { author: route.author })}
       posters={route.posters}
+      cover={route.coverUrl}
+      featured={featured}
       badges={<LanguageTag locale={route.locale} />}
     >
       <p className="stats">

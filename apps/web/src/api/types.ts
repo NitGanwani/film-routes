@@ -127,6 +127,8 @@ export type JourneySummary = {
     author: string;
     stepCount: number;
     posters: (string | null)[];
+    /** The first film's backdrop, the card's cover; null = none. */
+    coverUrl: string | null;
     hidden: boolean;
   };
 };

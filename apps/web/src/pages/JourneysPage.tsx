@@ -80,6 +80,7 @@ function JourneyCard({ journey }: { journey: JourneySummary }) {
       title={route.title}
       by={t('route.by', { author: route.author })}
       posters={route.posters}
+      cover={route.coverUrl}
       badges={badges}
     >
       <ProgressBar
