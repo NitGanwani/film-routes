@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FilmStrip, Frame } from './FilmStrip.js';
+import { FilmStrip } from './FilmStrip.js';
 import { Icon, type IconName } from './Icon.js';
 
 /** Placeholder cards while a list loads: the page keeps its shape. */
@@ -47,11 +47,13 @@ export function EmptyState({
     <div className="empty">
       {strip ? (
         <div className="empty-strip" aria-hidden="true">
-          <FilmStrip>
-            {Array.from({ length: 5 }, (_, index) => (
-              <Frame key={index} state="empty" />
-            ))}
-          </FilmStrip>
+          <FilmStrip
+            label=""
+            frames={Array.from({ length: 5 }, () => ({
+              posterUrl: null,
+              state: 'pending' as const,
+            }))}
+          />
         </div>
       ) : (
         <div className="ill">

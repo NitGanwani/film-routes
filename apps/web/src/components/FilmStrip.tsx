@@ -1,44 +1,33 @@
-import type { AriaAttributes, ReactNode } from 'react';
-
-/** What a frame of the strip shows. */
-export type FrameState = 'empty' | 'pending' | 'started' | 'closed';
+export type StripFrame = {
+  /** Null when TMDB has no poster, or when only a count is known. */
+  posterUrl: string | null;
+  /** closed: its poster; started: its poster in an amber border; pending: still dark. */
+  state: 'closed' | 'started' | 'pending';
+};
 
 /**
- * A strip of film: a dark band with perforations along both edges and the
- * frames in between, in order, like the films of a route. Pure decoration: the
- * meaning always goes in text next to it (and, for progress, in its role).
+ * A strip of film: a dark band with perforations along both edges and one
+ * frame per film, in the order of the route. It scrolls sideways (snapping to
+ * each frame) when the frames do not fit. It is announced as one image with the
+ * given `label`, since the meaning also goes in text next to it.
  */
 export function FilmStrip({
-  children,
-  ...aria
+  frames,
+  label,
 }: {
-  children: ReactNode;
-} & AriaAttributes & { role?: string }) {
-  return (
-    <div className="film-strip" {...aria}>
-      <div className="film-frames" aria-hidden="true">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-/**
- * One frame. A closed film shows its poster; a pending one stays dark; one
- * being watched is lit softly; a closed one with no picture to show is lit.
- */
-export function Frame({
-  state,
-  posterUrl = null,
-}: {
-  state: FrameState;
-  posterUrl?: string | null;
+  frames: StripFrame[];
+  /** Already translated, e.g. "1 de 5 cerradas". */
+  label: string;
 }) {
   return (
-    <span className="film-frame" data-state={state}>
-      {state === 'closed' && posterUrl && (
-        <img src={posterUrl} alt="" loading="lazy" decoding="async" />
-      )}
-    </span>
+    <div className="film-strip" role="img" aria-label={label}>
+      {frames.map((frame, index) => (
+        <span key={index} className="film-frame" data-state={frame.state}>
+          {frame.state !== 'pending' && frame.posterUrl && (
+            <img src={frame.posterUrl} alt="" loading="lazy" decoding="async" />
+          )}
+        </span>
+      ))}
+    </div>
   );
 }

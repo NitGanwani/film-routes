@@ -15,7 +15,7 @@ import { Icon } from '../components/Icon.js';
 import { Locked } from '../components/Locked.js';
 import { Poster } from '../components/Poster.js';
 import { Shared } from '../components/Shared.js';
-import { ProgressBar } from '../components/ProgressBar.js';
+import { FilmStrip } from '../components/FilmStrip.js';
 import { ErrorBox } from '../components/States.js';
 import { filmTitle, originalTitleNote } from '../films/titles.js';
 import { CloseDialog } from '../journey/CloseDialog.js';
@@ -146,6 +146,10 @@ export function JourneyPage() {
   }
 
   const { route, enrollment, steps } = journey.data;
+  const progressLabel = t('journey.progress', {
+    closed: enrollment.closedSteps,
+    total: enrollment.stepCount,
+  });
   const following = enrollment.status !== 'abandoned';
   const closingStep = closing
     ? steps.find((step) => step.id === closing.stepId)
@@ -166,18 +170,17 @@ export function JourneyPage() {
               <span>{t('journey.by', { author: route.author })}</span>
             </div>
             {route.description && <p>{route.description}</p>}
-            <ProgressBar
-              closed={enrollment.closedSteps}
-              total={enrollment.stepCount}
-              frames={steps.map((step) => ({
-                state: step.state,
-                posterUrl: step.film.posterUrl,
-              }))}
-              label={t('journey.progress', {
-                closed: enrollment.closedSteps,
-                total: enrollment.stepCount,
-              })}
-            />
+            <div className="progress">
+              <FilmStrip
+                frames={steps.map((step) => ({
+                  state: step.state,
+                  posterUrl: step.film.posterUrl,
+                }))}
+                label={progressLabel}
+              />
+              {/* The strip already says it to a screen reader. */}
+              <span aria-hidden="true">{progressLabel}</span>
+            </div>
             <p className="note">{t('journey.orderIsAdvice')}</p>
           </div>
           {enrollment.status === 'completed' && (

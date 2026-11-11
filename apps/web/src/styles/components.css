@@ -921,8 +921,12 @@ textarea.input {
   bottom: 0;
   left: 0;
   width: 6px;
-  background: color-mix(in srgb, var(--text-muted) 40%, transparent);
-  mask: var(--perforation-y) repeat-y center top / 6px 16px;
+  background: radial-gradient(
+      circle at 3px 8px,
+      color-mix(in srgb, var(--text-muted) 45%, transparent) 0 2.5px,
+      transparent 3px
+    )
+    0 0 / 6px 16px repeat-y;
 }
 .route-film {
   display: flex;
@@ -1052,71 +1056,81 @@ span.skel.route-step-n {
   gap: var(--sp-2);
   margin-top: var(--sp-4);
 }
-/* Film strip: the motif of the site. A dark band, perforations along the edges
-   (a mask, so they take whatever colour the rule gives them) and the frames of
-   the route in between. Used in three places only: the journey's progress, the
+/* Film strip: the motif of the site. A dark band with perforations along both
+   edges (round holes drawn with radial-gradient, no images) and the frames of
+   the route in between. It scrolls sideways, snapping to each frame, when the
+   frames do not fit. Used in three places only: the journey's progress, the
    list of films of a route, and the empty "my journeys". */
-:root {
-  /* One hole: a rounded rectangle, repeated. Only its shape matters. */
-  --perforation-x: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Crect x='1' width='8' height='6' rx='1.5'/%3E%3C/svg%3E");
-  --perforation-y: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='16'%3E%3Crect y='2' width='6' height='10' rx='1.5'/%3E%3C/svg%3E");
-}
 .film-strip {
-  position: relative;
-  width: fit-content;
-  max-width: 100%;
-  padding: 14px 8px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-}
-.film-strip::before,
-.film-strip::after {
-  content: '';
-  position: absolute;
-  left: 4px;
-  right: 4px;
-  height: 6px;
-  background: var(--bg);
-  mask: var(--perforation-x) repeat-x left center / 12px 6px;
-}
-.film-strip::before {
-  top: 4px;
-}
-.film-strip::after {
-  bottom: 4px;
-}
-.film-frames {
   display: flex;
   gap: 4px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 18px 10px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background-color: var(--bg);
+  /* One row of holes along the top and one along the bottom. "local" makes
+     them travel with the frames when the strip scrolls. */
+  background-image:
+    radial-gradient(
+      circle at 6px 4px,
+      var(--surface-2) 0 2.5px,
+      transparent 3px
+    ),
+    radial-gradient(
+      circle at 6px 4px,
+      var(--surface-2) 0 2.5px,
+      transparent 3px
+    );
+  background-size:
+    12px 8px,
+    12px 8px;
+  background-repeat: repeat-x, repeat-x;
+  background-position:
+    0 5px,
+    0 calc(100% - 5px);
+  background-attachment: local, local;
+}
+.film-strip::-webkit-scrollbar {
+  display: none;
 }
 .film-frame {
-  width: 44px;
-  flex: 0 1 auto;
-  min-width: 0;
+  flex: none;
+  width: 40px;
   aspect-ratio: 2 / 3;
-  display: block;
+  scroll-snap-align: start;
   overflow: hidden;
   border-radius: 2px;
-  background: var(--bg);
-  border: 1px solid var(--border);
+  /* Pending: still dark, a little lighter than the band. */
+  background: color-mix(in srgb, var(--surface-2) 60%, transparent);
+}
+@media (min-width: 720px) {
+  .film-frame {
+    width: 56px;
+  }
 }
 .film-frame img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-/* Being watched: lit softly. Closed: its poster, or lit when there is none. */
+/* Being watched: its poster inside an amber border. */
 .film-frame[data-state='started'] {
-  background: var(--accent-soft);
-  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  border-radius: 2px;
 }
-.film-frame[data-state='closed'] {
+/* With no poster to show (a list only knows how many are closed) the frame is lit. */
+.film-frame[data-state='closed']:not(:has(img)) {
   background: var(--accent);
-  border-color: var(--accent);
 }
-.empty-strip .film-frame {
-  width: 52px;
+.film-frame[data-state='started']:not(:has(img)) {
+  background: var(--accent-soft);
 }
 .progress span {
   font-size: var(--fs-sm);
@@ -1267,6 +1281,13 @@ span.skel.route-step-n {
   gap: var(--sp-2);
   align-items: center;
   padding: var(--sp-1) 0;
+}
+/* On a phone the three columns do not fit beside the poster: stack them. */
+@media (max-width: 480px) {
+  .compare {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: start;
+  }
 }
 .compare .who {
   font-size: var(--fs-xs);
