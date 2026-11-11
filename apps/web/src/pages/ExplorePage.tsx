@@ -1,9 +1,10 @@
 import { RATING } from '@film-routes/shared';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { api } from '../api/instance.js';
+import { publicRouteQuery } from '../api/queries.js';
 import type { PublicRouteSummary, PublicRoutesPage } from '../api/types.js';
 import { errorMessage } from '../components/errorMessage.js';
 import { LanguageTag } from '../components/LanguageTag.js';
@@ -146,9 +147,15 @@ function ExploreCard({
   featured: boolean;
 }) {
   const { t, i18n } = useTranslation();
+  const queryClient = useQueryClient();
   return (
     <RouteCard
       to={`/routes/${route.id}`}
+      transitionId={route.id}
+      // Load the page a moment early, so it is ready when the card travels to it.
+      onIntent={() =>
+        void queryClient.prefetchQuery(publicRouteQuery(route.id))
+      }
       title={route.title}
       by={t('route.by', { author: route.author })}
       posters={route.posters}

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { api } from '../api/instance.js';
@@ -6,6 +6,7 @@ import type { JourneySummary } from '../api/types.js';
 import { errorMessage } from '../components/errorMessage.js';
 import { ProgressBar } from '../components/ProgressBar.js';
 import { LanguageTag } from '../components/LanguageTag.js';
+import { journeyQuery } from '../api/queries.js';
 import { RouteCard } from '../components/RouteCard.js';
 import {
   EmptyState,
@@ -57,6 +58,7 @@ export function JourneysPage() {
 
 function JourneyCard({ journey }: { journey: JourneySummary }) {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const { route } = journey;
   const badges = (
     <>
@@ -77,6 +79,13 @@ function JourneyCard({ journey }: { journey: JourneySummary }) {
     <RouteCard
       // A hidden route cannot be opened until an admin lifts it.
       to={route.hidden ? null : `/journeys/${route.id}`}
+      transitionId={route.hidden ? null : route.id}
+      // Load the journey a moment early, so it is ready when the card travels to it.
+      onIntent={() =>
+        route.hidden
+          ? undefined
+          : void queryClient.prefetchQuery(journeyQuery(route.id))
+      }
       title={route.title}
       by={t('route.by', { author: route.author })}
       posters={route.posters}

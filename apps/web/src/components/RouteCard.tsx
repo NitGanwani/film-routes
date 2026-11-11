@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { backdropSources } from '../films/images.js';
 import { PosterStrip } from './Poster.js';
+import { Shared } from './Shared.js';
 
 /** What the browser needs to pick a cover width: the card's share of the row. */
 const COVER_SIZES = '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw';
@@ -22,6 +23,8 @@ export function RouteCard({
   posters,
   cover = null,
   featured = false,
+  transitionId = null,
+  onIntent,
   badges,
   children,
 }: {
@@ -33,12 +36,20 @@ export function RouteCard({
   cover?: string | null;
   /** The big card at the head of a list: wider, with a larger title, on wide screens. */
   featured?: boolean;
+  /** The route's id: its first poster and its title travel to the page it opens. */
+  transitionId?: string | null;
+  /** The person is about to open it (hover or focus): a chance to load it early. */
+  onIntent?: () => void;
   badges?: ReactNode;
   children?: ReactNode;
 }) {
   const sources = cover ? backdropSources(cover) : null;
   return (
-    <li className={featured ? 'card route-card featured' : 'card route-card'}>
+    <li
+      className={featured ? 'card route-card featured' : 'card route-card'}
+      onPointerEnter={onIntent}
+      onFocus={onIntent}
+    >
       <div
         className={sources ? 'route-card-media has-cover' : 'route-card-media'}
         aria-hidden="true"
@@ -54,11 +65,19 @@ export function RouteCard({
             decoding="async"
           />
         )}
-        <PosterStrip posters={posters} />
+        <PosterStrip
+          posters={posters}
+          transitionName={transitionId ? `poster-${transitionId}` : null}
+        />
       </div>
       <div className="route-card-main">
         {badges && <div className="badges">{badges}</div>}
-        <h3>{to ? <Link to={to}>{title}</Link> : title}</h3>
+        <Shared
+          name={transitionId ? `title-${transitionId}` : null}
+          kind="title"
+        >
+          <h3>{to ? <Link to={to}>{title}</Link> : title}</h3>
+        </Shared>
         <p className="by">{by}</p>
         {children}
       </div>

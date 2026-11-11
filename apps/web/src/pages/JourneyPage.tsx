@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
 import { ApiError } from '../api/client.js';
+import { journeyQuery } from '../api/queries.js';
 import { api } from '../api/instance.js';
 import type { CloseStepBody, Journey, JourneyStep } from '../api/types.js';
 import { Avatar } from '../components/Avatar.js';
@@ -11,6 +12,7 @@ import { errorMessage } from '../components/errorMessage.js';
 import { Icon } from '../components/Icon.js';
 import { Locked } from '../components/Locked.js';
 import { Poster } from '../components/Poster.js';
+import { Shared } from '../components/Shared.js';
 import { ProgressBar } from '../components/ProgressBar.js';
 import { ErrorBox } from '../components/States.js';
 import { filmTitle, originalTitleNote } from '../films/titles.js';
@@ -25,20 +27,16 @@ export function JourneyPage() {
   const { routeId = '' } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const queryKey = ['journey', routeId];
+  const { queryKey } = journeyQuery(routeId);
+  // What the route's card in "My journeys" sends here: its title and the poster
+  // of the first film, which is the first one on this page.
+  const titleName = `title-${routeId}`;
+  const posterName = `poster-${routeId}`;
 
   const [closing, setClosing] = useState<Closing | null>(null);
   const [confirmingLeave, setConfirmingLeave] = useState(false);
 
-  const journey = useQuery({
-    queryKey,
-    queryFn: () =>
-      api
-        .request<{ journey: Journey }>(`/routes/${routeId}/journey`, {
-          auth: true,
-        })
-        .then((response) => response.journey),
-  });
+  const journey = useQuery(journeyQuery(routeId));
 
   // Every change answers with the whole updated journey: just show it.
   function show(next: Journey) {
@@ -103,8 +101,27 @@ export function JourneyPage() {
 
   if (journey.isPending) {
     return (
-      <div className="page">
+      <div className="page" aria-busy="true">
         {back}
+        {/* The title's placeholder has the title's name, so the card's title
+            still travels here while the journey loads. */}
+        <div className="journey-layout">
+          <aside className="journey-side">
+            <div className="card card-pad" aria-hidden="true">
+              <Shared name={titleName} kind="title">
+                <div className="skel title" />
+              </Shared>
+              <div
+                className="skel line"
+                style={{ width: '55%', marginTop: 'var(--sp-3)' }}
+              />
+              <div
+                className="skel line"
+                style={{ width: '80%', marginTop: 'var(--sp-2)' }}
+              />
+            </div>
+          </aside>
+        </div>
         <p className="note" role="status">
           {t('common.loading')}
         </p>
@@ -136,7 +153,9 @@ export function JourneyPage() {
       <div className="journey-layout">
         <aside className="journey-side">
           <div className="card card-pad">
-            <h1>{route.title}</h1>
+            <Shared name={titleName} kind="title">
+              <h1>{route.title}</h1>
+            </Shared>
             <div className="author" style={{ marginTop: 0 }}>
               <Avatar name={route.author} />
               <span>{t('journey.by', { author: route.author })}</span>
@@ -178,10 +197,11 @@ export function JourneyPage() {
           )}
 
           <ol className="steps">
-            {steps.map((step) => (
+            {steps.map((step, index) => (
               <StepItem
                 key={step.id}
                 step={step}
+                transitionName={index === 0 ? posterName : null}
                 author={route.author}
                 following={following}
                 busy={busy}
@@ -259,6 +279,8 @@ export function JourneyPage() {
 
 type StepItemProps = {
   step: JourneyStep;
+  /** Set on the first step: its poster is the one that arrives from the card. */
+  transitionName: string | null;
   author: string;
   following: boolean;
   busy: boolean;
@@ -268,6 +290,7 @@ type StepItemProps = {
 
 function StepItem({
   step,
+  transitionName,
   author,
   following,
   busy,
@@ -296,7 +319,7 @@ function StepItem({
       data-next={step.recommendedNext}
     >
       <span className="num">{step.position}</span>
-      <Poster url={step.film.posterUrl} />
+      <Poster url={step.film.posterUrl} transitionName={transitionName} />
       <div className="body">
         <div className="main">
           <div className="head">

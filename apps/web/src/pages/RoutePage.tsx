@@ -3,13 +3,15 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
 import { api } from '../api/instance.js';
-import type { JoinResult, PublicRouteDetail } from '../api/types.js';
+import { publicRouteQuery } from '../api/queries.js';
+import type { JoinResult } from '../api/types.js';
 import { Avatar } from '../components/Avatar.js';
 import { Backdrop } from '../components/Backdrop.js';
 import { errorMessage } from '../components/errorMessage.js';
 import { Icon } from '../components/Icon.js';
 import { LanguageTag } from '../components/LanguageTag.js';
 import { Poster } from '../components/Poster.js';
+import { Shared } from '../components/Shared.js';
 import { ErrorBox } from '../components/States.js';
 import { filmTitle, originalTitleNote } from '../films/titles.js';
 import { formatAverage } from '../i18n/format.js';
@@ -24,13 +26,11 @@ export function RoutePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const route = useQuery({
-    queryKey: ['public-route', routeId],
-    queryFn: () =>
-      api
-        .request<{ route: PublicRouteDetail }>(`/public/routes/${routeId}`)
-        .then((response) => response.route),
-  });
+  const route = useQuery(publicRouteQuery(routeId));
+  // The backdrop and the title are the elements the route's card sends here;
+  // the loading placeholders carry the same names, so they arrive either way.
+  const posterName = `poster-${routeId}`;
+  const titleName = `title-${routeId}`;
 
   const join = useMutation({
     mutationFn: () =>
@@ -60,10 +60,14 @@ export function RoutePage() {
           <div className="route-top">
             <div className="route-wrap">{back}</div>
           </div>
-          <div className="backdrop skel" aria-hidden="true" />
+          <Shared name={posterName} kind="poster">
+            <div className="backdrop skel" aria-hidden="true" />
+          </Shared>
           <div className="route-fade" aria-hidden="true">
             <div className="route-wrap">
-              <div className="skel title" />
+              <Shared name={titleName} kind="title">
+                <div className="skel title" />
+              </Shared>
               <div className="skel line" style={{ width: '45%' }} />
               <div className="skel line" style={{ width: '85%' }} />
               <div className="skel line" style={{ width: '60%' }} />
@@ -144,12 +148,16 @@ export function RoutePage() {
         <div className="route-top">
           <div className="route-wrap">{back}</div>
         </div>
-        <Backdrop url={data.coverUrl} />
+        <Shared name={posterName} kind="poster">
+          <Backdrop url={data.coverUrl} />
+        </Shared>
         {/* Starts over the lower third of the backdrop and is solid page
             colour below its first few pixels: the text never sits on the image. */}
         <header className="route-fade">
           <div className="route-wrap">
-            <h1>{data.title}</h1>
+            <Shared name={titleName} kind="title">
+              <h1>{data.title}</h1>
+            </Shared>
             <div className="author">
               <Avatar name={data.author} />
               <span>

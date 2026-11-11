@@ -96,6 +96,34 @@ img {
   }
 }
 
+/* Page transitions (the View Transitions API). The whole page cross-fades
+   quickly; a poster or a title that exists on both pages (see Shared.tsx)
+   travels from one to the other. A browser without the API ignores all of it. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 220ms;
+  animation-timing-function: ease-out;
+}
+::view-transition-group(.shared-poster),
+::view-transition-group(.shared-title) {
+  animation-duration: 320ms;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+/* A poster becomes a wide backdrop and back: crop the picture, never stretch it. */
+::view-transition-old(.shared-poster),
+::view-transition-new(.shared-poster) {
+  height: 100%;
+  object-fit: cover;
+}
+/* Asking for less motion: the page just changes. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
 /* Hidden to the eye, still there for screen readers and the keyboard. */
 .visually-hidden {
   position: absolute;
