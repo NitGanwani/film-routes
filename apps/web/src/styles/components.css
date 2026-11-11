@@ -675,14 +675,6 @@ textarea.input {
 }
 
 /* ---------- Route header, author, stats ---------- */
-.route-head {
-  padding: var(--sp-2) 0 var(--sp-5);
-}
-.route-head .by {
-  margin-top: var(--sp-1);
-  color: var(--text-muted);
-  font-size: var(--fs-sm);
-}
 .author {
   display: flex;
   gap: var(--sp-2);
@@ -720,6 +712,186 @@ textarea.input {
 }
 .stats-line span {
   display: grid;
+}
+
+/* Route page */
+/* The backdrop is full width; --backdrop-h is shared by the image and by how far
+   the header climbs over it (a third of it). A route whose first film has no
+   backdrop gets a shorter, quieter hero instead of a big empty one. */
+.route-hero {
+  --backdrop-h: 56vh;
+  position: relative;
+}
+.route-hero.no-cover {
+  --backdrop-h: 30vh;
+}
+@media (min-width: 720px) {
+  .route-hero {
+    --backdrop-h: 64vh;
+  }
+  .route-hero.no-cover {
+    --backdrop-h: 36vh;
+  }
+}
+.backdrop {
+  position: relative;
+  height: var(--backdrop-h);
+  overflow: hidden;
+  background: var(--bg);
+}
+.backdrop img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* From clear to the page colour over the bottom 60%, eased so it has no band. */
+.backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 40% 0 0;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in oklab, var(--bg) 70%, transparent) 45%,
+    var(--bg)
+  );
+}
+/* No backdrop: a faint amber glow, never a stock picture. */
+.backdrop-empty {
+  background:
+    radial-gradient(
+      ellipse 70% 90% at 50% 0,
+      color-mix(in oklab, var(--accent) 14%, transparent),
+      transparent 70%
+    ),
+    var(--bg);
+}
+.backdrop.skel {
+  border-radius: 0;
+}
+
+/* The column the header and the back link are laid out in. */
+.route-wrap {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 var(--sp-4);
+}
+@media (min-width: 720px) {
+  .route-wrap {
+    padding: 0 var(--sp-8);
+  }
+}
+.route-top {
+  position: absolute;
+  inset: var(--sp-2) 0 auto;
+  z-index: 2;
+}
+.route-back {
+  padding: 0 var(--sp-3);
+  border-radius: var(--r-pill);
+  color: var(--text);
+  background: color-mix(in oklab, var(--bg) 70%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+/* The header climbs over the lower third of the backdrop. Its first --sp-12
+   fades into the page colour and below that it is solid, so the title and the
+   rest of the text always sit on --bg, whatever the image is. */
+.route-fade {
+  position: relative;
+  z-index: 1;
+  margin-top: calc(var(--backdrop-h) / -3);
+  padding-top: var(--sp-12);
+  background: linear-gradient(to bottom, transparent, var(--bg) var(--sp-12));
+}
+.route-fade h1 {
+  font-size: var(--fs-3xl);
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+@media (min-width: 720px) {
+  .route-fade h1 {
+    font-size: var(--fs-4xl);
+  }
+}
+.route-desc {
+  margin-top: var(--sp-3);
+  max-width: 60ch;
+}
+/* Phones pin the action to the bottom of the screen; wide screens keep it in
+   the header. The same element is drawn in both places and CSS shows one. */
+.head-cta {
+  display: none;
+}
+@media (min-width: 720px) {
+  .head-cta {
+    display: block;
+    margin-top: var(--sp-5);
+  }
+  .head-cta .btn {
+    width: auto;
+  }
+  .page .sticky-cta {
+    display: none;
+  }
+}
+
+/* Films of the route: a real poster, and the step number in a ring. */
+.route-films {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.route-film {
+  display: flex;
+  gap: var(--sp-4);
+  align-items: center;
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--border);
+  list-style: none;
+}
+.route-film:last-child {
+  border-bottom: 0;
+}
+.route-film .poster,
+.route-poster-skel {
+  width: 72px;
+}
+.route-poster-skel {
+  aspect-ratio: 2 / 3;
+  flex: none;
+}
+.route-step-n {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent);
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.route-film-text {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-lg);
+}
+/* Loading placeholders keep the same footprint as the real rows. */
+.route-fade .skel.title {
+  height: 44px;
+  width: 80%;
+  margin-bottom: var(--sp-3);
+}
+.route-fade .skel.line {
+  margin-top: var(--sp-2);
+}
+span.skel.route-step-n {
+  border: 0;
+  border-radius: 50%;
 }
 
 .film-row {
