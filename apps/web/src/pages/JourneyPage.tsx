@@ -169,6 +169,10 @@ export function JourneyPage() {
             <ProgressBar
               closed={enrollment.closedSteps}
               total={enrollment.stepCount}
+              frames={steps.map((step) => ({
+                state: step.state,
+                posterUrl: step.film.posterUrl,
+              }))}
               label={t('journey.progress', {
                 closed: enrollment.closedSteps,
                 total: enrollment.stepCount,

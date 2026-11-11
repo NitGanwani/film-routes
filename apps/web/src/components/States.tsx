@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { FilmStrip, Frame } from './FilmStrip.js';
 import { Icon, type IconName } from './Icon.js';
 
 /** Placeholder cards while a list loads: the page keeps its shape. */
@@ -32,18 +33,31 @@ export function EmptyState({
   icon = 'film',
   title,
   text,
+  strip = false,
   children,
 }: {
   icon?: IconName;
   title: string;
   text?: string;
+  /** Draw an empty strip of film instead of the icon: a route with nothing in it yet. */
+  strip?: boolean;
   children?: ReactNode;
 }) {
   return (
     <div className="empty">
-      <div className="ill">
-        <Icon name={icon} size={32} />
-      </div>
+      {strip ? (
+        <div className="empty-strip" aria-hidden="true">
+          <FilmStrip>
+            {Array.from({ length: 5 }, (_, index) => (
+              <Frame key={index} state="empty" />
+            ))}
+          </FilmStrip>
+        </div>
+      ) : (
+        <div className="ill">
+          <Icon name={icon} size={32} />
+        </div>
+      )}
       <h2>{title}</h2>
       {text && <p>{text}</p>}
       {children}

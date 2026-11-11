@@ -908,9 +908,21 @@ textarea.input {
 
 /* Films of the route: a real poster, and the step number in a ring. */
 .route-films {
+  position: relative;
   list-style: none;
   margin: 0;
-  padding: 0;
+  /* Room for the perforations along the left edge, like the side of a film. */
+  padding: 0 0 0 var(--sp-6);
+}
+.route-films::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 6px;
+  background: color-mix(in srgb, var(--text-muted) 40%, transparent);
+  mask: var(--perforation-y) repeat-y center top / 6px 16px;
 }
 .route-film {
   display: flex;
@@ -1040,18 +1052,71 @@ span.skel.route-step-n {
   gap: var(--sp-2);
   margin-top: var(--sp-4);
 }
-.progress .bar {
-  height: 6px;
-  border-radius: 3px;
+/* Film strip: the motif of the site. A dark band, perforations along the edges
+   (a mask, so they take whatever colour the rule gives them) and the frames of
+   the route in between. Used in three places only: the journey's progress, the
+   list of films of a route, and the empty "my journeys". */
+:root {
+  /* One hole: a rounded rectangle, repeated. Only its shape matters. */
+  --perforation-x: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Crect x='1' width='8' height='6' rx='1.5'/%3E%3C/svg%3E");
+  --perforation-y: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='16'%3E%3Crect y='2' width='6' height='10' rx='1.5'/%3E%3C/svg%3E");
+}
+.film-strip {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  padding: 14px 8px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  overflow: hidden;
+  border-radius: var(--r-sm);
 }
-.progress .bar i {
+.film-strip::before,
+.film-strip::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 6px;
+  background: var(--bg);
+  mask: var(--perforation-x) repeat-x left center / 12px 6px;
+}
+.film-strip::before {
+  top: 4px;
+}
+.film-strip::after {
+  bottom: 4px;
+}
+.film-frames {
+  display: flex;
+  gap: 4px;
+}
+.film-frame {
+  width: 44px;
+  flex: 0 1 auto;
+  min-width: 0;
+  aspect-ratio: 2 / 3;
   display: block;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+.film-frame img {
+  width: 100%;
   height: 100%;
+  object-fit: cover;
+}
+/* Being watched: lit softly. Closed: its poster, or lit when there is none. */
+.film-frame[data-state='started'] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.film-frame[data-state='closed'] {
   background: var(--accent);
-  border-radius: 3px;
+  border-color: var(--accent);
+}
+.empty-strip .film-frame {
+  width: 52px;
 }
 .progress span {
   font-size: var(--fs-sm);
