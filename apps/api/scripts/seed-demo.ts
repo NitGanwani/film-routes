@@ -38,7 +38,13 @@ type Film = {
   noteAfter: string;
   authorEmotion: Emotion;
 };
-type DemoRoute = { title: string; description: string; films: Film[] };
+type DemoRoute = {
+  title: string;
+  description: string;
+  /** The language the route is written in; Spanish when not given. */
+  locale?: 'es' | 'en';
+  films: Film[];
+};
 
 // Notes before hold no spoilers; notes after may talk about the ending.
 const ROUTES: DemoRoute[] = [
@@ -151,6 +157,201 @@ const ROUTES: DemoRoute[] = [
       },
     ],
   },
+  {
+    title: 'Comedias para reír sin culpa',
+    description:
+      'Cuatro películas para cuando solo quieres pasarlo bien. Se ven mejor en compañía.',
+    films: [
+      {
+        tmdbId: 137,
+        noteBefore:
+          'Una idea muy simple que da mucho más de sí de lo que parece. Aguanta los primeros minutos.',
+        noteAfter:
+          'Empieza como un chiste y acaba hablando de quién quieres ser. No me lo esperaba.',
+        authorEmotion: 'joy',
+      },
+      {
+        tmdbId: 773,
+        noteBefore:
+          'Una familia, una furgoneta y un viaje que sale mal. Ponla con gente que quieras.',
+        noteAfter:
+          'Me reí en voz alta y a los diez minutos tenía un nudo en la garganta. Esa mezcla es lo mejor.',
+        authorEmotion: 'tenderness',
+      },
+      {
+        tmdbId: 120467,
+        noteBefore:
+          'Cada plano parece un cuadro. Fíjate en los colores y en lo rápido que hablan.',
+        noteAfter:
+          'Detrás del humor hay una nostalgia enorme por un mundo que ya no existe.',
+        authorEmotion: 'joy',
+      },
+      {
+        tmdbId: 346648,
+        noteBefore:
+          'No te dejes engañar por el osito: es una película para todas las edades.',
+        noteAfter:
+          'Una película amable de verdad, sin ironía por debajo. Salí con ganas de ser mejor persona.',
+        authorEmotion: 'tenderness',
+      },
+    ],
+  },
+  {
+    title: 'Para llorar a gusto',
+    description:
+      'Pañuelos a mano. Cuatro películas que duelen un poco y que luego se agradecen.',
+    films: [
+      {
+        tmdbId: 11216,
+        noteBefore:
+          'Una carta de amor al cine, con un niño y un proyeccionista. Mejor con calma.',
+        noteAfter:
+          'La última escena es de las que se te quedan para siempre. Prepárate.',
+        authorEmotion: 'sadness',
+      },
+      {
+        tmdbId: 14160,
+        noteBefore:
+          'Los primeros diez minutos son lo que más se recuerda. Dales tiempo y no mires nada antes.',
+        noteAfter:
+          'Dice más de la vida corriente en un montaje mudo que muchas películas enteras.',
+        authorEmotion: 'sadness',
+      },
+      {
+        tmdbId: 637,
+        noteBefore:
+          'Empieza con humor y acaba en otro sitio. Ten paciencia con la primera mitad.',
+        noteAfter:
+          'Cuando entiendes para qué eran los juegos, ya no puedes parar de llorar.',
+        authorEmotion: 'tenderness',
+      },
+      {
+        tmdbId: 38,
+        noteBefore:
+          'Una historia de amor contada al revés y con una idea muy rara. Atento a los detalles.',
+        noteAfter:
+          'Me hizo pensar en qué recuerdos elegiría borrar. Y en cuáles no lo haría nunca.',
+        authorEmotion: 'thoughtful',
+      },
+    ],
+  },
+  {
+    title: 'Thrillers que no te sueltan',
+    description:
+      'Cuatro películas con el pulso alto de principio a fin. Mejor sin interrupciones.',
+    films: [
+      {
+        tmdbId: 77,
+        noteBefore:
+          'Hay que prestar atención: la historia no va en orden. Ponla cuando estés despejado.',
+        noteAfter:
+          'Al terminar me dieron ganas de verla otra vez de golpe, ya sabiendo cómo va.',
+        authorEmotion: 'thoughtful',
+      },
+      {
+        tmdbId: 210577,
+        noteBefore:
+          'Una desaparición y un matrimonio. Cuanto menos sepas de antemano, mejor.',
+        noteAfter:
+          'Lo inquietante no es el misterio, sino darte cuenta de a quién estabas creyendo.',
+        authorEmotion: 'discomfort',
+      },
+      {
+        tmdbId: 496243,
+        noteBefore:
+          'Empieza como una comedia y cambia de piel varias veces. No leas nada sobre ella.',
+        noteAfter:
+          'Esa mezcla de risa y angustia es lo que la hace tan incómoda y tan buena.',
+        authorEmotion: 'tension',
+      },
+      {
+        tmdbId: 146233,
+        noteBefore:
+          'Es dura y es larga. No la veas si hoy necesitas algo ligero.',
+        noteAfter:
+          'La última escena te deja en suspenso a propósito. Aún pienso en ella.',
+        authorEmotion: 'fear',
+      },
+    ],
+  },
+  {
+    title: 'Fantasía para volver a asombrarse',
+    description:
+      'Mundos inventados que hablan de cosas muy reales. Cuatro películas para mirar con ojos de niño.',
+    films: [
+      {
+        tmdbId: 1417,
+        noteBefore:
+          'Un cuento oscuro, no un cuento para niños. Mejor ver ya de noche.',
+        noteAfter:
+          'Me quedé con la duda de qué era real y qué se inventaba ella, y creo que da igual.',
+        authorEmotion: 'awe',
+      },
+      {
+        tmdbId: 2493,
+        noteBefore:
+          'Una historia dentro de otra historia, contada con mucho humor. Ríete sin miedo.',
+        noteAfter:
+          'Es a la vez una aventura de verdad y una burla de las aventuras. Lo logra sin esfuerzo.',
+        authorEmotion: 'joy',
+      },
+      {
+        tmdbId: 587,
+        noteBefore:
+          'Un padre que cuenta historias imposibles y un hijo que quiere saber cuáles son ciertas.',
+        noteAfter:
+          'Entendí por qué contamos cuentos: para que alguien nos recuerde como queremos ser recordados.',
+        authorEmotion: 'tenderness',
+      },
+      {
+        tmdbId: 87827,
+        noteBefore:
+          'Visualmente es una fiesta. Mira la pantalla más grande que tengas.',
+        noteAfter:
+          'Me dejó pensando en qué versión de una historia prefiero creer. Y por qué.',
+        authorEmotion: 'awe',
+      },
+    ],
+  },
+  {
+    title: 'Eighties afternoons',
+    description:
+      'Four films that feel like a Sunday afternoon in the eighties: friends, bikes and the odd bad decision.',
+    locale: 'en',
+    films: [
+      {
+        tmdbId: 105,
+        noteBefore:
+          'Pure fun, and surprisingly well put together. Pay attention to the small things early on.',
+        noteAfter:
+          'Everything that is set up in the first twenty minutes pays off. Nothing is wasted.',
+        authorEmotion: 'joy',
+      },
+      {
+        tmdbId: 2108,
+        noteBefore:
+          'Five teenagers, one room, one Saturday. It is mostly people talking.',
+        noteAfter:
+          'It is about how little we let each other see. I did not expect that to hit me.',
+        authorEmotion: 'tenderness',
+      },
+      {
+        tmdbId: 9377,
+        noteBefore: 'Light, quick and a bit cheeky. Do not overthink it.',
+        noteAfter:
+          'Behind the jokes it is really about a friend who is afraid of growing up.',
+        authorEmotion: 'joy',
+      },
+      {
+        tmdbId: 235,
+        noteBefore:
+          'A walk along some railway tracks. Quiet, and better if you have time afterwards.',
+        noteAfter:
+          'The last line stays with you: friends like those do not come back.',
+        authorEmotion: 'sadness',
+      },
+    ],
+  },
 ];
 
 async function call<T>(
@@ -227,33 +428,44 @@ async function main() {
     const created = await call<{ route: { id: string } }>('/routes', {
       method: 'POST',
       token,
-      body: { title: demo.title, description: demo.description, locale: 'es' },
+      body: {
+        title: demo.title,
+        description: demo.description,
+        locale: demo.locale ?? 'es',
+      },
     });
     if (created.status !== 201) {
       throw new Error(`No se pudo crear "${demo.title}" (${created.status})`);
     }
     const routeId = created.json.route.id;
-    for (const film of demo.films) {
-      const step = await call(`/routes/${routeId}/steps`, {
-        method: 'POST',
+    try {
+      for (const film of demo.films) {
+        const step = await call(`/routes/${routeId}/steps`, {
+          method: 'POST',
+          token,
+          body: film,
+        });
+        if (step.status !== 201 && step.status !== 200) {
+          throw new Error(
+            `No se pudo añadir la película ${film.tmdbId} a "${demo.title}" (${step.status}): ${JSON.stringify(step.json)}`,
+          );
+        }
+      }
+      const published = await call(`/routes/${routeId}`, {
+        method: 'PATCH',
         token,
-        body: film,
+        body: { visibility: 'public' },
       });
-      if (step.status !== 201 && step.status !== 200) {
+      if (published.status !== 200) {
         throw new Error(
-          `No se pudo añadir la película ${film.tmdbId} a "${demo.title}" (${step.status}): ${JSON.stringify(step.json)}`,
+          `No se pudo publicar "${demo.title}" (${published.status})`,
         );
       }
-    }
-    const published = await call(`/routes/${routeId}`, {
-      method: 'PATCH',
-      token,
-      body: { visibility: 'public' },
-    });
-    if (published.status !== 200) {
-      throw new Error(
-        `No se pudo publicar "${demo.title}" (${published.status})`,
-      );
+    } catch (error) {
+      // A half-built route would be skipped next time (it has the same title):
+      // remove it so running the script again starts it from scratch.
+      await call(`/routes/${routeId}`, { method: 'DELETE', token });
+      throw error;
     }
     console.log(`Creada y publicada: ${demo.title}`);
   }
