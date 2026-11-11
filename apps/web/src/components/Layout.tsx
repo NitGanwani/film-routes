@@ -1,7 +1,9 @@
-import { useEffect } from 'react';
+import type Lenis from 'lenis';
+import { useEffect, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { setLanguage } from '../i18n/index.js';
+import { useSmoothScroll } from '../motion/useSmoothScroll.js';
 import { useSession } from '../session/SessionProvider.js';
 import { Avatar } from './Avatar.js';
 import { IconSprite } from './Icon.js';
@@ -12,11 +14,12 @@ export function Layout() {
   const { t, i18n } = useTranslation();
   const session = useSession();
   const signedIn = session.status === 'authenticated';
+  const lenis = useSmoothScroll();
 
   return (
     <div className="site">
       <IconSprite />
-      <ScrollToTop />
+      <ScrollToTop lenis={lenis} />
       <header className="topnav">
         <Link className="brand" to="/">
           {t('app.name')}
@@ -85,10 +88,12 @@ export function Layout() {
 }
 
 /** A new page starts at the top, as with a normal link (the router keeps the old scroll). */
-function ScrollToTop() {
+function ScrollToTop({ lenis }: { lenis: RefObject<Lenis | null> }) {
   const { pathname } = useLocation();
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    // Lenis keeps its own target position: tell it, or it would glide back.
+    if (lenis.current) lenis.current.scrollTo(0, { immediate: true });
+    else window.scrollTo(0, 0);
+  }, [pathname, lenis]);
   return null;
 }

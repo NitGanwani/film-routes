@@ -12,7 +12,8 @@ import {
   mosaicRows,
   stripPosters,
 } from '../landing/model.js';
-import { gsap, prefersReducedMotion } from '../motion/gsap.js';
+import { gsap } from '../motion/gsap.js';
+import { prefersReducedMotion } from '../motion/reducedMotion.js';
 
 /** The four steps of "how it works": each with one icon of the sprite. */
 const STEPS = [
