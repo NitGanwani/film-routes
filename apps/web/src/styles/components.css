@@ -1292,21 +1292,41 @@ span.skel.route-step-n {
 }
 
 /* ---------- Close-a-film sheet (a native <dialog>) ---------- */
+/* The dialog is a transparent layer over the whole screen. Inside it, an overlay
+   (the dim, which can fade) and a panel (the sheet itself, which can slide). */
 dialog.sheet {
   border: 0;
   padding: 0;
-  background: var(--surface);
+  background: transparent;
   color: var(--text);
   width: 100%;
-  max-width: 100%;
-  max-height: 92dvh;
-  margin: auto 0 0;
-  border-radius: var(--r-lg) var(--r-lg) 0 0;
-  box-shadow: var(--shadow-sheet);
-  overflow: auto;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  overflow: hidden;
+}
+dialog.sheet[open] {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
 }
 dialog.sheet::backdrop {
+  background: transparent;
+}
+.sheet-overlay {
+  position: absolute;
+  inset: 0;
   background: var(--overlay);
+}
+.sheet-panel {
+  position: relative;
+  width: 100%;
+  max-height: 92dvh;
+  overflow: auto;
+  background: var(--surface);
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  box-shadow: var(--shadow-sheet);
 }
 .sheet form {
   display: grid;
@@ -1354,9 +1374,11 @@ dialog.sheet::backdrop {
   font-weight: 400;
 }
 @media (min-width: 720px) {
-  dialog.sheet {
+  dialog.sheet[open] {
+    align-items: center;
+  }
+  .sheet-panel {
     max-width: 480px;
-    margin: auto;
     border-radius: var(--r-lg);
   }
   .sheet .grab {

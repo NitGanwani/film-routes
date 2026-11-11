@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
 import { ApiError } from '../api/client.js';
@@ -20,6 +22,9 @@ import { CloseDialog } from '../journey/CloseDialog.js';
 import { compareEmotions, stepActions } from '../journey/model.js';
 
 type Closing = { stepId: string; seenBefore: boolean };
+
+/** The reveal of a closed film and the glide of the list: short, easing out. */
+const REVEAL_TRANSITION = { duration: 0.3, ease: [0.22, 1, 0.36, 1] } as const;
 
 /** One traveler's view of a route: the films, what has opened, what has not. */
 export function JourneyPage() {
@@ -258,21 +263,25 @@ export function JourneyPage() {
         </div>
       </div>
 
-      {closing && closingStep && (
-        <CloseDialog
-          step={closingStep}
-          total={enrollment.stepCount}
-          author={route.author}
-          initialSeenBefore={closing.seenBefore}
-          pending={close.isPending}
-          error={close.isError ? errorMessage(t, close.error) : null}
-          onSubmit={(body) => close.mutate({ stepId: closingStep.id, body })}
-          onCancel={() => {
-            close.reset();
-            setClosing(null);
-          }}
-        />
-      )}
+      {/* AnimatePresence keeps the sheet on screen while it slides away. */}
+      <AnimatePresence>
+        {closing && closingStep && (
+          <CloseDialog
+            key={closing.stepId}
+            step={closingStep}
+            total={enrollment.stepCount}
+            author={route.author}
+            initialSeenBefore={closing.seenBefore}
+            pending={close.isPending}
+            error={close.isError ? errorMessage(t, close.error) : null}
+            onSubmit={(body) => close.mutate({ stepId: closingStep.id, body })}
+            onCancel={() => {
+              close.reset();
+              setClosing(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -311,9 +320,24 @@ function StepItem({
       <span className="chip chip-state">{t('journey.statePending')}</span>
     );
   const hasButtons = actions.start || actions.closeWatched || actions.closeSeen;
+  // What a closed film reveals (the author's emotion and the note after) fades
+  // in and rises a little, but only when it is the person who just closed it:
+  // films that were already closed when the page opened are simply there.
+  const closedOnLoad = useRef(step.state === 'closed');
+  const reveal = closedOnLoad.current
+    ? {}
+    : {
+        initial: { opacity: 0, y: 8 },
+        animate: { opacity: 1, y: 0 },
+        transition: REVEAL_TRANSITION,
+      };
 
   return (
-    <li
+    // `layout`: when this film grows (its notes open) the ones below glide down
+    // instead of jumping.
+    <m.li
+      layout
+      transition={{ layout: REVEAL_TRANSITION }}
       className="step"
       data-state={step.state}
       data-next={step.recommendedNext}
@@ -345,15 +369,16 @@ function StepItem({
                 </div>
                 {step.authorEmotion && comparison && (
                   <>
-                    <span
+                    <m.span
                       className={`vs${comparison === 'same' ? ' same' : ''}`}
+                      {...reveal}
                     >
                       {t(`journey.${comparison}`)}
-                    </span>
-                    <div>
+                    </m.span>
+                    <m.div {...reveal}>
                       <span className="who">{author}</span>
                       <EmotionBadge emotion={step.authorEmotion} />
-                    </div>
+                    </m.div>
                   </>
                 )}
               </div>
@@ -380,12 +405,12 @@ function StepItem({
           )}
           {step.state === 'closed' ? (
             step.noteAfter && (
-              <p className="note-text">
+              <m.p className="note-text" {...reveal}>
                 <span className="note-label">
                   {t('journey.noteAfter', { author })}
                 </span>
                 <q>{step.noteAfter}</q>
-              </p>
+              </m.p>
             )
           ) : (
             <Locked text={t('journey.noteAfterLocked', { author })} />
@@ -437,6 +462,6 @@ function StepItem({
           </div>
         )}
       </div>
-    </li>
+    </m.li>
   );
 }

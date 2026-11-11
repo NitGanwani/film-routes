@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router';
 import { ApiError } from './api/client.js';
 import { App } from './App.js';
 import { initI18n } from './i18n/index.js';
+import { MotionRoot } from './motion/MotionRoot.js';
 import { SessionProvider } from './session/SessionProvider.js';
 import './styles/index.css';
 
@@ -28,9 +29,11 @@ void initI18n().then(() => {
     <StrictMode>
       <QueryClientProvider client={queryClient}>
         <SessionProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
+          <MotionRoot>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </MotionRoot>
         </SessionProvider>
       </QueryClientProvider>
     </StrictMode>,
