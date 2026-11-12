@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import type {
+  AuthorRouteDetail,
   AuthorRouteSummary,
   Journey,
   PublicRouteDetail,
@@ -40,6 +41,19 @@ export const myRoutesQuery = () => ({
 });
 
 export const useMyRoutes = () => useQuery(myRoutesQuery());
+
+/** One of my routes in full, for the editor. Another person's route answers 404. */
+export const myRouteQuery = (routeId: string) => ({
+  queryKey: ['my-route', routeId],
+  queryFn: () =>
+    api
+      .request<{ route: AuthorRouteDetail }>(`/routes/${routeId}`, {
+        auth: true,
+      })
+      .then((response) => response.route),
+});
+
+export const useMyRoute = (routeId: string) => useQuery(myRouteQuery(routeId));
 
 /**
  * The public routes in one order. `locale` null = every language. The key keeps

@@ -11,6 +11,7 @@ import {
 import { LoginPage, RegisterPage } from './pages/AuthPages.js';
 import { ExplorePage } from './pages/ExplorePage.js';
 import { JourneyPage } from './pages/JourneyPage.js';
+import { EditRoutePage } from './pages/EditRoutePage.js';
 import { JourneysPage } from './pages/JourneysPage.js';
 import { MyRoutesPage } from './pages/MyRoutesPage.js';
 import { NewRoutePage } from './pages/NewRoutePage.js';
@@ -74,6 +75,14 @@ export function App() {
           element={
             <RequireSession>
               <NewRoutePage />
+            </RequireSession>
+          }
+        />
+        <Route
+          path="my-routes/:routeId"
+          element={
+            <RequireSession>
+              <EditRoutePage />
             </RequireSession>
           }
         />

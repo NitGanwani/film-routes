@@ -49,6 +49,35 @@ export type AuthorRouteSummary = {
   updatedAt: string;
 };
 
+/** One film of the author's route, with the notes only the author (and travelers who reach it) read. */
+export type AuthorStep = {
+  id: string;
+  position: number;
+  noteBefore: string | null;
+  noteAfter: string | null;
+  authorEmotion: Emotion | null;
+  film: Film;
+};
+
+/** One of the author's routes in full (`GET /routes/:id`). */
+export type AuthorRouteDetail = {
+  id: string;
+  title: string;
+  description: string | null;
+  locale: Locale;
+  visibility: RouteVisibility;
+  /** Someone has joined: the films can no longer be changed. */
+  locked: boolean;
+  moderation: {
+    hidden: boolean;
+    hiddenAt: string | null;
+    reason: string | null;
+  };
+  createdAt: string;
+  updatedAt: string;
+  steps: AuthorStep[];
+};
+
 export type PublicRoutesPage = {
   routes: PublicRouteSummary[];
   page: number;

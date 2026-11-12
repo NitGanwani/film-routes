@@ -139,8 +139,6 @@ export const en: Translations = {
   myRoutes: {
     title: 'My routes',
     create: 'Create a route',
-    newTitle: 'New route',
-    soon: 'Coming soon',
     empty: {
       title: 'You have not made any route yet',
       body: 'Pick 3 to 10 films, leave a note on each one and share it with whoever you like.',
@@ -157,6 +155,38 @@ export const en: Translations = {
     incomplete_other: 'Incomplete · {{count}} films to go',
     films_one: 'film',
     films_other: 'films',
+  },
+  editor: {
+    heading: 'Edit route',
+    new: { title: 'New route' },
+    fields: {
+      title: 'Title',
+      titlePlaceholder: 'Give your route a title',
+      description: 'Description',
+      descriptionPlaceholder: 'Who this route is for and what ties it together',
+      locale: 'Writing language',
+    },
+    localeHint: 'Notes will call the films by their title in this language.',
+    localeFixed:
+      'The language is chosen when the route is created and cannot be changed later.',
+    create: 'Create the route',
+    creating: 'Creating…',
+    saved: 'Saved',
+    saving: 'Saving…',
+    saveFailed: 'Could not save',
+    retry: 'Retry',
+    counter: '{{count}} of {{max}}',
+    errors: {
+      required: 'Write a title for the route.',
+      tooLong: 'Too long: {{max}} characters at most.',
+    },
+    hidden: {
+      title: 'Taken down by a moderator',
+      reason: 'Reason: {{reason}}',
+      body: 'You can keep editing the texts, but this route cannot be published again.',
+    },
+    films: { title: 'Films', count: '{{count}} of {{max}}' },
+    notFound: 'This route does not exist or is not yours',
   },
   journey: {
     by: 'A route by {{author}} for you',

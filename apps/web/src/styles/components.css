@@ -1607,6 +1607,169 @@ dialog.sheet::backdrop {
   text-decoration: none;
 }
 
+/* ---------- Route editor ---------- */
+/* One centred column of about 720 px (the next phase adds a side column). */
+.editor {
+  max-width: 720px;
+  margin: 0 auto;
+  display: grid;
+  gap: var(--sp-5);
+}
+.editor-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.editor-top .back-link {
+  margin: 0;
+}
+/* Is it safe? Always there, so the page does not jump when it changes. */
+.save-status {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+.save-status-text {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  animation: fade-in 120ms ease-out;
+}
+.save-status[data-state='failed'] {
+  color: var(--danger);
+}
+.save-status button {
+  min-height: var(--tap);
+  padding: 0 var(--sp-2);
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+/* The title looks like a title and is edited where it stands. */
+.title-input {
+  min-height: var(--tap);
+  padding: var(--sp-2) var(--sp-3);
+  margin: 0 calc(-1 * var(--sp-3));
+  width: calc(100% + 2 * var(--sp-3));
+  border: 1.5px solid transparent;
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' var(--font-display-opsz);
+  font-size: var(--fs-2xl);
+  font-weight: 600;
+  line-height: var(--lh-tight);
+  display: block;
+  resize: none;
+  overflow: hidden;
+}
+.editor-new-title {
+  margin-bottom: var(--sp-5);
+}
+.title-input::placeholder {
+  color: var(--text-muted);
+}
+.title-input:hover {
+  border-color: var(--border);
+}
+.title-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 20%, transparent);
+}
+.field.invalid .title-input {
+  border-color: var(--danger);
+}
+@media (min-width: 720px) {
+  .title-input {
+    font-size: var(--fs-3xl);
+  }
+}
+.input.autosize {
+  min-height: var(--tap);
+  resize: none;
+  overflow: hidden;
+}
+/* Under a field: the problem on the left, the counter on the right. */
+.field-feedback {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  font-size: var(--fs-xs);
+}
+.field-feedback .form-error {
+  font-size: var(--fs-sm);
+}
+.field-feedback .count {
+  margin-left: auto;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+.field-feedback .count[data-level='full'] {
+  color: var(--warning);
+  font-weight: 600;
+}
+.field-feedback .count[data-level='over'] {
+  color: var(--danger);
+  font-weight: 600;
+}
+.field-label {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+}
+fieldset.field {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+fieldset.field legend {
+  padding: 0;
+  margin-bottom: var(--sp-1);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+}
+.locale-fixed {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+}
+/* A taken-down route, at the top of its editor: more than one line to say. */
+.editor-notice {
+  align-items: flex-start;
+}
+.editor-notice p {
+  margin: var(--sp-1) 0 0;
+  font-weight: 400;
+}
+.editor-films {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding-top: var(--sp-5);
+  border-top: 1px solid var(--border);
+}
+.editor-films h2 {
+  font-size: var(--fs-xl);
+}
+.editor-films-count {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
 /* ---------- Loading, empty and error states ---------- */
 .skel {
   background: linear-gradient(

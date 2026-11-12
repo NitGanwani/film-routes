@@ -138,8 +138,6 @@ export const es = {
   myRoutes: {
     title: 'Mis rutas',
     create: 'Crear una ruta',
-    newTitle: 'Nueva ruta',
-    soon: 'Próximamente',
     empty: {
       title: 'Todavía no has hecho ninguna ruta',
       body: 'Elige entre 3 y 10 películas, deja una nota en cada una y compártela con quien quieras.',
@@ -156,6 +154,39 @@ export const es = {
     incomplete_other: 'Incompleta · faltan {{count}}',
     films_one: 'película',
     films_other: 'películas',
+  },
+  editor: {
+    heading: 'Editar ruta',
+    new: { title: 'Nueva ruta' },
+    fields: {
+      title: 'Título',
+      titlePlaceholder: 'Ponle un título a tu ruta',
+      description: 'Descripción',
+      descriptionPlaceholder: 'Para quién es esta ruta y qué la une',
+      locale: 'Idioma de escritura',
+    },
+    localeHint:
+      'Las notas llamarán a las películas por su título en este idioma.',
+    localeFixed:
+      'El idioma se elige al crear la ruta y no se puede cambiar después.',
+    create: 'Crear la ruta',
+    creating: 'Creando…',
+    saved: 'Guardado',
+    saving: 'Guardando…',
+    saveFailed: 'No se pudo guardar',
+    retry: 'Reintentar',
+    counter: '{{count}} de {{max}}',
+    errors: {
+      required: 'Escribe un título para la ruta.',
+      tooLong: 'Es demasiado largo: máximo {{max}} caracteres.',
+    },
+    hidden: {
+      title: 'Retirada por moderación',
+      reason: 'Motivo: {{reason}}',
+      body: 'Puedes seguir editando los textos, pero esta ruta no se puede volver a publicar.',
+    },
+    films: { title: 'Películas', count: '{{count}} de {{max}}' },
+    notFound: 'Esta ruta no existe o no es tuya',
   },
   journey: {
     by: 'Una ruta de {{author}} para ti',
