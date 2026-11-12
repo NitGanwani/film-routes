@@ -2780,3 +2780,229 @@ fieldset.field legend {
   font-size: var(--fs-2xl);
   line-height: var(--lh-tight);
 }
+
+/* ---------- Share and danger (the end of the editor) ---------- */
+.editor-share,
+.editor-danger {
+  display: grid;
+  gap: var(--sp-4);
+  padding-top: var(--sp-5);
+  border-top: 1px solid var(--border);
+}
+.editor-share h2,
+.editor-danger h2 {
+  font-size: var(--fs-xl);
+}
+/* The danger zone is told apart by its own border, set well apart from the rest. */
+.editor-danger {
+  margin-top: var(--sp-6);
+  border-top-color: color-mix(in oklab, var(--danger) 45%, var(--border));
+}
+.editor-danger h2 {
+  color: var(--danger);
+}
+.share-requirements {
+  display: grid;
+  gap: var(--sp-2);
+}
+.share-requirements h3 {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.share-requirements ul {
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.share-requirements li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-md);
+}
+.share-requirements li svg {
+  flex: none;
+  color: var(--warning);
+}
+.share-requirements li[data-met='true'] svg {
+  color: var(--accent);
+}
+.share-sent {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+/* A button that reads as a link: it does something, it does not go anywhere. */
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: var(--fs-sm);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.link-button:disabled {
+  color: var(--text-muted);
+  cursor: default;
+}
+.share-options {
+  display: grid;
+  gap: var(--sp-3);
+}
+@media (min-width: 720px) {
+  .share-options {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.share-option {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    'icon name'
+    '. hint';
+  column-gap: var(--sp-3);
+  row-gap: var(--sp-1);
+  align-content: start;
+  padding: var(--sp-4);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease;
+}
+@media (min-width: 720px) {
+  .share-option {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'icon'
+      'name'
+      'hint';
+  }
+}
+.share-option svg {
+  grid-area: icon;
+  color: var(--text-muted);
+}
+.share-option-name {
+  grid-area: name;
+  font-weight: 600;
+}
+.share-option-hint {
+  grid-area: hint;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+.share-option[data-checked='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.share-option[data-checked='true'] svg {
+  color: var(--accent);
+}
+.share-option:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+/* Not available yet: still readable, still reachable, clearly not for now. */
+.share-option[data-unavailable='true'] {
+  border-style: dashed;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.share-missing {
+  margin: 0;
+  color: var(--warning);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+}
+.share-link {
+  display: grid;
+  gap: var(--sp-2);
+}
+.share-link label {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+}
+.share-link-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.share-link-row .input {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+.share-link-row .btn {
+  gap: var(--sp-2);
+}
+.share-invite-link {
+  justify-self: start;
+  color: var(--accent);
+  font-size: var(--fs-sm);
+  text-underline-offset: 3px;
+}
+.danger-locked {
+  display: grid;
+  gap: var(--sp-3);
+  justify-items: start;
+}
+.danger-locked p {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  color: var(--text-muted);
+}
+.editor-danger > .btn {
+  justify-self: start;
+}
+/* The confirmation dialog (it shares the sheet's layer, panel and overlay). */
+.confirm-panel form {
+  gap: var(--sp-4);
+}
+.confirm-title {
+  font-size: var(--fs-xl);
+}
+.confirm-body {
+  margin: 0;
+  color: var(--text-muted);
+}
+.confirm-expected {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 600;
+  color: var(--text);
+}
+.confirm-actions {
+  display: grid;
+  gap: var(--sp-2);
+}
+.btn[aria-disabled='true']:not(:disabled) {
+  opacity: 0.55;
+}
+/* The notice on My routes after a route was deleted. */
+.route-deleted {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  color: var(--text);
+}
+.route-deleted svg {
+  flex: none;
+  color: var(--accent);
+}

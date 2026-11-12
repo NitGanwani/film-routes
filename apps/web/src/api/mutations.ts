@@ -1,4 +1,4 @@
-import type { Locale } from '@film-routes/shared';
+import type { Locale, RouteVisibility } from '@film-routes/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
 import { useNavigate } from 'react-router';
@@ -44,6 +44,62 @@ export function useUpdateRoute(routeId: string) {
     },
     onSuccess: (route) => queryClient.setQueryData(key, route),
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['my-routes'] }),
+  });
+}
+
+/**
+ * Change who can see a route. The choice moves at once and goes back if the
+ * server says no (no confirmed email, too few films, hidden by a moderator).
+ * Only the visibility is touched, so a title being saved at the same moment is
+ * never painted over, neither by the change nor by its rollback.
+ */
+export function useChangeVisibility(routeId: string) {
+  const queryClient = useQueryClient();
+  const key = myRouteQuery(routeId).queryKey;
+  const setVisibility = (visibility: RouteVisibility) =>
+    queryClient.setQueryData<AuthorRouteDetail>(key, (route) =>
+      route ? { ...route, visibility } : route,
+    );
+  return useMutation({
+    mutationFn: (visibility: RouteVisibility) =>
+      api
+        .request<{ route: AuthorRouteDetail }>(`/routes/${routeId}`, {
+          method: 'PATCH',
+          auth: true,
+          body: { visibility },
+        })
+        .then((response) => response.route),
+    onMutate: async (visibility) => {
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<AuthorRouteDetail>(key);
+      setVisibility(visibility);
+      return { previous: previous?.visibility };
+    },
+    onError: (_error, _visibility, context) => {
+      if (context?.previous) setVisibility(context.previous);
+    },
+    onSuccess: (route) => setVisibility(route.visibility),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['my-routes'] }),
+  });
+}
+
+/**
+ * Delete a route for good. On success the list of my routes is asked again and
+ * the person goes back to it, with the title in the state so the list can say
+ * what was deleted. Nothing is removed before the server agrees.
+ */
+export function useDeleteRoute(routeId: string, title: string) {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  return useMutation({
+    mutationFn: () =>
+      api.request<void>(`/routes/${routeId}`, { method: 'DELETE', auth: true }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['my-routes'] });
+      void navigate('/my-routes', { replace: true, state: { deleted: title } });
+      // After leaving: the editor must not ask again for a route that is gone.
+      queryClient.removeQueries({ queryKey: myRouteQuery(routeId).queryKey });
+    },
   });
 }
 

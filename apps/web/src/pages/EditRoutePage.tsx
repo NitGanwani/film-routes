@@ -18,10 +18,12 @@ import { LanguageTag } from '../components/LanguageTag.js';
 import { SaveStatus } from '../components/SaveStatus.js';
 import { EmptyState, ErrorBox } from '../components/States.js';
 import { useMediaQuery } from '../components/useMediaQuery.js';
+import { DangerZone } from '../editor/DangerZone.js';
 import { FilmSearchPanel, FilmSearchSheet } from '../editor/FilmSearch.js';
 import { FilmsSection } from '../editor/FilmsSection.js';
 import { filmsState, isLockedRefusal, stepKey } from '../editor/films.js';
 import { combineSaveState, previewStep } from '../editor/notes.js';
+import { ShareSection } from '../editor/ShareSection.js';
 import { StepPreview } from '../editor/StepPreview.js';
 import { useStepNotes } from '../editor/useStepNotes.js';
 import { useSession } from '../session/SessionProvider.js';
@@ -264,6 +266,10 @@ function RouteEditor({ route }: { route: AuthorRouteDetail }) {
               setPreviewing(stepKey(step));
             }}
           />
+
+          {/* The last decision, and the one that cannot be undone, after everything else. */}
+          <ShareSection route={route} />
+          <DangerZone route={route} />
         </div>
 
         {wide && !route.locked && (

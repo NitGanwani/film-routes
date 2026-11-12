@@ -1,5 +1,6 @@
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { useMyRoutes } from '../api/queries.js';
 import type { AuthorRouteSummary } from '../api/types.js';
 import { errorMessage } from '../components/errorMessage.js';
@@ -13,11 +14,30 @@ import {
 } from '../components/States.js';
 import { missingFilms, VISIBILITY_ICON } from '../myRoutes/model.js';
 
+/**
+ * The title of the route that was just deleted, when the editor sent the person
+ * here. It is read once and taken out of the history, so a reload is clean.
+ */
+function useDeletedNotice(): string | null {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [deleted] = useState<string | null>(() => {
+    const state = location.state as { deleted?: unknown } | null;
+    return typeof state?.deleted === 'string' ? state.deleted : null;
+  });
+  useEffect(() => {
+    if (deleted !== null)
+      void navigate(location.pathname, { replace: true, state: null });
+  }, [deleted, location.pathname, navigate]);
+  return deleted;
+}
+
 /** The routes this person has written, and what state each one is in. */
 export function MyRoutesPage() {
   const { t } = useTranslation();
   const routes = useMyRoutes();
   const isEmpty = routes.data?.length === 0;
+  const deleted = useDeletedNotice();
 
   return (
     <div className="page">
@@ -30,6 +50,13 @@ export function MyRoutesPage() {
           </Link>
         )}
       </div>
+
+      {deleted && (
+        <p className="route-deleted" role="status">
+          <Icon name="check" size={16} />
+          {t('danger.deleted')}: {deleted}
+        </p>
+      )}
 
       {routes.isPending && <RouteListSkeleton />}
       {routes.isError && (
