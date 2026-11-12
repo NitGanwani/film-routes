@@ -30,7 +30,10 @@ export type IconName =
   | 'search'
   | 'plus'
   | 'arrow-up'
-  | 'arrow-down';
+  | 'arrow-down'
+  | 'chevron'
+  | 'eye'
+  | 'pending';
 
 export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   return (
@@ -247,6 +250,35 @@ export function IconSprite() {
         strokeLinejoin="round"
       >
         <path d="M12 5v14M6 13l6 6 6-6" />
+      </symbol>
+      {/* Notes of a film: a chevron to open it, a dashed circle for what is still to do. */}
+      {/* An open eye: what the traveler reads before the film. */}
+      <symbol
+        id="i-eye"
+        viewBox="0 0 24 24"
+        {...line}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z" />
+        <circle cx="12" cy="12" r="2.5" />
+      </symbol>
+      <symbol
+        id="i-chevron"
+        viewBox="0 0 24 24"
+        {...line}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M6 9l6 6 6-6" />
+      </symbol>
+      <symbol
+        id="i-pending"
+        viewBox="0 0 24 24"
+        {...line}
+        strokeLinecap="round"
+      >
+        <circle cx="12" cy="12" r="8" strokeDasharray="3.2 3.9" />
       </symbol>
     </svg>
   );

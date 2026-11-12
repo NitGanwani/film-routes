@@ -219,6 +219,37 @@ export const en: Translations = {
         limit: 'You already have {{max}}, the maximum',
       },
     },
+    notes: {
+      before: {
+        title: 'Before watching',
+        label: 'They read it right before watching the film',
+        hint: 'No spoilers',
+        placeholder: 'What to look for, what mood to go in with…',
+      },
+      after: {
+        title: 'After watching',
+        label: 'Opens when they close the film',
+        hint: 'Here you can talk about the ending',
+        placeholder: 'What the ending left you with, what to talk about after…',
+      },
+      preview: 'How the traveler will see it',
+      previewHeading: 'How the traveler will see it',
+      status: {
+        before: 'Before',
+        after: 'After',
+        done: 'done',
+        pending: 'to do',
+        noEmotion: 'No emotion',
+      },
+      summary: 'Notes: {{done}} of {{total}} complete',
+      summaryHint:
+        'A film is complete with its note before and your emotion; the note after is recommended. None of this stops you from sharing the route: it only needs between {{min}} and {{max}} films and your confirmed email.',
+    },
+    emotion: {
+      title: 'What I felt',
+      hint: 'The traveler sees it only after choosing theirs',
+      unknown: 'I do not know yet',
+    },
     locked: {
       title: 'Travelers have already joined this route',
       body: 'You can keep editing the notes, but not the list of films or their order.',

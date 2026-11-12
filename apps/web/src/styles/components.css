@@ -1825,7 +1825,7 @@ fieldset.field legend {
   opacity: 0;
   border-color: transparent;
 }
-.film-row.is-collapsing .film-row-inner {
+.film-row.is-collapsing .film-row-content {
   overflow: hidden;
 }
 /* A film just added fades in. */
@@ -2073,6 +2073,246 @@ fieldset.field legend {
   }
   .film-sheet .film-search {
     padding: 0 var(--sp-6) var(--sp-5);
+  }
+}
+
+/* ---------- Notes and emotion of a film (the row opens) ---------- */
+.film-row-content {
+  min-height: 0;
+}
+.film-row-text {
+  flex: 1;
+  min-width: 0;
+}
+.film-title {
+  font-size: var(--fs-lg);
+}
+/* The title is the button that opens the notes. */
+.film-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  width: 100%;
+  min-height: var(--tap);
+  padding: var(--sp-1) 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.film-toggle-text {
+  flex: 1;
+  min-width: 0;
+}
+.film-toggle svg {
+  flex: none;
+  margin-top: var(--sp-1);
+  color: var(--text-muted);
+  transition: transform 200ms ease;
+}
+.film-toggle:hover svg {
+  color: var(--text);
+}
+.film-toggle[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+/* What is written already: icon AND words, never colour alone. */
+.film-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+  margin-top: var(--sp-1);
+}
+.note-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 2px var(--sp-2);
+  border: 1px dashed var(--border);
+  border-radius: var(--r-pill);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+.note-pill[data-done='true'] {
+  border-style: solid;
+  border-color: color-mix(in oklab, var(--accent) 55%, transparent);
+  color: var(--text);
+}
+.note-pill[data-done='true'] svg {
+  color: var(--accent);
+}
+.film-status-none {
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+/* On a phone the title leaves its line to the buttons; the indicators take the next. */
+@media (max-width: 719.98px) {
+  .film-row-text {
+    display: contents;
+  }
+  .film-title {
+    flex: 1;
+    min-width: 0;
+  }
+  .film-actions,
+  .film-confirm {
+    order: 2;
+  }
+  .film-status {
+    order: 3;
+    flex-basis: 100%;
+  }
+}
+/* It unfolds in 200 ms (and just opens with reduced motion: see base.css). */
+.film-editor {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 200ms ease;
+}
+.film-editor[data-open='true'] {
+  grid-template-rows: 1fr;
+}
+/* The padding leaves room for focus rings; the negative margin gives it back. */
+.film-editor-inner {
+  min-height: 0;
+  margin: -6px;
+  padding: 6px;
+  overflow: hidden;
+}
+.step-editor {
+  display: grid;
+  gap: var(--sp-4);
+  padding: var(--sp-2) 0 var(--sp-4);
+}
+.note-cards {
+  display: grid;
+  gap: var(--sp-3);
+}
+@media (min-width: 720px) {
+  .note-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+.note-card {
+  display: grid;
+  gap: var(--sp-2);
+  min-width: 0;
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+}
+/* "Before" is a plain card; "after" keeps the dashed border of locked content. */
+.note-card:not(.locked) {
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.note-card.locked {
+  display: grid;
+  align-items: start;
+  color: var(--text);
+  font-size: var(--fs-md);
+}
+.note-card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.note-card-head svg {
+  flex: none;
+  color: var(--accent);
+}
+.note-card.locked .note-card-head svg {
+  color: var(--text-muted);
+}
+.note-card-head h4 {
+  font-size: var(--fs-md);
+}
+.note-card-label {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+.note-card-hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+.note-card .field {
+  margin-top: var(--sp-1);
+}
+.step-emotion {
+  display: grid;
+  gap: var(--sp-2);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.step-emotion legend {
+  padding: 0;
+  margin-bottom: var(--sp-1);
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+.step-emotion .hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+/* "I do not know yet": the same radio group, on a row of its own. */
+.emo-none {
+  --c: var(--text-muted);
+  grid-column: 1 / -1;
+  flex-direction: row;
+  justify-content: center;
+  gap: var(--sp-2);
+  min-height: var(--tap);
+  padding: var(--sp-2) var(--sp-4);
+}
+.emo-opt.emo-none svg {
+  width: 20px;
+  height: 20px;
+}
+.step-preview-btn {
+  justify-self: start;
+}
+/* The summary above the list: how many films have their notes. */
+.films-notes-summary {
+  display: grid;
+  gap: var(--sp-1);
+}
+.films-notes-count {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-weight: 600;
+}
+.films-notes-count[data-complete='true'] {
+  color: var(--success);
+}
+.films-notes-summary .hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+/* The preview sheet: the journey's own row, inside the usual sheet. */
+.step-preview {
+  max-height: 92dvh;
+  overflow: auto;
+}
+.step-preview-list {
+  padding: var(--sp-2) var(--sp-4) var(--sp-6);
+}
+@media (min-width: 720px) {
+  .step-preview-list {
+    padding: var(--sp-2) var(--sp-6) var(--sp-6);
   }
 }
 

@@ -19,11 +19,17 @@ import { CSS } from '@dnd-kit/utilities';
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { AuthorStep } from '../api/types.js';
+import { EmotionBadge } from '../components/EmotionBadge.js';
 import { Icon } from '../components/Icon.js';
 import { Poster } from '../components/Poster.js';
 import { useMediaQuery } from '../components/useMediaQuery.js';
 import { filmTitle, originalTitleNote } from '../films/titles.js';
 import { isPendingStep, moveItem, stepKey } from './films.js';
+import { contentOf } from './notes.js';
+import { StepEditor } from './StepEditor.js';
+import type { useStepNotes } from './useStepNotes.js';
+
+type Notes = ReturnType<typeof useStepNotes>;
 
 /** How long "Remove? Yes / No" waits before it takes itself back. */
 export const CONFIRM_MS = 5000;
@@ -46,28 +52,137 @@ type Props = {
   onRemove: (step: AuthorStep) => void;
   /** Says something to people who cannot see the list (a polite live region). */
   announce: (message: string) => void;
+  /** The notes and emotion of every film, and how they are saved. */
+  notes: Notes;
+  onPreview: (step: AuthorStep, trigger: HTMLButtonElement) => void;
 };
 
-/** What a row shows: its number, poster and title. The same in every state. */
-function FilmSummary({ step }: { step: AuthorStep }) {
-  const { i18n } = useTranslation();
+/** The ids that tie a row's button to what it opens. */
+function useRowIds() {
+  const uid = useId();
+  return { toggleId: `${uid}-toggle`, panelId: `${uid}-panel` };
+}
+
+type RowShared = {
+  step: AuthorStep;
+  notes: Notes;
+  open: boolean;
+  onToggle: () => void;
+  toggleId: string;
+  panelId: string;
+};
+
+/** A small indicator: an icon AND words, so it never rests on colour alone. */
+function StatusPill({ label, done }: { label: string; done: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <span className="note-pill" data-done={done}>
+      <Icon name={done ? 'check' : 'pending'} size={14} />
+      {label} ·{' '}
+      {t(done ? 'editor.notes.status.done' : 'editor.notes.status.pending')}
+    </span>
+  );
+}
+
+/**
+ * What a row shows: its number, poster, the title (a button that opens the
+ * notes of the film) and, under it, what is written already. The same in every
+ * state of the list.
+ */
+function RowMain({
+  step,
+  notes,
+  open,
+  onToggle,
+  toggleId,
+  panelId,
+}: RowShared) {
+  const { t, i18n } = useTranslation();
   const shown = filmTitle(step.film, i18n.language);
   const original = originalTitleNote(step.film, shown);
+  const content = contentOf(step, notes.draft(step));
   return (
     <>
       <span className="route-step-n">{step.position}</span>
       <Poster url={step.film.posterUrl} />
-      <h3 className="route-film-text">
-        {shown}
-        {step.film.releaseYear !== null && (
-          <>
-            {' '}
-            <span className="year">{step.film.releaseYear}</span>
-          </>
-        )}
-        {original && <span className="orig">{original}</span>}
-      </h3>
+      <div className="film-row-text">
+        <h3 className="film-title">
+          <button
+            type="button"
+            id={toggleId}
+            className="film-toggle"
+            aria-expanded={open}
+            aria-controls={panelId}
+            onClick={onToggle}
+          >
+            <span className="film-toggle-text">
+              {shown}
+              {step.film.releaseYear !== null && (
+                <>
+                  {' '}
+                  <span className="year">{step.film.releaseYear}</span>
+                </>
+              )}
+              {original && <span className="orig">{original}</span>}
+            </span>
+            <Icon name="chevron" size={18} />
+          </button>
+        </h3>
+        <div className="film-status">
+          <StatusPill
+            label={t('editor.notes.status.before')}
+            done={content.hasBefore}
+          />
+          <StatusPill
+            label={t('editor.notes.status.after')}
+            done={content.hasAfter}
+          />
+          {content.emotion ? (
+            <EmotionBadge emotion={content.emotion} />
+          ) : (
+            <span className="film-status-none">
+              {t('editor.notes.status.noEmotion')}
+            </span>
+          )}
+        </div>
+      </div>
     </>
+  );
+}
+
+/** What opens under a row: the notes and the emotion. It unfolds in 200 ms. */
+function RowPanel({
+  step,
+  notes,
+  open,
+  toggleId,
+  panelId,
+  onPreview,
+}: Omit<RowShared, 'onToggle'> & {
+  onPreview: (step: AuthorStep, trigger: HTMLButtonElement) => void;
+}) {
+  // Built the first time it opens, and kept so it can fold away again.
+  const [built, setBuilt] = useState(open);
+  if (open && !built) setBuilt(true);
+  return (
+    <div
+      className="film-editor"
+      data-open={open}
+      id={panelId}
+      role="group"
+      aria-labelledby={toggleId}
+    >
+      {/* Shut: out of the tab order and of the reading order, not only out of sight. */}
+      <div className="film-editor-inner" inert={!open}>
+        {built && (
+          <StepEditor
+            step={step}
+            notes={notes}
+            onPreview={(trigger) => onPreview(step, trigger)}
+          />
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -83,12 +198,18 @@ export function FilmList({
   onReorder,
   onRemove,
   announce,
+  notes,
+  onPreview,
 }: Props) {
   const { t, i18n } = useTranslation();
   const dndId = useId();
   const reduced = useMediaQuery('(prefers-reduced-motion: reduce)');
   const listRef = useRef<HTMLOListElement>(null);
   const [confirming, setConfirming] = useState<string | null>(null);
+  // Which films have their notes open. On a phone only one at a time (two
+  // editors would be a very long page); on a wider screen as many as wanted.
+  const roomy = useMediaQuery('(min-width: 720px)');
+  const [openKeys, setOpenKeys] = useState<string[]>([]);
   // After a move with the buttons, the one that was used gets the focus back.
   const refocus = useRef<{ key: string; direction: -1 | 1 } | null>(null);
 
@@ -121,6 +242,24 @@ export function FilmList({
   useEffect(() => {
     if (confirming !== null && !keys.includes(confirming)) setConfirming(null);
   }, [confirming, keys]);
+
+  // A film that goes away takes its open notes with it.
+  useEffect(() => {
+    setOpenKeys((current) =>
+      current.every((key) => keys.includes(key))
+        ? current
+        : current.filter((key) => keys.includes(key)),
+    );
+  }, [keys]);
+
+  const toggle = (key: string) =>
+    setOpenKeys((current) =>
+      current.includes(key)
+        ? current.filter((item) => item !== key)
+        : roomy
+          ? [...current, key]
+          : [key],
+    );
 
   // Moving a row in the DOM can drop the focus: put it back where it was.
   useLayoutEffect(() => {
@@ -199,11 +338,14 @@ export function FilmList({
     return (
       <ol className="route-films film-list">
         {steps.map((step) => (
-          <li key={stepKey(step)} className="route-film film-row">
-            <div className="film-row-inner">
-              <FilmSummary step={step} />
-            </div>
-          </li>
+          <StaticRow
+            key={stepKey(step)}
+            step={step}
+            notes={notes}
+            open={openKeys.includes(stepKey(step))}
+            onToggle={() => toggle(stepKey(step))}
+            onPreview={onPreview}
+          />
         ))}
       </ol>
     );
@@ -231,6 +373,10 @@ export function FilmList({
               total={steps.length}
               frozen={frozen}
               reduced={reduced}
+              notes={notes}
+              open={openKeys.includes(stepKey(step))}
+              onToggle={() => toggle(stepKey(step))}
+              onPreview={onPreview}
               confirming={confirming === stepKey(step)}
               onAskRemove={() => setConfirming(stepKey(step))}
               onCancelRemove={() => setConfirming(null)}
@@ -255,6 +401,10 @@ type RowProps = {
   total: number;
   frozen: boolean;
   reduced: boolean;
+  notes: Notes;
+  open: boolean;
+  onToggle: () => void;
+  onPreview: (step: AuthorStep, trigger: HTMLButtonElement) => void;
   confirming: boolean;
   onAskRemove: () => void;
   onCancelRemove: () => void;
@@ -268,6 +418,10 @@ function SortableRow({
   total,
   frozen,
   reduced,
+  notes,
+  open,
+  onToggle,
+  onPreview,
   confirming,
   onAskRemove,
   onCancelRemove,
@@ -277,6 +431,7 @@ function SortableRow({
   const { t, i18n } = useTranslation();
   const key = stepKey(step);
   const title = filmTitle(step.film, i18n.language);
+  const { toggleId, panelId } = useRowIds();
   const {
     attributes,
     listeners,
@@ -353,58 +508,112 @@ function SortableRow({
       className={classes}
       style={{ transform: CSS.Translate.toString(transform), transition }}
     >
-      <div className="film-row-inner">
-        <FilmSummary step={step} />
-        {confirming ? (
-          <div className="film-confirm" role="group" aria-label={title}>
-            <span>{t('editor.films.removeConfirm')}</span>
-            <button
-              type="button"
-              className="btn btn-danger btn-sm"
-              onClick={confirmRemove}
-            >
-              {t('editor.films.yes')}
-              <span className="visually-hidden"> {title}</span>
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              ref={noRef}
-              onClick={onCancelRemove}
-            >
-              {t('editor.films.no')}
-            </button>
-          </div>
-        ) : (
-          <div className="film-actions">
-            {/* Only for the keyboard: they appear while one of them has the focus. */}
-            <div className="film-moves" role="group" aria-label={title}>
-              {move(-1)}
-              {move(1)}
+      <div className="film-row-content">
+        <div className="film-row-inner">
+          <RowMain
+            step={step}
+            notes={notes}
+            open={open}
+            onToggle={onToggle}
+            toggleId={toggleId}
+            panelId={panelId}
+          />
+          {confirming ? (
+            <div className="film-confirm" role="group" aria-label={title}>
+              <span>{t('editor.films.removeConfirm')}</span>
+              <button
+                type="button"
+                className="btn btn-danger btn-sm"
+                onClick={confirmRemove}
+              >
+                {t('editor.films.yes')}
+                <span className="visually-hidden"> {title}</span>
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                ref={noRef}
+                onClick={onCancelRemove}
+              >
+                {t('editor.films.no')}
+              </button>
             </div>
-            <button
-              type="button"
-              className="film-icon-btn film-handle"
-              ref={setActivatorNodeRef}
-              disabled={frozen}
-              {...attributes}
-              {...listeners}
-              aria-label={t('editor.films.reorder', { title })}
-            >
-              <Icon name="grip" size={22} />
-            </button>
-            <button
-              type="button"
-              className="film-icon-btn"
-              ref={trashRef}
-              disabled={frozen}
-              aria-label={t('editor.films.remove', { title })}
-              onClick={onAskRemove}
-            >
-              <Icon name="trash" size={20} />
-            </button>
-          </div>
-        )}
+          ) : (
+            <div className="film-actions">
+              {/* Only for the keyboard: they appear while one of them has the focus. */}
+              <div className="film-moves" role="group" aria-label={title}>
+                {move(-1)}
+                {move(1)}
+              </div>
+              <button
+                type="button"
+                className="film-icon-btn film-handle"
+                ref={setActivatorNodeRef}
+                disabled={frozen}
+                {...attributes}
+                {...listeners}
+                aria-label={t('editor.films.reorder', { title })}
+              >
+                <Icon name="grip" size={22} />
+              </button>
+              <button
+                type="button"
+                className="film-icon-btn"
+                ref={trashRef}
+                disabled={frozen}
+                aria-label={t('editor.films.remove', { title })}
+                onClick={onAskRemove}
+              >
+                <Icon name="trash" size={20} />
+              </button>
+            </div>
+          )}
+        </div>
+        <RowPanel
+          step={step}
+          notes={notes}
+          open={open}
+          toggleId={toggleId}
+          panelId={panelId}
+          onPreview={onPreview}
+        />
+      </div>
+    </li>
+  );
+}
+
+/** A row of a locked route: no handle, no way to remove it; the notes still open. */
+function StaticRow({
+  step,
+  notes,
+  open,
+  onToggle,
+  onPreview,
+}: Omit<RowShared, 'toggleId' | 'panelId'> & {
+  onPreview: (step: AuthorStep, trigger: HTMLButtonElement) => void;
+}) {
+  const { toggleId, panelId } = useRowIds();
+  return (
+    <li className="route-film film-row">
+      <div className="film-row-content">
+        <div className="film-row-inner">
+          <RowMain
+            step={step}
+            notes={notes}
+            open={open}
+            onToggle={onToggle}
+            toggleId={toggleId}
+            panelId={panelId}
+          />
+        </div>
+        <RowPanel
+          step={step}
+          notes={notes}
+          open={open}
+          toggleId={toggleId}
+          panelId={panelId}
+          onPreview={onPreview}
+        />
       </div>
     </li>
   );

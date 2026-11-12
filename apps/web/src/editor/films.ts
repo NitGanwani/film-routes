@@ -1,4 +1,4 @@
-import { ROUTE_LIMITS, type Locale } from '@film-routes/shared';
+import { ROUTE_LIMITS, type Emotion, type Locale } from '@film-routes/shared';
 import type {
   AuthorRouteDetail,
   AuthorStep,
@@ -153,4 +153,24 @@ export function isLockedRefusal(error: unknown): boolean {
   if (typeof error !== 'object' || error === null) return false;
   const { status, code } = error as { status?: unknown; code?: unknown };
   return status === 423 || code === 'route_locked';
+}
+
+/** The route with the notes and/or emotion of one film changed (the saved ones, as the server will have them). */
+export function withStepUpdated(
+  route: AuthorRouteDetail,
+  change: {
+    stepId: string;
+    patch: {
+      noteBefore?: string | null;
+      noteAfter?: string | null;
+      authorEmotion?: Emotion | null;
+    };
+  },
+): AuthorRouteDetail {
+  return {
+    ...route,
+    steps: route.steps.map((step) =>
+      step.id === change.stepId ? { ...step, ...change.patch } : step,
+    ),
+  };
 }

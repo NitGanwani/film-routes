@@ -1,6 +1,6 @@
 import { ROUTE_LIMITS } from '@film-routes/shared';
 import { AnimatePresence } from 'motion/react';
-import { useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
 import { ApiError } from '../api/client.js';
@@ -20,7 +20,11 @@ import { EmptyState, ErrorBox } from '../components/States.js';
 import { useMediaQuery } from '../components/useMediaQuery.js';
 import { FilmSearchPanel, FilmSearchSheet } from '../editor/FilmSearch.js';
 import { FilmsSection } from '../editor/FilmsSection.js';
-import { filmsState, isLockedRefusal } from '../editor/films.js';
+import { filmsState, isLockedRefusal, stepKey } from '../editor/films.js';
+import { combineSaveState, previewStep } from '../editor/notes.js';
+import { StepPreview } from '../editor/StepPreview.js';
+import { useStepNotes } from '../editor/useStepNotes.js';
+import { useSession } from '../session/SessionProvider.js';
 import { filmTitle } from '../films/titles.js';
 import { descriptionProblem, titleProblem } from '../editor/model.js';
 import { useAutosize } from '../editor/useAutosize.js';
@@ -76,6 +80,21 @@ function RouteEditor({ route }: { route: AuthorRouteDetail }) {
   const { hidden, reason } = route.moderation;
 
   const films = useRouteFilms(route.id);
+  const notes = useStepNotes(route.id, films.update);
+  const { user } = useSession();
+  // The film whose preview is open (by TMDB id), and the button that opened it.
+  const [previewing, setPreviewing] = useState<string | null>(null);
+  const previewTrigger = useRef<HTMLButtonElement | null>(null);
+  const previewed = route.steps.find((step) => stepKey(step) === previewing);
+  // The title, the description and every film's notes share one indicator.
+  const saveState = combineSaveState(save.state, notes.state);
+  const retryAll = () => {
+    save.flush();
+    notes.flushAll();
+  };
+  // A film that is taken out must not be saved back from its draft.
+  const { forget } = notes;
+  useEffect(() => forget(route.steps), [forget, route.steps]);
   // Wide screens have the search beside the list; the rest open it as a sheet.
   const wide = useMediaQuery('(min-width: 1100px)');
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -151,7 +170,7 @@ function RouteEditor({ route }: { route: AuthorRouteDetail }) {
               <Icon name="back" size={18} />
               {t('myRoutes.title')}
             </Link>
-            <SaveStatus state={save.state} onRetry={save.flush} />
+            <SaveStatus state={saveState} onRetry={retryAll} />
           </div>
 
           <h1 className="visually-hidden">{t('editor.heading')}</h1>
@@ -239,6 +258,11 @@ function RouteEditor({ route }: { route: AuthorRouteDetail }) {
             error={listError}
             status={status}
             announce={setStatus}
+            notes={notes}
+            onPreview={(step, trigger) => {
+              previewTrigger.current = trigger;
+              setPreviewing(stepKey(step));
+            }}
           />
         </div>
 
@@ -262,6 +286,21 @@ function RouteEditor({ route }: { route: AuthorRouteDetail }) {
             onAdd={addFilm}
             error={addError}
             onClose={() => setSheetOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* The film as the traveler meets it: the journey's own row, fed with
+          what is written so far. The focus goes back to the button that opened it. */}
+      <AnimatePresence onExitComplete={() => previewTrigger.current?.focus()}>
+        {previewed && (
+          <StepPreview
+            key={stepKey(previewed)}
+            step={previewStep(previewed, {
+              noteBefore: notes.draft(previewed).noteBefore,
+            })}
+            author={user?.username ?? ''}
+            onClose={() => setPreviewing(null)}
           />
         )}
       </AnimatePresence>

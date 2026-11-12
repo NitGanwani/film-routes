@@ -6,6 +6,8 @@ import { Icon } from '../components/Icon.js';
 import { EmptyState } from '../components/States.js';
 import { FilmList } from './FilmList.js';
 import { filmsState } from './films.js';
+import { contentOf, notesProgress } from './notes.js';
+import type { useStepNotes } from './useStepNotes.js';
 
 type Props = {
   route: AuthorRouteDetail;
@@ -20,6 +22,9 @@ type Props = {
   /** The last thing that happened to the list, for people who cannot see it. */
   status: string;
   announce: (message: string) => void;
+  /** The notes and emotion of every film, and how they are saved. */
+  notes: ReturnType<typeof useStepNotes>;
+  onPreview: (step: AuthorStep, trigger: HTMLButtonElement) => void;
 };
 
 /**
@@ -37,11 +42,16 @@ export function FilmsSection({
   error,
   status,
   announce,
+  notes,
+  onPreview,
 }: Props) {
   const { t } = useTranslation();
   const headingId = useId();
   const { count, canAdd, missing } = filmsState(route.steps.length);
   const { locked } = route;
+  const progress = notesProgress(
+    route.steps.map((step) => contentOf(step, notes.draft(step))),
+  );
 
   return (
     <section className="editor-films" aria-labelledby={headingId}>
@@ -69,6 +79,27 @@ export function FilmsSection({
         )
       )}
 
+      {route.steps.length > 0 && (
+        <div className="films-notes-summary">
+          <p
+            className="films-notes-count"
+            data-complete={progress.done === progress.total}
+          >
+            <Icon
+              name={progress.done === progress.total ? 'check' : 'pending'}
+              size={16}
+            />
+            {t('editor.notes.summary', progress)}
+          </p>
+          <p className="hint">
+            {t('editor.notes.summaryHint', {
+              min: ROUTE_LIMITS.minSteps,
+              max: ROUTE_LIMITS.maxSteps,
+            })}
+          </p>
+        </div>
+      )}
+
       {route.steps.length === 0 ? (
         <EmptyState
           strip
@@ -83,6 +114,8 @@ export function FilmsSection({
             onReorder={onReorder}
             onRemove={onRemove}
             announce={announce}
+            notes={notes}
+            onPreview={onPreview}
           />
         </div>
       )}

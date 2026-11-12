@@ -1,9 +1,9 @@
-import { EMOTIONS, ROUTE_LIMITS } from '@film-routes/shared';
+import { ROUTE_LIMITS } from '@film-routes/shared';
 import * as m from 'motion/react-m';
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CloseStepBody, JourneyStep } from '../api/types.js';
-import { Icon } from '../components/Icon.js';
+import { EmotionPicker } from '../components/EmotionPicker.js';
 import { Poster } from '../components/Poster.js';
 import { filmTitle, originalTitleNote } from '../films/titles.js';
 import { closeBody, closeFormProblem, type CloseForm } from './model.js';
@@ -144,33 +144,16 @@ export function CloseDialog({
           </fieldset>
 
           <fieldset>
-            <legend>
+            <legend id={`${titleId}-emotion`}>
               {t('journey.closeForm.emotion')}{' '}
               <small>{t('journey.closeForm.emotionHint')}</small>
             </legend>
-            <div className="emo-grid">
-              {EMOTIONS.map((emotion) => (
-                // The chosen tile swells a little under the finger.
-                <m.label
-                  key={emotion}
-                  className="emo-opt emo"
-                  data-emo={emotion}
-                  whileTap={{ scale: 1.04 }}
-                  transition={{ duration: 0.12 }}
-                >
-                  <input
-                    className="visually-hidden"
-                    type="radio"
-                    name="emotion"
-                    value={emotion}
-                    checked={form.emotion === emotion}
-                    onChange={() => setForm({ ...form, emotion })}
-                  />
-                  <Icon name={emotion} size={26} />
-                  {t(`emotions.${emotion}`)}
-                </m.label>
-              ))}
-            </div>
+            <EmotionPicker
+              name="emotion"
+              value={form.emotion}
+              labelledBy={`${titleId}-emotion`}
+              onChange={(emotion) => setForm({ ...form, emotion })}
+            />
           </fieldset>
 
           <div

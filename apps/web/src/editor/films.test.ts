@@ -15,6 +15,7 @@ import {
   withStepAdded,
   withStepRemoved,
   withStepsOrdered,
+  withStepUpdated,
 } from './films.js';
 
 const result = (tmdbId: number): FilmSearchResult => ({
@@ -159,5 +160,42 @@ describe('isLockedRefusal', () => {
     ).toBe(false);
     expect(isLockedRefusal(new Error('x'))).toBe(false);
     expect(isLockedRefusal(null)).toBe(false);
+  });
+});
+
+describe('withStepUpdated', () => {
+  it('changes the notes and emotion of one film only', () => {
+    const next = withStepUpdated(route(1, 2), {
+      stepId: 'step-2',
+      patch: { noteBefore: 'Antes', authorEmotion: 'awe' },
+    });
+    expect(next.steps[1]).toMatchObject({
+      noteBefore: 'Antes',
+      authorEmotion: 'awe',
+      noteAfter: null,
+    });
+    expect(next.steps[0]?.noteBefore).toBeNull();
+  });
+
+  it('clears a field with null and leaves the rest of the route alone', () => {
+    const base = withStepUpdated(route(1), {
+      stepId: 'step-1',
+      patch: { noteAfter: 'Final' },
+    });
+    const cleared = withStepUpdated(base, {
+      stepId: 'step-1',
+      patch: { noteAfter: null },
+    });
+    expect(cleared.steps[0]?.noteAfter).toBeNull();
+    expect(cleared.title).toBe(base.title);
+  });
+
+  it('ignores an id that is not there', () => {
+    const before = route(1);
+    const next = withStepUpdated(before, {
+      stepId: 'nope',
+      patch: { noteBefore: 'x' },
+    });
+    expect(next.steps).toEqual(before.steps);
   });
 });

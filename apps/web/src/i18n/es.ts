@@ -219,6 +219,37 @@ export const es = {
         limit: 'Ya tienes {{max}}, el máximo',
       },
     },
+    notes: {
+      before: {
+        title: 'Antes de verla',
+        label: 'La leerá justo antes de ver la película',
+        hint: 'Sin spoilers',
+        placeholder: 'Qué mirar, con qué ánimo entrar…',
+      },
+      after: {
+        title: 'Después de verla',
+        label: 'Se abre cuando la cierre',
+        hint: 'Aquí sí puedes hablar del final',
+        placeholder: 'Qué te dejó el final, de qué hablar después…',
+      },
+      preview: 'Cómo lo verá el viajero',
+      previewHeading: 'Así la verá el viajero',
+      status: {
+        before: 'Antes',
+        after: 'Después',
+        done: 'hecho',
+        pending: 'pendiente',
+        noEmotion: 'Sin emoción',
+      },
+      summary: 'Notas: {{done}} de {{total}} completas',
+      summaryHint:
+        'Una película está completa con su nota de antes y tu emoción; la de después es recomendable. Nada de esto impide compartir la ruta: solo hacen falta entre {{min}} y {{max}} películas y tu correo confirmado.',
+    },
+    emotion: {
+      title: 'Lo que sentí yo',
+      hint: 'El viajero la verá solo después de elegir la suya',
+      unknown: 'Todavía no lo sé',
+    },
     locked: {
       title: 'Ya hay viajeros en esta ruta',
       body: 'Puedes seguir editando las notas, pero no la lista de películas ni su orden.',

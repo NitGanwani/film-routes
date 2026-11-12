@@ -1,13 +1,16 @@
 import type { Locale } from '@film-routes/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRef } from 'react';
 import { useNavigate } from 'react-router';
 import {
   isLockedRefusal,
   withStepAdded,
   withStepRemoved,
   withStepsOrdered,
+  withStepUpdated,
 } from '../editor/films.js';
 import { applyPatch, type RoutePatch } from '../editor/model.js';
+import type { StepPatch } from '../editor/notes.js';
 import { api } from './instance.js';
 import { myRouteQuery } from './queries.js';
 import type { AuthorRouteDetail, FilmSearchResult } from './types.js';
@@ -87,10 +90,17 @@ export function useRouteFilms(routeId: string) {
   const mutationKey = stepsKey(routeId);
 
   const alone = () => queryClient.isMutating({ mutationKey }) <= 1;
+  // A change that failed while others were in flight could not be undone on
+  // its own: the last one to land reads the route to put things right.
+  const unsettled = useRef(false);
 
   /** Shared by the three: show first, undo on error, settle at the end. */
   const callbacks = <V>(
     show: (route: AuthorRouteDetail, input: V) => AuthorRouteDetail,
+    // Reading the route again after a success is only worth it when the answer
+    // is not the whole route (every one of these answers with it): kept for a
+    // refusal, where it tells what the server really has.
+    options: { verify?: boolean } = { verify: true },
   ) => ({
     mutationKey,
     onMutate: async (input: V) => {
@@ -107,6 +117,8 @@ export function useRouteFilms(routeId: string) {
     ) => {
       if (context?.previous && alone()) {
         queryClient.setQueryData(key, context.previous);
+      } else {
+        unsettled.current = true;
       }
       if (isLockedRefusal(error)) {
         void queryClient.invalidateQueries({ queryKey: key });
@@ -115,9 +127,12 @@ export function useRouteFilms(routeId: string) {
     onSuccess: (route: AuthorRouteDetail) => {
       if (alone()) queryClient.setQueryData(key, route);
     },
-    onSettled: () => {
+    onSettled: (_route: unknown, error: unknown) => {
       void queryClient.invalidateQueries({ queryKey: ['my-routes'] });
-      if (alone()) void queryClient.invalidateQueries({ queryKey: key });
+      if (alone() && (error || options.verify || unsettled.current)) {
+        unsettled.current = false;
+        void queryClient.invalidateQueries({ queryKey: key });
+      }
     },
   });
 
@@ -155,5 +170,20 @@ export function useRouteFilms(routeId: string) {
     ...callbacks<string[]>(withStepsOrdered),
   });
 
-  return { add, remove, reorder };
+  // Notes and emotion: allowed even when travelers have joined, so no lock to
+  // react to. Saving text is frequent, so success does not read the route again.
+  const update = useMutation({
+    mutationFn: (change: { stepId: string; patch: StepPatch }) =>
+      api
+        .request<{ route: AuthorRouteDetail }>(
+          `/routes/${routeId}/steps/${change.stepId}`,
+          { method: 'PATCH', auth: true, body: change.patch },
+        )
+        .then((response) => response.route),
+    ...callbacks<{ stepId: string; patch: StepPatch }>(withStepUpdated, {
+      verify: false,
+    }),
+  });
+
+  return { add, remove, reorder, update };
 }
