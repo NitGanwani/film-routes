@@ -1,4 +1,9 @@
-import type { Emotion, EnrollmentStatus, Locale } from '@film-routes/shared';
+import type {
+  Emotion,
+  EnrollmentStatus,
+  Locale,
+  RouteVisibility,
+} from '@film-routes/shared';
 
 /** Mirrors what the API returns; kept by hand while it is this small. */
 export type User = {
@@ -26,6 +31,22 @@ export type PublicRouteSummary = {
   /** The first film's wide backdrop, the route's cover; null = none. */
   coverUrl: string | null;
   createdAt: string;
+};
+
+/** One of the signed-in author's own routes (`GET /routes`): no pictures, no stats. */
+export type AuthorRouteSummary = {
+  id: string;
+  title: string;
+  description: string | null;
+  locale: Locale;
+  visibility: RouteVisibility;
+  stepCount: number;
+  /** Someone has joined: the films can no longer be changed. */
+  locked: boolean;
+  /** A moderator took it down; the reason is only in the route itself. */
+  hidden: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type PublicRoutesPage = {

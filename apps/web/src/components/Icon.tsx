@@ -20,7 +20,11 @@ export type IconName =
   | 'flag'
   | 'link'
   | 'eye-off'
-  | 'film';
+  | 'film'
+  | 'compass'
+  | 'journey'
+  | 'pencil'
+  | 'globe';
 
 export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   return (
@@ -159,6 +163,41 @@ export function IconSprite() {
       >
         <rect x="3" y="4" width="18" height="16" rx="2" />
         <path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4" />
+      </symbol>
+      {/* Navigation: explore (a compass), my journeys (a winding path between
+          two points), my routes (a pencil: the ones I write) and a globe. */}
+      <symbol
+        id="i-compass"
+        viewBox="0 0 24 24"
+        {...line}
+        strokeLinejoin="round"
+      >
+        <circle cx="12" cy="12" r="9" />
+        <path d="M15.5 8.5l-2 5-5 2 2-5z" />
+      </symbol>
+      <symbol
+        id="i-journey"
+        viewBox="0 0 24 24"
+        {...line}
+        strokeLinecap="round"
+      >
+        <circle cx="6" cy="18" r="2" />
+        <circle cx="18" cy="6" r="2" />
+        <path d="M8 18h6a3 3 0 0 0 0-6h-4a3 3 0 0 1 0-6h6" />
+      </symbol>
+      <symbol
+        id="i-pencil"
+        viewBox="0 0 24 24"
+        {...line}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1z" />
+        <path d="M14.5 6.5l3 3" />
+      </symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24" {...line} strokeLinecap="round">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z" />
       </symbol>
     </svg>
   );

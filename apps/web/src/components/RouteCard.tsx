@@ -22,6 +22,7 @@ export function RouteCard({
   by,
   posters,
   cover = null,
+  placeholder,
   featured = false,
   transitionId = null,
   onIntent,
@@ -30,10 +31,13 @@ export function RouteCard({
 }: {
   to: string | null;
   title: string;
-  by: string;
+  /** The line under the title; a card with nothing to say there leaves it out. */
+  by?: string;
   posters: (string | null)[];
   /** The route's `coverUrl`; null when the first film has no backdrop. */
   cover?: string | null;
+  /** What fills the picture when there is no cover (decoration: the area is hidden from screen readers). */
+  placeholder?: ReactNode;
   /** The big card at the head of a list: wider, with a larger title, on wide screens. */
   featured?: boolean;
   /** The route's id: its first poster and its title travel to the page it opens. */
@@ -51,7 +55,13 @@ export function RouteCard({
       onFocus={onIntent}
     >
       <div
-        className={sources ? 'route-card-media has-cover' : 'route-card-media'}
+        className={
+          sources
+            ? 'route-card-media has-cover'
+            : placeholder
+              ? 'route-card-media is-blank'
+              : 'route-card-media'
+        }
         aria-hidden="true"
       >
         {sources && (
@@ -65,6 +75,7 @@ export function RouteCard({
             decoding="async"
           />
         )}
+        {!sources && placeholder}
         <PosterStrip
           posters={posters}
           transitionName={transitionId ? `poster-${transitionId}` : null}
@@ -78,7 +89,7 @@ export function RouteCard({
         >
           <h3>{to ? <Link to={to}>{title}</Link> : title}</h3>
         </Shared>
-        <p className="by">{by}</p>
+        {by && <p className="by">{by}</p>}
         {children}
       </div>
     </li>

@@ -12,6 +12,8 @@ import { LoginPage, RegisterPage } from './pages/AuthPages.js';
 import { ExplorePage } from './pages/ExplorePage.js';
 import { JourneyPage } from './pages/JourneyPage.js';
 import { JourneysPage } from './pages/JourneysPage.js';
+import { MyRoutesPage } from './pages/MyRoutesPage.js';
+import { NewRoutePage } from './pages/NewRoutePage.js';
 import { NotFoundPage } from './pages/NotFoundPage.js';
 import { RoutePage } from './pages/RoutePage.js';
 import { WelcomePage } from './pages/WelcomePage.js';
@@ -56,6 +58,22 @@ export function App() {
           element={
             <RequireSession>
               <JourneyPage />
+            </RequireSession>
+          }
+        />
+        <Route
+          path="my-routes"
+          element={
+            <RequireSession>
+              <MyRoutesPage />
+            </RequireSession>
+          }
+        />
+        <Route
+          path="my-routes/new"
+          element={
+            <RequireSession>
+              <NewRoutePage />
             </RequireSession>
           }
         />

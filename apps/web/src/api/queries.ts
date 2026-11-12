@@ -1,4 +1,10 @@
-import type { Journey, PublicRouteDetail, PublicRoutesPage } from './types.js';
+import { useQuery } from '@tanstack/react-query';
+import type {
+  AuthorRouteSummary,
+  Journey,
+  PublicRouteDetail,
+  PublicRoutesPage,
+} from './types.js';
 import { api } from './instance.js';
 
 /**
@@ -23,6 +29,17 @@ export const journeyQuery = (routeId: string) => ({
       })
       .then((response) => response.journey),
 });
+
+/** The routes the signed-in person has written, most recently changed first. */
+export const myRoutesQuery = () => ({
+  queryKey: ['my-routes'],
+  queryFn: () =>
+    api
+      .request<{ routes: AuthorRouteSummary[] }>('/routes', { auth: true })
+      .then((response) => response.routes),
+});
+
+export const useMyRoutes = () => useQuery(myRoutesQuery());
 
 /**
  * The public routes in one order. `locale` null = every language. The key keeps

@@ -103,6 +103,63 @@
   }
 }
 
+/* ---------- Bottom navigation: phones with a session ---------- */
+.bottom-nav {
+  display: none;
+}
+@media (max-width: 899.98px) {
+  .site.has-bottom-nav {
+    /* The bar's height, including the notch of the phone. Whatever sticks to the
+       bottom of the screen (see .sticky-cta) stays above it. */
+    --bottom-nav-h: calc(
+      var(--tap) + var(--sp-3) + env(safe-area-inset-bottom, 0px)
+    );
+    padding-bottom: var(--bottom-nav-h);
+  }
+  /* The top bar gives its links up to the bottom bar. */
+  .topnav nav.has-bottom-nav {
+    display: none;
+  }
+  .bottom-nav {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 5;
+    box-sizing: border-box;
+    display: flex;
+    gap: var(--sp-1);
+    height: var(--bottom-nav-h);
+    padding: var(--sp-1) var(--sp-2) env(safe-area-inset-bottom, 0px);
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+  .bottom-nav a {
+    flex: 1;
+    min-width: 0;
+    min-height: var(--tap);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border-radius: var(--r-md);
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: var(--fs-xs);
+    font-weight: 500;
+  }
+  .bottom-nav a span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* The page you are on: amber, and the icon and the word both say it. */
+  .bottom-nav a[aria-current] {
+    color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
+  }
+}
+
 .site-footer {
   padding: var(--sp-6) var(--sp-4);
   border-top: 1px solid var(--border);
@@ -502,6 +559,57 @@
 .route-card .progress {
   margin-top: auto;
   padding-top: var(--sp-2);
+}
+/* No picture (my own routes): an amber glow, like a route page without a
+   backdrop, with the number of films big in the middle. */
+.route-card-media.is-blank {
+  background:
+    radial-gradient(
+      120% 90% at 50% 115%,
+      color-mix(in oklab, var(--accent) 18%, transparent),
+      transparent 70%
+    ),
+    var(--surface-2);
+}
+.route-card-count {
+  display: grid;
+  justify-items: center;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+.route-card-count b {
+  font-family: var(--font-display);
+  font-size: var(--fs-4xl);
+  font-weight: 600;
+  line-height: var(--lh-tight);
+  color: var(--text);
+}
+/* A taken-down route: a strip in the warning tone, with its icon. */
+.route-notice {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+  border: 1px solid color-mix(in oklab, var(--warning) 40%, transparent);
+  background: color-mix(in oklab, var(--warning) 10%, var(--surface));
+  color: var(--warning);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.route-notice svg {
+  flex: none;
+}
+/* A list that appears after an action: a short fade, none with reduced motion
+   (the global rule for that turns every animation off). */
+.route-list.fade-in > .route-card {
+  animation: fade-in 150ms ease-out;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
 }
 /* Loading cards keep the footprint of the real ones. */
 .route-card .skel.route-card-media {
@@ -1033,7 +1141,8 @@ span.skel.route-step-n {
 /* Call to action pinned to the bottom of the screen on phones */
 .sticky-cta {
   position: sticky;
-  bottom: 0;
+  /* Above the bottom navigation bar, when there is one. */
+  bottom: var(--bottom-nav-h, 0px);
   margin: var(--sp-4) calc(-1 * var(--sp-4)) 0;
   padding: var(--sp-3) var(--sp-4) var(--sp-5);
   background: linear-gradient(to top, var(--bg) 70%, transparent);
@@ -1587,6 +1696,15 @@ dialog.sheet::backdrop {
 .page-head .note {
   margin-top: var(--sp-2);
 }
+/* The header's main button: the whole width under the title on phones. */
+.page-head .head-create {
+  width: 100%;
+}
+@media (min-width: 640px) {
+  .page-head .head-create {
+    width: auto;
+  }
+}
 
 .badge {
   display: inline-flex;
@@ -1604,6 +1722,14 @@ dialog.sheet::backdrop {
   color: var(--success);
   border-color: color-mix(in oklab, var(--success) 40%, transparent);
   background: color-mix(in oklab, var(--success) 10%, var(--surface));
+}
+.badge svg {
+  flex: none;
+}
+.badge-warn {
+  color: var(--warning);
+  border-color: color-mix(in oklab, var(--warning) 40%, transparent);
+  background: color-mix(in oklab, var(--warning) 8%, var(--surface));
 }
 .badge-hidden {
   color: var(--danger);

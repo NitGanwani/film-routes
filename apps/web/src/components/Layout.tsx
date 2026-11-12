@@ -6,7 +6,9 @@ import { setLanguage } from '../i18n/index.js';
 import { useSmoothScroll } from '../motion/useSmoothScroll.js';
 import { useSession } from '../session/SessionProvider.js';
 import { Avatar } from './Avatar.js';
+import { BottomNav } from './BottomNav.js';
 import { IconSprite } from './Icon.js';
+import { NAV_LINKS } from './navLinks.js';
 import { VerifyBanner } from './VerifyBanner.js';
 
 /** The shell: top navigation, the page, and the TMDB notice. */
@@ -17,16 +19,25 @@ export function Layout() {
   const lenis = useSmoothScroll();
 
   return (
-    <div className="site">
+    <div className={signedIn ? 'site has-bottom-nav' : 'site'}>
       <IconSprite />
       <ScrollToTop lenis={lenis} />
       <header className="topnav">
         <Link className="brand" to="/">
           {t('app.name')}
         </Link>
-        <nav aria-label={t('nav.main')}>
-          <NavLink to="/explore">{t('nav.explore')}</NavLink>
-          {signedIn && <NavLink to="/journeys">{t('nav.journeys')}</NavLink>}
+        {/* With a session, phones get the bottom bar instead (see BottomNav). */}
+        <nav
+          aria-label={t('nav.main')}
+          className={signedIn ? 'has-bottom-nav' : undefined}
+        >
+          {NAV_LINKS.filter((link) => signedIn || !link.needsSession).map(
+            (link) => (
+              <NavLink key={link.to} to={link.to}>
+                {t(link.label)}
+              </NavLink>
+            ),
+          )}
         </nav>
         <div className="me">
           <select
@@ -83,6 +94,8 @@ export function Layout() {
           <Link to="/welcome">{t('nav.howItWorks')}</Link>
         </div>
       </footer>
+
+      {signedIn && <BottomNav />}
     </div>
   );
 }
