@@ -1,16 +1,27 @@
 import { ROUTE_LIMITS } from '@film-routes/shared';
-import { useId, useRef } from 'react';
+import { AnimatePresence } from 'motion/react';
+import { useId, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
 import { ApiError } from '../api/client.js';
+import { useRouteFilms } from '../api/mutations.js';
 import { useMyRoute } from '../api/queries.js';
-import type { AuthorRouteDetail } from '../api/types.js';
+import type {
+  AuthorRouteDetail,
+  AuthorStep,
+  FilmSearchResult,
+} from '../api/types.js';
 import { errorMessage } from '../components/errorMessage.js';
 import { FieldFeedback } from '../components/FieldFeedback.js';
 import { Icon } from '../components/Icon.js';
 import { LanguageTag } from '../components/LanguageTag.js';
 import { SaveStatus } from '../components/SaveStatus.js';
 import { EmptyState, ErrorBox } from '../components/States.js';
+import { useMediaQuery } from '../components/useMediaQuery.js';
+import { FilmSearchPanel, FilmSearchSheet } from '../editor/FilmSearch.js';
+import { FilmsSection } from '../editor/FilmsSection.js';
+import { filmsState, isLockedRefusal } from '../editor/films.js';
+import { filmTitle } from '../films/titles.js';
 import { descriptionProblem, titleProblem } from '../editor/model.js';
 import { useAutosize } from '../editor/useAutosize.js';
 import { useRouteAutosave } from '../editor/useRouteAutosave.js';
@@ -52,7 +63,7 @@ export function EditRoutePage() {
 }
 
 function RouteEditor({ route }: { route: AuthorRouteDetail }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const id = useId();
   const save = useRouteAutosave(route);
   const titleRef = useRef<HTMLTextAreaElement>(null);
@@ -64,110 +75,196 @@ function RouteEditor({ route }: { route: AuthorRouteDetail }) {
   const descriptionIssue = descriptionProblem(save.description);
   const { hidden, reason } = route.moderation;
 
+  const films = useRouteFilms(route.id);
+  // Wide screens have the search beside the list; the rest open it as a sheet.
+  const wide = useMediaQuery('(min-width: 1100px)');
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [status, setStatus] = useState('');
+  const addRef = useRef<HTMLButtonElement>(null);
+  const { canAdd } = filmsState(route.steps.length);
+  const taken = useMemo(
+    () => new Set(route.steps.map((step) => step.film.tmdbId)),
+    [route.steps],
+  );
+
+  // A refusal because travelers have joined says what the strip above the list
+  // says; anything else is told as the server explains it.
+  const failure = (error: unknown) =>
+    isLockedRefusal(error)
+      ? `${t('editor.locked.title')}. ${t('editor.locked.body')}`
+      : errorMessage(t, error);
+  const addError =
+    films.add.isError && !route.locked ? failure(films.add.error) : null;
+  const listError = route.locked
+    ? null
+    : films.remove.isError
+      ? failure(films.remove.error)
+      : films.reorder.isError
+        ? failure(films.reorder.error)
+        : null;
+
+  function addFilm(film: FilmSearchResult) {
+    // A second click before the first has shown would only be refused.
+    if (!canAdd || taken.has(film.tmdbId)) return;
+    films.add.mutate(film);
+    setStatus(
+      t('editor.films.added', {
+        title: film.title,
+        count: route.steps.length + 1,
+        max: ROUTE_LIMITS.maxSteps,
+      }),
+    );
+  }
+
+  function removeFilm(step: AuthorStep) {
+    films.remove.mutate(step.id);
+    setStatus(
+      t('editor.films.removed', {
+        title: filmTitle(step.film, i18n.language),
+        count: route.steps.length - 1,
+        max: ROUTE_LIMITS.maxSteps,
+      }),
+    );
+  }
+
   return (
     <div className="page">
-      <div className="editor">
-        {hidden && (
-          <div className="route-notice editor-notice" role="note">
-            <Icon name="alert" size={18} />
-            <div>
-              <strong>{t('editor.hidden.title')}</strong>
-              {reason && <p>{t('editor.hidden.reason', { reason })}</p>}
-              <p>{t('editor.hidden.body')}</p>
+      <div
+        className={
+          wide && !route.locked ? 'editor-layout has-panel' : 'editor-layout'
+        }
+      >
+        <div className="editor">
+          {hidden && (
+            <div className="route-notice editor-notice" role="note">
+              <Icon name="alert" size={18} />
+              <div>
+                <strong>{t('editor.hidden.title')}</strong>
+                {reason && <p>{t('editor.hidden.reason', { reason })}</p>}
+                <p>{t('editor.hidden.body')}</p>
+              </div>
             </div>
+          )}
+
+          <div className="editor-top">
+            <Link className="back-link" to="/my-routes">
+              <Icon name="back" size={18} />
+              {t('myRoutes.title')}
+            </Link>
+            <SaveStatus state={save.state} onRetry={save.flush} />
           </div>
-        )}
 
-        <div className="editor-top">
-          <Link className="back-link" to="/my-routes">
-            <Icon name="back" size={18} />
-            {t('myRoutes.title')}
-          </Link>
-          <SaveStatus state={save.state} onRetry={save.flush} />
-        </div>
+          <h1 className="visually-hidden">{t('editor.heading')}</h1>
 
-        <h1 className="visually-hidden">{t('editor.heading')}</h1>
-
-        <div className={titleIssue ? 'field invalid' : 'field'}>
-          <label className="visually-hidden" htmlFor={`${id}-title`}>
-            {t('editor.fields.title')}
-          </label>
-          {/* A textarea of one line that grows: a long title wraps instead of
+          <div className={titleIssue ? 'field invalid' : 'field'}>
+            <label className="visually-hidden" htmlFor={`${id}-title`}>
+              {t('editor.fields.title')}
+            </label>
+            {/* A textarea of one line that grows: a long title wraps instead of
               hiding behind an ellipsis. Enter confirms it, it never adds a line. */}
-          <textarea
-            id={`${id}-title`}
-            ref={titleRef}
-            className="title-input"
-            rows={1}
-            value={save.title}
-            placeholder={t('editor.fields.titlePlaceholder')}
-            aria-invalid={titleIssue !== null}
-            aria-describedby={titleIssue ? `${id}-title-error` : undefined}
-            onChange={(event) =>
-              save.setTitle(event.target.value.replace(/\s*\n+\s*/g, ' '))
-            }
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                event.currentTarget.blur();
+            <textarea
+              id={`${id}-title`}
+              ref={titleRef}
+              className="title-input"
+              rows={1}
+              value={save.title}
+              placeholder={t('editor.fields.titlePlaceholder')}
+              aria-invalid={titleIssue !== null}
+              aria-describedby={titleIssue ? `${id}-title-error` : undefined}
+              onChange={(event) =>
+                save.setTitle(event.target.value.replace(/\s*\n+\s*/g, ' '))
               }
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  event.currentTarget.blur();
+                }
+              }}
+              onBlur={save.flush}
+            />
+            <FieldFeedback
+              id={`${id}-title`}
+              problem={titleIssue}
+              value={save.title}
+              max={ROUTE_LIMITS.titleMaxLength}
+            />
+          </div>
+
+          <div className={descriptionIssue ? 'field invalid' : 'field'}>
+            <label htmlFor={`${id}-description`}>
+              {t('editor.fields.description')}
+            </label>
+            <textarea
+              id={`${id}-description`}
+              ref={descriptionRef}
+              className="input autosize"
+              rows={2}
+              value={save.description}
+              placeholder={t('editor.fields.descriptionPlaceholder')}
+              aria-invalid={descriptionIssue !== null}
+              aria-describedby={
+                descriptionIssue ? `${id}-description-error` : undefined
+              }
+              onChange={(event) => save.setDescription(event.target.value)}
+              onBlur={save.flush}
+            />
+            <FieldFeedback
+              id={`${id}-description`}
+              problem={descriptionIssue}
+              value={save.description}
+              max={ROUTE_LIMITS.descriptionMaxLength}
+            />
+          </div>
+
+          {/* The API fixes the language when the route is created, so it is shown, not offered. */}
+          <div className="field">
+            <span className="field-label">{t('editor.fields.locale')}</span>
+            <p className="locale-fixed">
+              <LanguageTag locale={route.locale} />
+              {t(`languages.${route.locale}`)}
+            </p>
+            <span className="hint">{t('editor.localeFixed')}</span>
+          </div>
+
+          <FilmsSection
+            route={route}
+            showAdd={!wide}
+            addRef={addRef}
+            onOpenSearch={() => {
+              films.add.reset();
+              setSheetOpen(true);
             }}
-            onBlur={save.flush}
-          />
-          <FieldFeedback
-            id={`${id}-title`}
-            problem={titleIssue}
-            value={save.title}
-            max={ROUTE_LIMITS.titleMaxLength}
+            onReorder={(stepIds) => films.reorder.mutate(stepIds)}
+            onRemove={removeFilm}
+            error={listError}
+            status={status}
+            announce={setStatus}
           />
         </div>
 
-        <div className={descriptionIssue ? 'field invalid' : 'field'}>
-          <label htmlFor={`${id}-description`}>
-            {t('editor.fields.description')}
-          </label>
-          <textarea
-            id={`${id}-description`}
-            ref={descriptionRef}
-            className="input autosize"
-            rows={2}
-            value={save.description}
-            placeholder={t('editor.fields.descriptionPlaceholder')}
-            aria-invalid={descriptionIssue !== null}
-            aria-describedby={
-              descriptionIssue ? `${id}-description-error` : undefined
-            }
-            onChange={(event) => save.setDescription(event.target.value)}
-            onBlur={save.flush}
+        {wide && !route.locked && (
+          <FilmSearchPanel
+            taken={taken}
+            full={!canAdd}
+            onAdd={addFilm}
+            error={addError}
           />
-          <FieldFeedback
-            id={`${id}-description`}
-            problem={descriptionIssue}
-            value={save.description}
-            max={ROUTE_LIMITS.descriptionMaxLength}
-          />
-        </div>
-
-        {/* The API fixes the language when the route is created, so it is shown, not offered. */}
-        <div className="field">
-          <span className="field-label">{t('editor.fields.locale')}</span>
-          <p className="locale-fixed">
-            <LanguageTag locale={route.locale} />
-            {t(`languages.${route.locale}`)}
-          </p>
-          <span className="hint">{t('editor.localeFixed')}</span>
-        </div>
-
-        <section className="editor-films" aria-labelledby={`${id}-films`}>
-          <h2 id={`${id}-films`}>{t('editor.films.title')}</h2>
-          <p className="editor-films-count">
-            {t('editor.films.count', {
-              count: route.steps.length,
-              max: ROUTE_LIMITS.maxSteps,
-            })}
-          </p>
-        </section>
+        )}
       </div>
+
+      {/* AnimatePresence keeps the sheet on screen while it slides away; the
+          focus goes back to the button that opened it. */}
+      <AnimatePresence onExitComplete={() => addRef.current?.focus()}>
+        {sheetOpen && !wide && !route.locked && (
+          <FilmSearchSheet
+            taken={taken}
+            full={!canAdd}
+            onAdd={addFilm}
+            error={addError}
+            onClose={() => setSheetOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

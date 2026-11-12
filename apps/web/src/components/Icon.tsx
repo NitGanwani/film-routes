@@ -24,7 +24,13 @@ export type IconName =
   | 'compass'
   | 'journey'
   | 'pencil'
-  | 'globe';
+  | 'globe'
+  | 'trash'
+  | 'grip'
+  | 'search'
+  | 'plus'
+  | 'arrow-up'
+  | 'arrow-down';
 
 export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   return (
@@ -198,6 +204,49 @@ export function IconSprite() {
       <symbol id="i-globe" viewBox="0 0 24 24" {...line} strokeLinecap="round">
         <circle cx="12" cy="12" r="9" />
         <path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z" />
+      </symbol>
+      {/* Editing the films of a route: remove, drag (six dots), search, add, move. */}
+      <symbol
+        id="i-trash"
+        viewBox="0 0 24 24"
+        {...line}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6" />
+      </symbol>
+      <symbol id="i-grip" viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="9" cy="6" r="1.6" />
+        <circle cx="15" cy="6" r="1.6" />
+        <circle cx="9" cy="12" r="1.6" />
+        <circle cx="15" cy="12" r="1.6" />
+        <circle cx="9" cy="18" r="1.6" />
+        <circle cx="15" cy="18" r="1.6" />
+      </symbol>
+      <symbol id="i-search" viewBox="0 0 24 24" {...line} strokeLinecap="round">
+        <circle cx="11" cy="11" r="6.5" />
+        <path d="M16 16l4.5 4.5" />
+      </symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24" {...line} strokeLinecap="round">
+        <path d="M12 5v14M5 12h14" />
+      </symbol>
+      <symbol
+        id="i-arrow-up"
+        viewBox="0 0 24 24"
+        {...line}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 19V5M6 11l6-6 6 6" />
+      </symbol>
+      <symbol
+        id="i-arrow-down"
+        viewBox="0 0 24 24"
+        {...line}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 5v14M6 13l6 6 6-6" />
       </symbol>
     </svg>
   );

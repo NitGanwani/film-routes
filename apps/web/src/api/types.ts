@@ -188,3 +188,20 @@ export type CloseStepBody = {
   comment?: string;
   seenBefore: boolean;
 };
+
+/** A film as the search offers it, in the language that was asked for. */
+export type FilmSearchResult = {
+  tmdbId: number;
+  title: string;
+  originalTitle: string;
+  releaseYear: number | null;
+  posterUrl: string | null;
+  posterUrlSmall: string | null;
+  backdropUrl: string | null;
+};
+
+export type FilmSearchPage = {
+  page: number;
+  totalPages: number;
+  results: FilmSearchResult[];
+};

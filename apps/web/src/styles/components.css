@@ -1608,8 +1608,9 @@ dialog.sheet::backdrop {
 }
 
 /* ---------- Route editor ---------- */
-/* One centred column of about 720 px (the next phase adds a side column). */
+/* One centred column of about 720 px; wide screens add the search beside it. */
 .editor {
+  width: 100%;
   max-width: 720px;
   margin: 0 auto;
   display: grid;
@@ -1753,21 +1754,326 @@ fieldset.field legend {
   margin: var(--sp-1) 0 0;
   font-weight: 400;
 }
+/* The films of the route: a count, what is missing, the list, the way to add. */
 .editor-films {
+  display: grid;
+  gap: var(--sp-4);
+  padding-top: var(--sp-5);
+  border-top: 1px solid var(--border);
+}
+.films-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--sp-3);
-  padding-top: var(--sp-5);
-  border-top: 1px solid var(--border);
 }
-.editor-films h2 {
+.films-head h2 {
   font-size: var(--fs-xl);
 }
-.editor-films-count {
+/* The number that matters while building a route: big, in the title face. */
+.films-count {
   margin: 0;
-  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' var(--font-display-opsz);
+  font-size: var(--fs-2xl);
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.films-min {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  color: var(--warning);
   font-size: var(--fs-sm);
+  font-weight: 500;
+}
+.film-list:focus {
+  outline: none;
+}
+
+/* A row of the list: the same look as on the public page, plus its controls. */
+.film-row {
+  position: relative;
+  display: grid;
+  grid-template-rows: 1fr;
+  padding: 0;
+  transition:
+    grid-template-rows 150ms ease,
+    opacity 150ms ease;
+}
+.film-row-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-4);
+  min-height: 0;
+  padding: var(--sp-3) 0;
+}
+@media (max-width: 719.98px) {
+  .film-row .poster {
+    width: 56px;
+  }
+  .film-row-inner {
+    gap: var(--sp-3);
+  }
+}
+/* Removing: the row folds away. */
+.film-row.is-collapsing {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  border-color: transparent;
+}
+.film-row.is-collapsing .film-row-inner {
+  overflow: hidden;
+}
+/* A film just added fades in. */
+.film-row.is-added {
+  animation: fade-in 200ms ease-out;
+}
+.film-row.is-dragging {
+  z-index: 2;
+  background: var(--surface-2);
+  border-radius: var(--r-md);
+  box-shadow:
+    0 0 0 var(--sp-2) var(--surface-2),
+    var(--shadow-2);
+}
+.film-actions {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  margin-left: auto;
+}
+.film-icon-btn {
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.film-icon-btn:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.film-icon-btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.film-handle {
+  cursor: grab;
+  /* The finger drags from here: the page must not scroll instead. */
+  touch-action: none;
+}
+.film-handle:active {
+  cursor: grabbing;
+}
+/* "Move up / down": for the keyboard only. They are in the tab order and show
+   themselves, beside the controls, while one of them has the focus. */
+.film-moves {
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  z-index: 3;
+  display: flex;
+  gap: var(--sp-1);
+  padding: var(--sp-1);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  box-shadow: var(--shadow-2);
+  transform: translateY(-50%);
+}
+.film-moves:not(:focus-within) {
+  opacity: 0;
+  pointer-events: none;
+}
+.film-moves .btn[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+/* "Remove? Yes / No": under the row, in place of the controls. */
+.film-confirm {
+  display: flex;
+  flex-basis: 100%;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-3);
+  font-weight: 500;
+}
+.film-confirm .btn {
+  min-height: var(--tap);
+}
+
+/* Add: pinned above the bottom bar on phones and tablets. */
+.films-add-bar {
+  position: sticky;
+  bottom: var(--bottom-nav-h, 0px);
+  z-index: 2;
+  margin: 0 calc(-1 * var(--sp-4));
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
+  background: linear-gradient(to top, var(--bg) 70%, transparent);
+}
+@media (min-width: 720px) {
+  .films-add-bar {
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+  .films-add-bar .btn {
+    width: auto;
+  }
+}
+
+/* Two columns on wide screens: the editor and, beside it, the search. */
+@media (min-width: 1100px) {
+  .editor-layout.has-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    align-items: start;
+    gap: var(--sp-8);
+  }
+  /* The add button is for the sheet; the panel is already there. */
+  .editor-layout.has-panel .films-add-bar {
+    display: none;
+  }
+}
+
+/* ---------- Film search: a side panel and a sheet, the same inside ---------- */
+.film-search {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--sp-3);
+  min-height: 0;
+}
+.film-search-panel {
+  position: sticky;
+  top: calc(64px + var(--sp-6));
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  max-height: calc(100dvh - 64px - var(--sp-12));
+  padding: var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+.film-search-panel h2 {
+  font-size: var(--fs-xl);
+}
+.search-field {
+  position: relative;
+}
+.search-field > svg {
+  position: absolute;
+  top: 50%;
+  left: var(--sp-3);
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.search-field .input {
+  padding-left: calc(var(--sp-3) + 18px + var(--sp-2));
+}
+.film-search-results {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.search-note {
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: var(--sp-8) var(--sp-4);
+  color: var(--text-muted);
+  text-align: center;
+}
+.search-limit {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  color: var(--warning);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+}
+.film-results {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.film-result {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--border);
+}
+.film-result:last-child {
+  border-bottom: 0;
+}
+.film-result .poster,
+.film-result-poster {
+  width: 44px;
+}
+.film-result-poster {
+  display: block;
+  flex: none;
+  aspect-ratio: 2 / 3;
+}
+.film-result-text {
+  flex: 1;
+  min-width: 0;
+}
+.film-result-title {
+  font-weight: 500;
+}
+.film-result .btn {
+  flex: none;
+  padding: 0 var(--sp-4);
+}
+/* The sheet: tall, with the field fixed and only the results scrolling. */
+.film-sheet {
+  display: flex;
+  flex-direction: column;
+  height: 92dvh;
+  overflow: hidden;
+}
+.film-sheet-head {
+  padding: var(--sp-3) var(--sp-4) var(--sp-2);
+}
+.film-sheet-head .grab {
+  margin-bottom: var(--sp-3);
+}
+.film-sheet-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.film-sheet-bar h2 {
+  font-size: var(--fs-xl);
+}
+.film-sheet .film-search {
+  padding: 0 var(--sp-4) var(--sp-4);
+}
+@media (min-width: 720px) {
+  .film-sheet {
+    height: min(92dvh, 720px);
+  }
+  .film-sheet-head {
+    padding: var(--sp-5) var(--sp-6) var(--sp-2);
+  }
+  .film-sheet .film-search {
+    padding: 0 var(--sp-6) var(--sp-5);
+  }
 }
 
 /* ---------- Loading, empty and error states ---------- */

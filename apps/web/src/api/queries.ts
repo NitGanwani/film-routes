@@ -1,7 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { SEARCH_DELAY_MS, searchTerm } from '../editor/films.js';
 import type {
   AuthorRouteDetail,
   AuthorRouteSummary,
+  FilmSearchPage,
   Journey,
   PublicRouteDetail,
   PublicRoutesPage,
@@ -69,3 +72,49 @@ export const publicRoutesQuery = (
       `/public/routes?sort=${sort}${locale ? `&locale=${locale}` : ''}`,
     ),
 });
+
+/**
+ * Films matching a title, in the language of the interface. The language is part
+ * of the key (after the text) because the titles come back in it.
+ */
+export const filmSearchQuery = (term: string, locale: 'es' | 'en') => ({
+  queryKey: ['film-search', term, locale],
+  queryFn: () =>
+    api.request<FilmSearchPage>(
+      `/films/search?q=${encodeURIComponent(term)}&locale=${locale}`,
+      { auth: true },
+    ),
+  // The same words give the same films for a while: typing back is free.
+  staleTime: 5 * 60_000,
+});
+
+/** A value that follows `value` only after it has stayed the same for `delay` ms. */
+export function useDebounced<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+}
+
+/**
+ * The search as it is typed: it asks 300 ms after the last key, and not before
+ * there are two letters. `waiting` is true from the first key until the answer
+ * is in, so the screen can show it is on its way.
+ */
+export function useFilmSearch(input: string, locale: 'es' | 'en') {
+  const typed = searchTerm(input);
+  const settled = useDebounced(typed, SEARCH_DELAY_MS);
+  const query = useQuery({
+    ...filmSearchQuery(settled ?? '', locale),
+    enabled: settled !== null,
+  });
+  return {
+    query,
+    /** The text the results on screen belong to; null while there is none. */
+    term: settled,
+    /** Typed, but the request has not been answered yet. */
+    waiting: typed !== null && (typed !== settled || query.isPending),
+  };
+}
