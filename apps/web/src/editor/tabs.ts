@@ -5,13 +5,28 @@ export type RouteTab = (typeof ROUTE_TABS)[number];
 export const tabPath = (routeId: string, tab: RouteTab) =>
   tab === 'route' ? `/my-routes/${routeId}` : `/my-routes/${routeId}/${tab}`;
 
+/** The page of one traveler, inside the Travelers tab. */
+export const travelerPath = (routeId: string, enrollmentId: string) =>
+  `/my-routes/${routeId}/travelers/${enrollmentId}`;
+
+const trimmed = (rest: string | undefined) =>
+  (rest ?? '').replace(/^\/+|\/+$/g, '');
+
+/** The traveler an address points at (`travelers/:enrollmentId`), or null. */
+export function travelerIdFromPath(rest: string | undefined): string | null {
+  const match = /^travelers\/([^/]+)$/.exec(trimmed(rest));
+  return match?.[1] ?? null;
+}
+
 /**
- * The tab an address stands for, from what follows `/my-routes/:id`.
- * Anything else is not a tab (null), so the page can send it back to the route.
+ * The tab an address stands for, from what follows `/my-routes/:id`. The page
+ * of a traveler belongs to the Travelers tab. Anything else is not a tab
+ * (null), so the page can send it back to the route.
  */
 export function tabFromPath(rest: string | undefined): RouteTab | null {
-  const name = (rest ?? '').replace(/^\/+|\/+$/g, '');
+  const name = trimmed(rest);
   if (name === '') return 'route';
+  if (travelerIdFromPath(rest) !== null) return 'travelers';
   return (ROUTE_TABS as readonly string[]).includes(name)
     ? (name as RouteTab)
     : null;

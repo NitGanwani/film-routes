@@ -12,7 +12,7 @@ import {
 import { applyPatch, type RoutePatch } from '../editor/model.js';
 import type { StepPatch } from '../editor/notes.js';
 import { api } from './instance.js';
-import { invitesQuery, myRouteQuery } from './queries.js';
+import { invitesQuery, myRouteQuery, travelersQuery } from './queries.js';
 import type {
   AuthorRouteDetail,
   CreateInviteBody,
@@ -165,6 +165,33 @@ export function useRevokeInvite(routeId: string) {
       if (context?.previous) queryClient.setQueryData(key, context.previous);
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
+  });
+}
+
+/**
+ * Take someone off the route. The server keeps them as removed for good (their
+ * link no longer works for them), so there is no undo and nothing to show
+ * before it is done. Taking off the last one unlocks the route, so the route
+ * and the list of routes are asked again too.
+ */
+export function useRemoveTraveler(routeId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (enrollmentId: string) =>
+      api.request<void>(`/routes/${routeId}/travelers/${enrollmentId}`, {
+        method: 'DELETE',
+        auth: true,
+      }),
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: travelersQuery(routeId).queryKey,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: myRouteQuery(routeId).queryKey,
+        }),
+        queryClient.invalidateQueries({ queryKey: ['my-routes'] }),
+      ]),
   });
 }
 

@@ -1369,7 +1369,8 @@ span.skel.route-step-n {
   gap: var(--sp-1) var(--sp-3);
   align-items: center;
 }
-.step h2 {
+.step h2,
+.step h3 {
   font-size: var(--fs-lg);
 }
 .step .note-text {
@@ -1463,7 +1464,8 @@ span.skel.route-step-n {
     padding-left: var(--sp-5);
     border-left: 1px solid var(--border);
   }
-  .step h2 {
+  .step h2,
+  .step h3 {
     font-size: var(--fs-xl);
   }
   .step[data-next='true'] {
@@ -3263,4 +3265,198 @@ fieldset.field legend {
 /* "Go to Share" lands below the fixed header, not under it. */
 .editor-share {
   scroll-margin-top: 5rem;
+}
+
+/* ---------- Travelers ---------- */
+.travelers,
+.traveler-detail {
+  display: grid;
+  gap: var(--sp-4);
+}
+.travelers-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2) var(--sp-4);
+}
+.travelers-head h2 {
+  font-size: var(--fs-xl);
+}
+.travelers-head h2:focus {
+  outline: none;
+}
+.travelers-count {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+.traveler-list {
+  display: grid;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.traveler-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--sp-2) var(--sp-3);
+  align-items: center;
+  padding: var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  transition: border-color 150ms ease;
+}
+.traveler-row:hover {
+  border-color: color-mix(in oklab, var(--accent) 45%, var(--border));
+}
+.traveler-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-3);
+  min-width: 0;
+}
+/* The whole row is the link: its box stretches over the card. */
+.traveler-link {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+}
+.traveler-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-md);
+}
+.traveler-link:focus-visible {
+  outline: none;
+}
+.traveler-link:focus-visible::after {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.traveler-progress,
+.traveler-since,
+.traveler-remove {
+  grid-column: 1 / -1;
+}
+.traveler-since {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+/* The button sits above the stretched link, and keeps a finger-sized target. */
+.traveler-remove {
+  position: relative;
+  z-index: 1;
+  min-height: 44px;
+  justify-self: start;
+}
+@media (min-width: 720px) {
+  .traveler-row {
+    grid-template-columns: auto minmax(0, 1fr) 12rem 8.5rem auto;
+    padding: var(--sp-3) var(--sp-4);
+  }
+  .traveler-progress,
+  .traveler-since,
+  .traveler-remove {
+    grid-column: auto;
+  }
+}
+/* Where they are, as icon + word; the colour only supports it. */
+.traveler-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 2px var(--sp-2);
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.traveler-chip svg {
+  flex: none;
+}
+.traveler-chip[data-status='active'] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.traveler-chip[data-status='completed'] {
+  color: var(--success);
+}
+
+/* One traveler: who, how far, and film by film how it compares. */
+.traveler-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.traveler-head h2 {
+  font-size: var(--fs-xl);
+  overflow-wrap: anywhere;
+}
+.traveler-dates {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+.traveler-match {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-weight: 600;
+}
+.traveler-match svg {
+  flex: none;
+  color: var(--accent);
+}
+.compare-empty {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+.note-text.compare-empty {
+  font-style: normal;
+}
+/* A film they have not closed is told as locked, with nothing of theirs. */
+.traveler-step[data-state]:not([data-state='closed']) .body {
+  align-self: center;
+}
+.traveler-step {
+  animation: traveler-in 200ms ease-out both;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+@keyframes traveler-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (min-width: 720px) {
+  /* Wide: me · same/different · the traveler, in three columns. */
+  .traveler-compare {
+    display: grid;
+    width: 100%;
+    max-width: 34rem;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: var(--sp-4);
+  }
+  .traveler-compare .vs {
+    justify-self: center;
+  }
+}
+@media (min-width: 900px) {
+  /* A traveler's film has no side notes: its text takes the whole width. */
+  .step.traveler-step .body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'main';
+  }
 }

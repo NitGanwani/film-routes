@@ -34,7 +34,12 @@ import { combineSaveState, previewStep } from '../editor/notes.js';
 import { panelId, RouteTabs, tabId } from '../editor/RouteTabs.js';
 import { ShareSection } from '../editor/ShareSection.js';
 import { StepPreview } from '../editor/StepPreview.js';
-import { tabFromPath, tabPath, type RouteTab } from '../editor/tabs.js';
+import {
+  tabFromPath,
+  tabPath,
+  travelerIdFromPath,
+  type RouteTab,
+} from '../editor/tabs.js';
 import { TravelersPanel } from '../editor/TravelersPanel.js';
 import { useStepNotes } from '../editor/useStepNotes.js';
 import { useSession } from '../session/SessionProvider.js';
@@ -81,15 +86,25 @@ export function EditRoutePage() {
   }
 
   // Keyed by id: another route is another editor, with its own text.
-  return <RouteEditor key={route.data.id} route={route.data} tab={tab} />;
+  return (
+    <RouteEditor
+      key={route.data.id}
+      route={route.data}
+      tab={tab}
+      enrollmentId={travelerIdFromPath(rest)}
+    />
+  );
 }
 
 function RouteEditor({
   route,
   tab,
+  enrollmentId,
 }: {
   route: AuthorRouteDetail;
   tab: RouteTab;
+  /** The traveler whose page is open inside the Travelers tab. */
+  enrollmentId: string | null;
 }) {
   const { t, i18n } = useTranslation();
   const id = useId();
@@ -312,7 +327,9 @@ function RouteEditor({
               </>
             )}
             {tab === 'invites' && <InvitesPanel route={route} />}
-            {tab === 'travelers' && <TravelersPanel route={route} />}
+            {tab === 'travelers' && (
+              <TravelersPanel route={route} enrollmentId={enrollmentId} />
+            )}
           </TabPanel>
         </div>
 

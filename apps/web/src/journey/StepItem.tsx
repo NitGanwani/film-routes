@@ -2,10 +2,10 @@ import * as m from 'motion/react-m';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { JourneyStep } from '../api/types.js';
-import { EmotionBadge } from '../components/EmotionBadge.js';
 import { Locked } from '../components/Locked.js';
 import { Poster } from '../components/Poster.js';
 import { filmTitle, originalTitleNote } from '../films/titles.js';
+import { EmotionCompare } from './EmotionCompare.js';
 import { compareEmotions, stepActions } from './model.js';
 
 /** The reveal of a closed film and the glide of the list: short, easing out. */
@@ -91,26 +91,12 @@ export function StepItem({
 
           {step.state === 'closed' && step.myEmotion && (
             <>
-              <div className="compare">
-                <div>
-                  <span className="who">{t('journey.you')}</span>
-                  <EmotionBadge emotion={step.myEmotion} />
-                </div>
-                {step.authorEmotion && comparison && (
-                  <>
-                    <m.span
-                      className={`vs${comparison === 'same' ? ' same' : ''}`}
-                      {...reveal}
-                    >
-                      {t(`journey.${comparison}`)}
-                    </m.span>
-                    <m.div {...reveal}>
-                      <span className="who">{author}</span>
-                      <EmotionBadge emotion={step.authorEmotion} />
-                    </m.div>
-                  </>
-                )}
-              </div>
+              <EmotionCompare
+                left={{ label: t('journey.you'), emotion: step.myEmotion }}
+                right={{ label: author, emotion: step.authorEmotion }}
+                comparison={comparison}
+                reveal={reveal}
+              />
               {step.myComment && (
                 <p className="note-text">
                   <span className="note-label">{t('journey.yourComment')}</span>

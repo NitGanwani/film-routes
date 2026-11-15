@@ -9,6 +9,8 @@ import type {
   Journey,
   PublicRouteDetail,
   PublicRoutesPage,
+  Traveler,
+  TravelerJourney,
 } from './types.js';
 import { api } from './instance.js';
 
@@ -132,3 +134,33 @@ export const invitesQuery = (routeId: string) => ({
 });
 
 export const useInvites = (routeId: string) => useQuery(invitesQuery(routeId));
+
+/** Who has joined one of my routes. */
+export const travelersQuery = (routeId: string) => ({
+  queryKey: ['travelers', routeId],
+  queryFn: () =>
+    api
+      .request<{ travelers: Traveler[] }>(`/routes/${routeId}/travelers`, {
+        auth: true,
+      })
+      .then((response) => response.travelers),
+});
+
+export const useTravelers = (routeId: string) =>
+  useQuery(travelersQuery(routeId));
+
+/** One traveler's journey film by film, next to what the author felt. */
+export const travelerJourneyQuery = (
+  routeId: string,
+  enrollmentId: string,
+) => ({
+  queryKey: ['traveler-journey', routeId, enrollmentId],
+  queryFn: () =>
+    api.request<TravelerJourney>(
+      `/routes/${routeId}/travelers/${enrollmentId}/journey`,
+      { auth: true },
+    ),
+});
+
+export const useTravelerJourney = (routeId: string, enrollmentId: string) =>
+  useQuery(travelerJourneyQuery(routeId, enrollmentId));

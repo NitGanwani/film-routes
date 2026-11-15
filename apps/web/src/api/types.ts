@@ -230,3 +230,38 @@ export type CreateInviteBody = {
   maxUses: number | null;
   expiresInDays: number | null;
 };
+
+/** One person following one of my routes (`GET /routes/:id/travelers`). */
+export type Traveler = {
+  /** The enrollment: what the page and the API call this person on the route. */
+  id: string;
+  username: string;
+  /** The list also returns the ones the author removed; the page hides them. */
+  status: EnrollmentStatus;
+  startedAt: string;
+  completedAt: string | null;
+  closedSteps: number;
+  stepCount: number;
+};
+
+/** A film of a traveler's journey, as the author compares it. Nothing partial: a film that is not closed has no emotion. */
+export type TravelerStep = {
+  id: string;
+  position: number;
+  film: Film;
+  state: StepState;
+  /** What the author felt (null when they never said). */
+  authorEmotion: Emotion | null;
+  travelerEmotion: Emotion | null;
+  travelerComment: string | null;
+  seenBefore: boolean;
+  watchedAt: string | null;
+  /** null until both sides have an emotion. */
+  sameEmotion: boolean | null;
+};
+
+/** `GET /routes/:id/travelers/:enrollmentId/journey` */
+export type TravelerJourney = {
+  traveler: Omit<Traveler, 'id'> & { enrollmentId: string };
+  steps: TravelerStep[];
+};
