@@ -3460,3 +3460,73 @@ fieldset.field legend {
     grid-template-areas: 'main';
   }
 }
+
+/* ---------- Explore: the title with the button to write a route ---------- */
+.explore-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3) var(--sp-5);
+}
+/* On phones the button goes under the title, the whole width. */
+.explore-create {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.explore-create span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (min-width: 640px) {
+  .explore-create {
+    width: auto;
+    max-width: 20rem;
+  }
+}
+
+/* Two actions under an empty state: stacked on phones, side by side from 480 px. */
+.empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-3);
+  width: 100%;
+}
+@media (max-width: 479px) {
+  .empty-actions .btn {
+    width: 100%;
+  }
+}
+
+/* ---------- Finger-sized targets on phones (44 px) ---------- */
+@media (max-width: 719px) {
+  .tabs button,
+  .tabs [role='tab'],
+  .film-moves .btn,
+  .topnav .me select,
+  .topnav .me .btn {
+    min-height: 44px;
+  }
+  .brand,
+  .site-footer .inner a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+.invite-panel:focus {
+  outline: none;
+}
+.explore-create svg {
+  flex: none;
+}
+/* A long route title must shorten inside the button, never widen the page. */
+.explore-intro {
+  min-width: 0;
+  max-width: 100%;
+}
+.explore-title > * {
+  min-width: 0;
+}

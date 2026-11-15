@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCreateInvite } from '../api/mutations.js';
 import type { CreatedInvite } from '../api/types.js';
@@ -229,6 +229,11 @@ function InviteResult({
   const { copied, copy } = useCopied(link, () => inputRef.current?.select());
   // Where the device has a share sheet, offer it; elsewhere the button is not drawn.
   const canShare = typeof navigator.share === 'function';
+  // The form that was just sent is gone: the focus goes to the link, so a
+  // keyboard goes on from there (to "Copy") instead of starting over.
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   return (
     <div className="invite-result">

@@ -46,6 +46,10 @@ export function EmotionPicker({
           key={emotion}
           className="emo-opt emo"
           data-emo={emotion}
+          // whileTap would make every tile a tab stop of its own (Motion adds
+          // tabindex 0), and the focus would sit on the label, where the arrow
+          // keys do nothing. The radio inside is what takes the focus.
+          tabIndex={-1}
           whileTap={{ scale: 1.04 }}
           transition={{ duration: 0.12 }}
         >

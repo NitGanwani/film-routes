@@ -97,6 +97,8 @@ export const en: Translations = {
     emptyLanguage: 'There are no routes in {{language}} yet',
     emptyLanguageText: 'Try showing the ones in every language.',
     showAll: 'Show every language',
+    createRoute: 'Create a route',
+    continueRoute: 'Carry on with “{{title}}”',
   },
   languages: {
     es: 'Spanish',
@@ -127,10 +129,12 @@ export const en: Translations = {
   },
   journeys: {
     title: 'My journeys',
-    empty: 'You are not following any route yet',
-    emptyText:
-      'Did someone send you a link? Open it and the route shows up here.',
-    exploreCta: 'Explore public routes',
+    empty: {
+      title: 'You have not started any route yet',
+      body: 'You can walk one that someone else made, or make one yourself for someone.',
+      explore: 'Explore routes',
+      create: 'Make one for someone',
+    },
     progress: '{{closed}} of {{total}} closed',
     completed: 'Completed',
     abandoned: 'Left',
@@ -500,7 +504,6 @@ export const en: Translations = {
     retry: 'Try again',
     notFound: 'This page does not exist.',
     loadFailed: 'We could not load this',
-    back: 'Back',
   },
   errors: {
     invalid_token: 'This link is not valid or has expired. Ask for a new one.',

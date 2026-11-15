@@ -2,14 +2,16 @@ import { useQuery } from '@tanstack/react-query';
 import { useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import { publicRoutesQuery } from '../api/queries.js';
+import { myRoutesQuery, publicRoutesQuery } from '../api/queries.js';
 import { errorMessage } from '../components/errorMessage.js';
+import { Icon } from '../components/Icon.js';
 import { PublicRouteCard } from '../components/PublicRouteCard.js';
 import {
   EmptyState,
   ErrorBox,
   RouteListSkeleton,
 } from '../components/States.js';
+import { unfinishedRoute } from '../myRoutes/model.js';
 import { useSession } from '../session/SessionProvider.js';
 
 const SORTS = ['new', 'popular', 'top'] as const;
@@ -31,6 +33,13 @@ export function ExplorePage() {
   const routes = useQuery(
     publicRoutesQuery(sort, allLanguages ? null : language),
   );
+  // Whoever has a session is offered to write a route, or to carry on with the
+  // one they left half way. If the list of theirs fails, the plain button stays.
+  const mine = useQuery({
+    ...myRoutesQuery(),
+    enabled: session.status === 'authenticated',
+  });
+  const unfinished = mine.data ? unfinishedRoute(mine.data) : null;
 
   return (
     <div className="page">
@@ -52,8 +61,25 @@ export function ExplorePage() {
         </section>
       )}
       <div className="page-head">
-        <div>
-          <h1>{t('explore.title')}</h1>
+        <div className="explore-intro">
+          <div className="explore-title">
+            <h1>{t('explore.title')}</h1>
+            {session.status === 'authenticated' && (
+              <Link
+                className="btn btn-secondary explore-create"
+                to={
+                  unfinished ? `/my-routes/${unfinished.id}` : '/my-routes/new'
+                }
+              >
+                <Icon name={unfinished ? 'pencil' : 'plus'} size={18} />
+                <span>
+                  {unfinished
+                    ? t('explore.continueRoute', { title: unfinished.title })
+                    : t('explore.createRoute')}
+                </span>
+              </Link>
+            )}
+          </div>
           <p className="note">{t('explore.subtitle')}</p>
         </div>
         {/* A segmented control: the indicator slides to the chosen option. */}

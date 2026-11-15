@@ -15,3 +15,22 @@ export const VISIBILITY_ICON = {
 export function missingFilms(stepCount: number): number {
   return Math.max(0, ROUTE_LIMITS.minSteps - stepCount);
 }
+
+/**
+ * The route the person left unfinished (fewer films than it needs to be
+ * shared), to offer to carry on with it. `routes` comes most recently changed
+ * first, so it is the one they touched last. A route taken down by a moderator
+ * or without a title is not offered: there is nothing to carry on with.
+ */
+export function unfinishedRoute<
+  T extends { stepCount: number; hidden: boolean; title: string },
+>(routes: readonly T[]): T | null {
+  return (
+    routes.find(
+      (route) =>
+        missingFilms(route.stepCount) > 0 &&
+        !route.hidden &&
+        route.title.trim() !== '',
+    ) ?? null
+  );
+}

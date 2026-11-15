@@ -41,12 +41,17 @@ export function JourneysPage() {
       {journeys.data?.length === 0 && (
         <EmptyState
           strip
-          title={t('journeys.empty')}
-          text={t('journeys.emptyText')}
+          title={t('journeys.empty.title')}
+          text={t('journeys.empty.body')}
         >
-          <Link className="btn btn-secondary btn-sm" to="/explore">
-            {t('journeys.exploreCta')}
-          </Link>
+          <div className="empty-actions">
+            <Link className="btn btn-primary" to="/explore">
+              {t('journeys.empty.explore')}
+            </Link>
+            <Link className="btn btn-secondary" to="/my-routes/new">
+              {t('journeys.empty.create')}
+            </Link>
+          </div>
         </EmptyState>
       )}
       {journeys.data && journeys.data.length > 0 && (

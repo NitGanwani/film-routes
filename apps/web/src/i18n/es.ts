@@ -96,6 +96,8 @@ export const es = {
     emptyLanguage: 'Todavía no hay rutas en {{language}}',
     emptyLanguageText: 'Prueba a mostrar las de todos los idiomas.',
     showAll: 'Ver todos los idiomas',
+    createRoute: 'Crear una ruta',
+    continueRoute: 'Seguir con «{{title}}»',
   },
   languages: {
     es: 'español',
@@ -126,10 +128,12 @@ export const es = {
   },
   journeys: {
     title: 'Mis viajes',
-    empty: 'Todavía no sigues ninguna ruta',
-    emptyText:
-      '¿Alguien te ha pasado un enlace? Ábrelo y la ruta aparecerá aquí.',
-    exploreCta: 'Explorar rutas públicas',
+    empty: {
+      title: 'Todavía no has empezado ninguna ruta',
+      body: 'Puedes recorrer una que haya hecho otra persona, o hacer tú una para alguien.',
+      explore: 'Explorar rutas',
+      create: 'Crear una para alguien',
+    },
     progress: '{{closed}} de {{total}} cerradas',
     completed: 'Completada',
     abandoned: 'Abandonada',
@@ -501,7 +505,6 @@ export const es = {
     retry: 'Reintentar',
     notFound: 'Esta página no existe.',
     loadFailed: 'No hemos podido cargar esto',
-    back: 'Volver',
   },
   errors: {
     unknown: 'Algo ha salido mal. Inténtalo de nuevo.',

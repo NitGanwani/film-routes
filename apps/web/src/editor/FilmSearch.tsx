@@ -31,6 +31,9 @@ type BodyProps = {
  */
 function SearchBody({ taken, full, onAdd, error, inputRef }: BodyProps) {
   const { t, i18n } = useTranslation();
+  // The sheet owns its field's ref (it focuses it on opening); the panel does not.
+  const ownRef = useRef<HTMLInputElement>(null);
+  const fieldRef = inputRef ?? ownRef;
   const id = useId();
   const locale = i18n.language === 'en' ? 'en' : 'es';
   const [text, setText] = useState('');
@@ -113,7 +116,12 @@ function SearchBody({ taken, full, onAdd, error, inputRef }: BodyProps) {
                   type="button"
                   className="btn btn-secondary"
                   disabled={full}
-                  onClick={() => onAdd(film)}
+                  onClick={() => {
+                    onAdd(film);
+                    // The button turns into "in the route" and cannot hold the
+                    // focus: back to the search, so the keyboard keeps its place.
+                    fieldRef.current?.focus();
+                  }}
                 >
                   {t('editor.films.addShort')}
                   <span className="visually-hidden"> {film.title}</span>
@@ -135,7 +143,7 @@ function SearchBody({ taken, full, onAdd, error, inputRef }: BodyProps) {
         <Icon name="search" size={18} />
         <input
           id={`${id}-q`}
-          ref={inputRef}
+          ref={fieldRef}
           className="input"
           type="search"
           autoComplete="off"

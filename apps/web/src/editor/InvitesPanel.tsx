@@ -1,6 +1,6 @@
 import { ROUTE_LIMITS } from '@film-routes/shared';
 import { AnimatePresence } from 'motion/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { useRevokeInvite } from '../api/mutations.js';
@@ -39,6 +39,14 @@ export function InvitesPanel({ route }: { route: AuthorRouteDetail }) {
   // The link just made, so the list can bring its row in softly.
   const [freshId, setFreshId] = useState<string | null>(null);
   const newButton = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const panelId = useId();
+  // The form opens in the page, away from the button that asked for it: the
+  // focus goes in, and the next Tab is its first field.
+  const inline = creating && wide;
+  useEffect(() => {
+    if (inline) panelRef.current?.focus();
+  }, [inline]);
 
   const { hidden, reason } = route.moderation;
   const requirements = shareRequirements({
@@ -119,8 +127,13 @@ export function InvitesPanel({ route }: { route: AuthorRouteDetail }) {
 
       {/* Wide screens: the form opens in the page, above the list. */}
       {creating && wide && (
-        <section className="card card-pad invite-panel">
-          <h3>{t('invites.new')}</h3>
+        <section
+          ref={panelRef}
+          tabIndex={-1}
+          aria-labelledby={`${panelId}-title`}
+          className="card card-pad invite-panel"
+        >
+          <h3 id={`${panelId}-title`}>{t('invites.new')}</h3>
           <InviteCreator
             routeId={route.id}
             routeTitle={route.title}
