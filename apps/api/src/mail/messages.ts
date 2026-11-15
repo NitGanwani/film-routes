@@ -1,8 +1,8 @@
 import type { Locale } from '@film-routes/shared';
 import type { MailMessage } from './mailer.js';
 
-// Working title: change it here when the final name is decided.
-const APP_NAME = 'film-routes';
+// The name people read in the emails: change it here if the product is renamed.
+const APP_NAME = 'Filmgrim';
 
 type Text = { subject: string; intro: string; ignore: string };
 
