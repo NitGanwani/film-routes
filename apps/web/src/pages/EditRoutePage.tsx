@@ -1,8 +1,15 @@
 import { ROUTE_LIMITS } from '@film-routes/shared';
 import { AnimatePresence } from 'motion/react';
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useParams } from 'react-router';
+import { Link, Navigate, useLocation, useParams } from 'react-router';
 import { ApiError } from '../api/client.js';
 import { useRouteFilms } from '../api/mutations.js';
 import { useMyRoute } from '../api/queries.js';
@@ -21,10 +28,14 @@ import { useMediaQuery } from '../components/useMediaQuery.js';
 import { DangerZone } from '../editor/DangerZone.js';
 import { FilmSearchPanel, FilmSearchSheet } from '../editor/FilmSearch.js';
 import { FilmsSection } from '../editor/FilmsSection.js';
+import { InvitesPanel } from '../editor/InvitesPanel.js';
 import { filmsState, isLockedRefusal, stepKey } from '../editor/films.js';
 import { combineSaveState, previewStep } from '../editor/notes.js';
+import { panelId, RouteTabs, tabId } from '../editor/RouteTabs.js';
 import { ShareSection } from '../editor/ShareSection.js';
 import { StepPreview } from '../editor/StepPreview.js';
+import { tabFromPath, tabPath, type RouteTab } from '../editor/tabs.js';
+import { TravelersPanel } from '../editor/TravelersPanel.js';
 import { useStepNotes } from '../editor/useStepNotes.js';
 import { useSession } from '../session/SessionProvider.js';
 import { filmTitle } from '../films/titles.js';
@@ -35,8 +46,13 @@ import { useRouteAutosave } from '../editor/useRouteAutosave.js';
 /** The editor of one of my routes. Everything on it saves by itself. */
 export function EditRoutePage() {
   const { t } = useTranslation();
-  const { routeId = '' } = useParams();
+  const { routeId = '', '*': rest } = useParams();
   const route = useMyRoute(routeId);
+  // /my-routes/:id, /invites or /travelers; anything else is the route itself.
+  const tab = tabFromPath(rest);
+  if (tab === null) {
+    return <Navigate to={tabPath(routeId, 'route')} replace />;
+  }
 
   if (route.isPending) return <EditorSkeleton />;
 
@@ -65,10 +81,16 @@ export function EditRoutePage() {
   }
 
   // Keyed by id: another route is another editor, with its own text.
-  return <RouteEditor key={route.data.id} route={route.data} />;
+  return <RouteEditor key={route.data.id} route={route.data} tab={tab} />;
 }
 
-function RouteEditor({ route }: { route: AuthorRouteDetail }) {
+function RouteEditor({
+  route,
+  tab,
+}: {
+  route: AuthorRouteDetail;
+  tab: RouteTab;
+}) {
   const { t, i18n } = useTranslation();
   const id = useId();
   const save = useRouteAutosave(route);
@@ -97,8 +119,16 @@ function RouteEditor({ route }: { route: AuthorRouteDetail }) {
   // A film that is taken out must not be saved back from its draft.
   const { forget } = notes;
   useEffect(() => forget(route.steps), [forget, route.steps]);
+  // "Go to Share" from the other tabs lands on its section.
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (tab === 'route' && hash === '#share') {
+      document.getElementById('share')?.scrollIntoView();
+    }
+  }, [tab, hash]);
   // Wide screens have the search beside the list; the rest open it as a sheet.
-  const wide = useMediaQuery('(min-width: 1100px)');
+  // The search belongs to the films, so only the Route tab has it.
+  const wide = useMediaQuery('(min-width: 1100px)') && tab === 'route';
   const [sheetOpen, setSheetOpen] = useState(false);
   const [status, setStatus] = useState('');
   const addRef = useRef<HTMLButtonElement>(null);
@@ -211,65 +241,79 @@ function RouteEditor({ route }: { route: AuthorRouteDetail }) {
             />
           </div>
 
-          <div className={descriptionIssue ? 'field invalid' : 'field'}>
-            <label htmlFor={`${id}-description`}>
-              {t('editor.fields.description')}
-            </label>
-            <textarea
-              id={`${id}-description`}
-              ref={descriptionRef}
-              className="input autosize"
-              rows={2}
-              value={save.description}
-              placeholder={t('editor.fields.descriptionPlaceholder')}
-              aria-invalid={descriptionIssue !== null}
-              aria-describedby={
-                descriptionIssue ? `${id}-description-error` : undefined
-              }
-              onChange={(event) => save.setDescription(event.target.value)}
-              onBlur={save.flush}
-            />
-            <FieldFeedback
-              id={`${id}-description`}
-              problem={descriptionIssue}
-              value={save.description}
-              max={ROUTE_LIMITS.descriptionMaxLength}
-            />
-          </div>
+          <RouteTabs routeId={route.id} tab={tab} />
 
-          {/* The API fixes the language when the route is created, so it is shown, not offered. */}
-          <div className="field">
-            <span className="field-label">{t('editor.fields.locale')}</span>
-            <p className="locale-fixed">
-              <LanguageTag locale={route.locale} />
-              {t(`languages.${route.locale}`)}
-            </p>
-            <span className="hint">{t('editor.localeFixed')}</span>
-          </div>
+          <TabPanel tab={tab}>
+            {tab === 'route' && (
+              <>
+                <div className={descriptionIssue ? 'field invalid' : 'field'}>
+                  <label htmlFor={`${id}-description`}>
+                    {t('editor.fields.description')}
+                  </label>
+                  <textarea
+                    id={`${id}-description`}
+                    ref={descriptionRef}
+                    className="input autosize"
+                    rows={2}
+                    value={save.description}
+                    placeholder={t('editor.fields.descriptionPlaceholder')}
+                    aria-invalid={descriptionIssue !== null}
+                    aria-describedby={
+                      descriptionIssue ? `${id}-description-error` : undefined
+                    }
+                    onChange={(event) =>
+                      save.setDescription(event.target.value)
+                    }
+                    onBlur={save.flush}
+                  />
+                  <FieldFeedback
+                    id={`${id}-description`}
+                    problem={descriptionIssue}
+                    value={save.description}
+                    max={ROUTE_LIMITS.descriptionMaxLength}
+                  />
+                </div>
 
-          <FilmsSection
-            route={route}
-            showAdd={!wide}
-            addRef={addRef}
-            onOpenSearch={() => {
-              films.add.reset();
-              setSheetOpen(true);
-            }}
-            onReorder={(stepIds) => films.reorder.mutate(stepIds)}
-            onRemove={removeFilm}
-            error={listError}
-            status={status}
-            announce={setStatus}
-            notes={notes}
-            onPreview={(step, trigger) => {
-              previewTrigger.current = trigger;
-              setPreviewing(stepKey(step));
-            }}
-          />
+                {/* The API fixes the language when the route is created, so it is shown, not offered. */}
+                <div className="field">
+                  <span className="field-label">
+                    {t('editor.fields.locale')}
+                  </span>
+                  <p className="locale-fixed">
+                    <LanguageTag locale={route.locale} />
+                    {t(`languages.${route.locale}`)}
+                  </p>
+                  <span className="hint">{t('editor.localeFixed')}</span>
+                </div>
 
-          {/* The last decision, and the one that cannot be undone, after everything else. */}
-          <ShareSection route={route} />
-          <DangerZone route={route} />
+                <FilmsSection
+                  route={route}
+                  showAdd={!wide}
+                  addRef={addRef}
+                  onOpenSearch={() => {
+                    films.add.reset();
+                    setSheetOpen(true);
+                  }}
+                  onReorder={(stepIds) => films.reorder.mutate(stepIds)}
+                  onRemove={removeFilm}
+                  error={listError}
+                  status={status}
+                  announce={setStatus}
+                  notes={notes}
+                  onPreview={(step, trigger) => {
+                    previewTrigger.current = trigger;
+                    setPreviewing(stepKey(step));
+                  }}
+                />
+
+                {/* The last decision, and the one that cannot be undone, after everything else. */}
+                <ShareSection route={route} />
+                <DangerZone route={route} />
+              </>
+            )}
+            {tab === 'invites' && <InvitesPanel route={route} />}
+            {tab === 'travelers' && <TravelersPanel route={route} />}
+          </TabPanel>
         </div>
 
         {wide && !route.locked && (
@@ -310,6 +354,20 @@ function RouteEditor({ route }: { route: AuthorRouteDetail }) {
           />
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+/** The page of the current tab, tied to its tab for screen readers. */
+function TabPanel({ tab, children }: { tab: RouteTab; children: ReactNode }) {
+  return (
+    <div
+      id={panelId(tab)}
+      role="tabpanel"
+      aria-labelledby={tabId(tab)}
+      className="route-panel"
+    >
+      {children}
     </div>
   );
 }

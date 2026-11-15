@@ -205,3 +205,28 @@ export type FilmSearchPage = {
   totalPages: number;
   results: FilmSearchResult[];
 };
+
+/** Why a link can or cannot be used; the API works it out (`GET /routes/:id/invites`). */
+export type InviteStatus = 'active' | 'exhausted' | 'expired' | 'revoked';
+
+/** One invitation link of a route. The token is never in the list: only a hash is kept. */
+export type Invite = {
+  id: string;
+  /** null = unlimited. */
+  maxUses: number | null;
+  usesCount: number;
+  /** null = never expires. */
+  expiresAt: string | null;
+  revokedAt: string | null;
+  createdAt: string;
+  status: InviteStatus;
+};
+
+/** What creating a link returns: the token appears here once, and never again. */
+export type CreatedInvite = Invite & { token: string };
+
+/** What the author chooses for a new link (`null` = no limit). */
+export type CreateInviteBody = {
+  maxUses: number | null;
+  expiresInDays: number | null;
+};

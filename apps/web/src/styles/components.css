@@ -3006,3 +3006,261 @@ fieldset.field legend {
   flex: none;
   color: var(--accent);
 }
+
+/* ---------- Tabs of the editor: Route · Invitations · Travelers ---------- */
+/* The segmented control of Explore, with links instead of toggle buttons. */
+.tabs [role='tab'] {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 34px;
+  padding: 0 var(--sp-2);
+  border-radius: var(--r-pill);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.25s ease;
+}
+.tabs [role='tab'][aria-selected='true'] {
+  color: var(--bg);
+}
+.tabs [role='tab']:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (min-width: 720px) {
+  .tabs [role='tab'] {
+    padding: 0 var(--sp-4);
+  }
+  .route-tabs {
+    width: 28rem;
+  }
+}
+.route-panel {
+  display: grid;
+  gap: var(--sp-5);
+}
+
+/* ---------- Invitations ---------- */
+.invites {
+  display: grid;
+  gap: var(--sp-4);
+}
+.invites-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.invites-head h2 {
+  font-size: var(--fs-xl);
+}
+.invites-blocker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  color: var(--warning);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+}
+.invites-blocker a {
+  color: var(--accent);
+  text-underline-offset: 3px;
+}
+.invite-skeleton {
+  display: grid;
+  gap: var(--sp-2);
+}
+.seg.seg-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.invite-panel {
+  display: grid;
+  gap: var(--sp-4);
+}
+.invite-panel h3,
+.invite-result h3 {
+  font-size: var(--fs-lg);
+}
+.invite-form,
+.invite-result {
+  display: grid;
+  gap: var(--sp-5);
+}
+.invite-form fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  display: grid;
+  gap: var(--sp-3);
+}
+.invite-form legend {
+  font-weight: 500;
+  font-size: var(--fs-sm);
+  padding: 0;
+  margin-bottom: var(--sp-2);
+}
+.invite-number {
+  width: 8rem;
+  font-variant-numeric: tabular-nums;
+}
+.invite-days {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  color: var(--text-muted);
+}
+.invite-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.invite-actions .btn {
+  gap: var(--sp-2);
+}
+/* The link, once, as large as it can be read. */
+.invite-link-big {
+  font-size: var(--fs-md);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* The sheet draws the padding of its own forms; the body already has it. */
+.invite-sheet-body {
+  display: grid;
+  gap: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4) var(--sp-6);
+}
+.invite-sheet .invite-form {
+  padding: 0;
+  gap: var(--sp-5);
+}
+.invite-sheet h2 {
+  font-size: var(--fs-xl);
+}
+@media (min-width: 720px) {
+  .invite-sheet-body {
+    padding: var(--sp-6);
+  }
+}
+
+.invite-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.invite-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--sp-1) var(--sp-3);
+  align-items: center;
+  padding: var(--sp-3) var(--sp-4);
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-sm);
+}
+.invite-row:first-child {
+  border-top: 0;
+}
+.invite-row:focus {
+  outline: none;
+}
+.invite-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.invite-row[data-fresh='true'] {
+  animation: invite-in 200ms ease-out;
+}
+@keyframes invite-in {
+  from {
+    opacity: 0;
+  }
+}
+.invite-uses {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.invite-expiry,
+.invite-created {
+  grid-column: 1 / -1;
+  color: var(--text-muted);
+}
+.invite-row-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+}
+.invite-row-actions:empty {
+  display: none;
+}
+.invite-confirm {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+/* Status as icon + word; the colour only supports it. */
+.invite-chip {
+  display: inline-flex;
+  justify-self: start;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 2px var(--sp-2);
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+.invite-chip svg {
+  flex: none;
+}
+.invite-chip[data-status='active'] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.invite-row:not([data-status='active']) .invite-uses,
+.invite-row:not([data-status='active']) .invite-expiry {
+  color: var(--text-muted);
+}
+@media (min-width: 720px) {
+  /* A light table: status, uses, expiry, when it was made, actions. The rows
+     share the columns of the list, so they line up even while one asks. */
+  .invite-list {
+    grid-template-columns: 6.5rem 6rem minmax(9rem, 1fr) 8.5rem max-content;
+  }
+  .invite-row {
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    column-gap: var(--sp-4);
+    padding: var(--sp-3) var(--sp-5);
+  }
+  .invite-expiry,
+  .invite-created,
+  .invite-row-actions {
+    grid-column: auto;
+  }
+  .invite-row-actions {
+    justify-content: flex-end;
+  }
+  .invite-row-actions:empty {
+    display: flex;
+  }
+}
+/* "Go to Share" lands below the fixed header, not under it. */
+.editor-share {
+  scroll-margin-top: 5rem;
+}

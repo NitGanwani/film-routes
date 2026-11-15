@@ -5,6 +5,7 @@ import type {
   AuthorRouteDetail,
   AuthorRouteSummary,
   FilmSearchPage,
+  Invite,
   Journey,
   PublicRouteDetail,
   PublicRoutesPage,
@@ -118,3 +119,16 @@ export function useFilmSearch(input: string, locale: 'es' | 'en') {
     waiting: typed !== null && (typed !== settled || query.isPending),
   };
 }
+
+/** The invitation links of one of my routes, newest first. */
+export const invitesQuery = (routeId: string) => ({
+  queryKey: ['invites', routeId],
+  queryFn: () =>
+    api
+      .request<{ invites: Invite[] }>(`/routes/${routeId}/invites`, {
+        auth: true,
+      })
+      .then((response) => response.invites),
+});
+
+export const useInvites = (routeId: string) => useQuery(invitesQuery(routeId));

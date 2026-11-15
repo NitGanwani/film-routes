@@ -79,7 +79,7 @@ export function App() {
           }
         />
         <Route
-          path="my-routes/:routeId"
+          path="my-routes/:routeId/*"
           element={
             <RequireSession>
               <EditRoutePage />

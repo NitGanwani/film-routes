@@ -12,8 +12,14 @@ import {
 import { applyPatch, type RoutePatch } from '../editor/model.js';
 import type { StepPatch } from '../editor/notes.js';
 import { api } from './instance.js';
-import { myRouteQuery } from './queries.js';
-import type { AuthorRouteDetail, FilmSearchResult } from './types.js';
+import { invitesQuery, myRouteQuery } from './queries.js';
+import type {
+  AuthorRouteDetail,
+  CreateInviteBody,
+  CreatedInvite,
+  FilmSearchResult,
+  Invite,
+} from './types.js';
 
 /**
  * Save the title or the description of one of my routes. The page changes
@@ -100,6 +106,65 @@ export function useDeleteRoute(routeId: string, title: string) {
       // After leaving: the editor must not ask again for a route that is gone.
       queryClient.removeQueries({ queryKey: myRouteQuery(routeId).queryKey });
     },
+  });
+}
+
+/**
+ * Create an invitation link. Not optimistic: the token only exists in the
+ * answer, so there is nothing to show before it. The list is asked again when
+ * it is done.
+ */
+export function useCreateInvite(routeId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateInviteBody) =>
+      api
+        .request<{ invite: CreatedInvite }>(`/routes/${routeId}/invites`, {
+          method: 'POST',
+          auth: true,
+          body,
+        })
+        .then((response) => response.invite),
+    onSettled: () =>
+      queryClient.invalidateQueries({
+        queryKey: invitesQuery(routeId).queryKey,
+      }),
+  });
+}
+
+/**
+ * Revoke a link: it shows as revoked at once and goes back if the server says
+ * no. A revoked link can never be used again, so there is no undo.
+ */
+export function useRevokeInvite(routeId: string) {
+  const queryClient = useQueryClient();
+  const key = invitesQuery(routeId).queryKey;
+  return useMutation({
+    mutationFn: (inviteId: string) =>
+      api.request<void>(`/routes/${routeId}/invites/${inviteId}`, {
+        method: 'DELETE',
+        auth: true,
+      }),
+    onMutate: async (inviteId) => {
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<Invite[]>(key);
+      queryClient.setQueryData<Invite[]>(key, (invites) =>
+        invites?.map((invite) =>
+          invite.id === inviteId
+            ? {
+                ...invite,
+                status: 'revoked',
+                revokedAt: new Date().toISOString(),
+              }
+            : invite,
+        ),
+      );
+      return { previous };
+    },
+    onError: (_error, _inviteId, context) => {
+      if (context?.previous) queryClient.setQueryData(key, context.previous);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
   });
 }
 

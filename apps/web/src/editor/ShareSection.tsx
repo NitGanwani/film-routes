@@ -1,6 +1,6 @@
 import { ROUTE_LIMITS, type RouteVisibility } from '@film-routes/shared';
 import { AnimatePresence } from 'motion/react';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { useChangeVisibility } from '../api/mutations.js';
@@ -8,18 +8,17 @@ import type { AuthorRouteDetail } from '../api/types.js';
 import { ConfirmDialog } from '../components/ConfirmDialog.js';
 import { errorMessage } from '../components/errorMessage.js';
 import { Icon } from '../components/Icon.js';
+import { useCopied } from '../components/useCopied.js';
 import { useResendVerification } from '../components/useResendVerification.js';
 import { VISIBILITY_ICON } from '../myRoutes/model.js';
 import { useSession } from '../session/SessionProvider.js';
+import { tabPath } from './tabs.js';
 import {
   canChoose,
   needsShareWarning,
   shareLink,
   shareRequirements,
 } from './share.js';
-
-/** How long "Copied" stays on the button. */
-const COPIED_MS = 2000;
 
 /**
  * "Share": who can see the route, what it still needs before it can be shared,
@@ -84,7 +83,7 @@ export function ShareSection({ route }: { route: AuthorRouteDetail }) {
   ] as const;
 
   return (
-    <section className="editor-share" aria-labelledby={headingId}>
+    <section id="share" className="editor-share" aria-labelledby={headingId}>
       <h2 id={headingId}>{t('share.title')}</h2>
 
       <div className="share-requirements">
@@ -214,23 +213,8 @@ function ShareLink({ routeId }: { routeId: string }) {
   const { t } = useTranslation();
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [copied, setCopied] = useState(false);
-  const timer = useRef<number | undefined>(undefined);
   const link = shareLink(window.location.origin, routeId);
-
-  useEffect(() => () => window.clearTimeout(timer.current), []);
-
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(link);
-      setCopied(true);
-      window.clearTimeout(timer.current);
-      timer.current = window.setTimeout(() => setCopied(false), COPIED_MS);
-    } catch {
-      // No clipboard (or it was refused): leave the link selected to copy by hand.
-      inputRef.current?.select();
-    }
-  }
+  const { copied, copy } = useCopied(link, () => inputRef.current?.select());
 
   return (
     <div className="share-link">
@@ -255,7 +239,7 @@ function ShareLink({ routeId }: { routeId: string }) {
           </span>
         </button>
       </div>
-      <Link className="share-invite-link" to={{ hash: '#invites' }}>
+      <Link className="share-invite-link" to={tabPath(routeId, 'invites')}>
         {t('share.inviteLimit')}
       </Link>
     </div>
