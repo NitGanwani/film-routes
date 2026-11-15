@@ -159,3 +159,62 @@ solo del color. Entrega un HTML de presentación con cada momento en un
 botón "reproducir" sobre un fondo #0f0e13, a 390 y a 1280 px, y cada SVG en
 un bloque de código aparte con su nombre de archivo.
 ```
+
+---
+
+## Prompt 3 · Página de invitación y valoración al terminar
+
+Pegar después del Prompt 2 (si queda uso), con el logo adjunto. Pedir salida
+**corta**: especificación + SVG, sin HTML de presentación largo.
+
+```
+Filmgrim es una web (React + Vite) donde una persona, la guía, hace una ruta
+de 3 a 10 películas para alguien. Adjunto el logo. Necesito diseñar dos
+pantallas que aún no existen. Entrega una especificación breve y precisa (a
+390 y 1280 px), no un HTML de presentación largo.
+
+DIRECCIÓN VISUAL VIGENTE (no la cambies)
+Sala de cine con las luces apagadas, tema oscuro único, acento ámbar, nada de
+morado. Solo estos colores: fondo #0f0e13, superficie #17161d, superficie 2
+#201f28, texto #f1ece2, texto apagado #a69f92, borde #2c2a33, crema de
+proyector #f1d9a3, ámbar #e3a93a, éxito #7ccf94, peligro #f2796b. Fraunces
+solo en títulos, Instrument Sans en el resto. Grano de película sutil, pósters
+y backdrops reales de TMDB como atmósfera, nunca stock. Emociones nunca solo
+con color. Movimiento solo como respuesta a una acción y con versión para
+prefers-reduced-motion. Componentes que ya existen: FilmStrip, RouteCard,
+EmptyState, botones, la hoja inferior de cierre.
+
+1) PÁGINA DE INVITACIÓN  (/invite/:token)
+Alguien recibe un enlace por mensaje y lo abre, normalmente en el móvil. Es la
+primera pantalla que ve un viajero nuevo.
+Restricciones reales (no las inventes):
+- Un invitado puede NO tener cuenta: la web pide iniciar sesión o crear
+  cuenta antes de aceptar. Tras eso, vuelve a esta página y acepta.
+- Antes de aceptar NO se puede mostrar quién invita ni qué ruta es (la API no
+  da una vista previa pública). Diseña la pantalla para que, aun así, se sienta
+  una invitación personal y no un muro de login: tono, composición, logo.
+  Después de aceptar sí se muestra la ruta y se lleva al viaje.
+- Estados a diseñar: (a) sin sesión: explica en una frase qué es Filmgrim y
+  ofrece "Crear cuenta" / "Ya tengo cuenta"; (b) con sesión: botón
+  "Aceptar invitación"; (c) aceptando; (d) aceptada: transición hacia la ruta;
+  (e) enlace caducado, (f) agotado (ya lo usó el máximo de personas), (g)
+  revocado, (h) es tu propia ruta, (i) el autor te quitó de esta ruta, (j) la
+  ruta fue retirada por un moderador, (k) sin conexión. Cada error: icono +
+  texto + salida clara (ir a Explorar, pedir otro enlace al autor). Con
+  role="alert" donde toque. Copy en español e inglés, cálido, sin culpar.
+
+2) VALORAR LA RUTA AL TERMINAR
+Cuando un viajero cierra la última película aparece (Prompt 2) el momento de
+"Ruta terminada". Dentro debe haber una valoración de 1 a 10: una por persona
+y ruta, se puede cambiar de opinión, es opcional. Diseña el selector de
+puntuación (accesible con teclado y lector de pantalla, 44 px mínimo, sin
+estrellas de supermercado: algo propio de cine, coherente con el logo y la
+tira de película), su estado "ya valorada" (con opción de cambiarla) y el
+agradecimiento. Recuerda que la nota de una ruta solo se muestra al público
+cuando tiene suficientes votos.
+
+ENTREGA
+Por pantalla/estado: composición a 390 y 1280, tokens usados, textos es/en,
+animaciones con duración en ms y curvas, versión reduced-motion y notas de
+accesibilidad. SVG en bloques con nombre de archivo para lo ilustrativo.
+```
