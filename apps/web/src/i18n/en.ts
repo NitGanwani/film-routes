@@ -1,7 +1,7 @@
 import type { Translations } from './es.js';
 
 export const en: Translations = {
-  app: { name: 'film-routes' },
+  app: { name: 'Filmgrim' },
   nav: {
     main: 'Main',
     explore: 'Explore',

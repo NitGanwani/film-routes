@@ -1,6 +1,6 @@
 /** Spanish is the source of truth: English must have exactly the same keys. */
 export const es = {
-  app: { name: 'film-routes' },
+  app: { name: 'Filmgrim' },
   nav: {
     main: 'Principal',
     explore: 'Explorar',
