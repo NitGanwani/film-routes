@@ -41,11 +41,24 @@
   border-bottom: 1px solid var(--border);
 }
 .topnav .brand {
-  font-family: var(--font-display);
-  font-size: var(--fs-xl);
+  display: inline-flex;
+  align-items: center;
   color: var(--text);
   text-decoration: none;
   order: 1;
+  /* The perforations of the lit frame show the bar behind the logo. */
+  --logo-notch: var(--surface);
+}
+.topnav .brand .logo {
+  display: block;
+  height: 28px;
+  width: auto;
+}
+@media (max-width: 639.98px) {
+  /* Smaller on phones so the session buttons stay on the same row. */
+  .topnav .brand .logo {
+    height: 22px;
+  }
 }
 .topnav nav {
   display: flex;

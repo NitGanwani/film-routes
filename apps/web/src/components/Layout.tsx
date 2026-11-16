@@ -8,6 +8,7 @@ import { useSession } from '../session/SessionProvider.js';
 import { Avatar } from './Avatar.js';
 import { BottomNav } from './BottomNav.js';
 import { IconSprite } from './Icon.js';
+import { Logo } from './Logo.js';
 import { NAV_LINKS } from './navLinks.js';
 import { VerifyBanner } from './VerifyBanner.js';
 
@@ -23,8 +24,8 @@ export function Layout() {
       <IconSprite />
       <ScrollToTop lenis={lenis} />
       <header className="topnav">
-        <Link className="brand" to="/">
-          {t('app.name')}
+        <Link className="brand" to="/" aria-label={t('app.name')}>
+          <Logo className="logo" />
         </Link>
         {/* With a session, phones get the bottom bar instead (see BottomNav). */}
         <nav

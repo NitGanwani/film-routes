@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Filmgrim · confirmaciones</title>
+<style>
+/* ---------- tokens ---------- */
+:root{
+  --bg:#0f0e13;--surface:#17161d;--surface-2:#201f28;--text:#f1ece2;--text-muted:#a69f92;--border:#2c2a33;
+  --light:#f1d9a3;--accent:#e3a93a;--accent-soft:#3a2a10;--success:#7ccf94;--danger:#f2796b;
+  --font-display:Fraunces,Georgia,serif;--font-body:"Instrument Sans",system-ui,sans-serif;
+  --ease-out:cubic-bezier(.2,.8,.2,1);--ease-in:cubic-bezier(.4,0,1,1);--ease-draw:cubic-bezier(.65,0,.35,1);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 var(--font-body);padding:32px 24px 96px}
+h1,h2,h3{font-family:var(--font-display);font-weight:600;margin:0;letter-spacing:-.01em}
+h1{font-size:40px}h2{font-size:26px;margin-top:64px}h3{font-size:16px;color:var(--light);margin:28px 0 10px}
+p.idea{color:var(--text-muted);max-width:70ch;margin:8px 0 0}
+code{font-size:.92em;background:var(--surface);padding:1px 5px;border-radius:4px}
+.controls{position:sticky;top:0;z-index:50;background:rgba(15,14,19,.92);backdrop-filter:blur(6px);padding:12px 0;margin:16px 0 0;display:flex;gap:16px;align-items:center;border-bottom:1px solid var(--border)}
+.controls label{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--text-muted)}
+.lang{display:inline-flex;border:1px solid var(--border);border-radius:999px;overflow:hidden}
+.lang button{background:none;border:0;color:var(--text-muted);padding:6px 12px;font:inherit;cursor:pointer}.lang button.on{background:var(--surface-2);color:var(--text)}
+
+/* ---------- dispositivos de prueba ---------- */
+.devices{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;margin-top:16px}
+.device{position:relative;background:var(--bg);border:1px solid var(--border);border-radius:16px;overflow:hidden;flex:none;isolation:isolate}
+.device::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.05;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");z-index:0}
+.phone{width:390px;height:700px}
+.desk-wrap{width:768px;height:432px;overflow:hidden;border:1px solid var(--border);border-radius:16px;flex:none}
+.desk{width:1280px;height:720px;transform:scale(.6);transform-origin:top left;border:0;border-radius:0}
+.topnav{display:flex;align-items:center;gap:20px;height:60px;padding:0 20px;border-bottom:1px solid var(--border);position:relative;z-index:1}
+.topnav .brand{display:inline-flex;align-items:center;white-space:nowrap}.topnav .brand svg{height:28px;width:auto;display:block}
+.topnav nav{display:flex;gap:4px}.topnav nav a{padding:7px 12px;border-radius:999px;color:var(--text-muted);font-size:14px}.topnav nav a.on{background:var(--surface-2);color:var(--text)}
+.topnav .me{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:13px}.av{width:30px;height:30px;border-radius:50%;background:var(--light);color:var(--bg);display:grid;place-items:center;font-weight:600}
+.page{padding:72px 20px 24px;position:relative;z-index:1}.page h1{font-size:28px}.page p{color:var(--text-muted);margin:6px 0 0}
+.tabbar{position:absolute;left:0;right:0;bottom:0;height:64px;display:flex;justify-content:space-around;align-items:center;border-top:1px solid var(--border);background:var(--bg);z-index:3}
+.tabbar a{font-size:12px;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;gap:4px}.tabbar a.on{color:var(--text)}.tabbar svg{width:20px;height:20px}
+.play{position:absolute;top:72px;left:16px;z-index:4;background:var(--accent);color:var(--bg);border:0;border-radius:999px;padding:10px 16px;font:600 14px var(--font-body);cursor:pointer;min-height:44px}
+.desk .play{top:76px;left:auto;right:24px}
+/* editor de prueba (momento 1) */
+.editor{padding:72px 20px 24px;position:relative;z-index:1}
+.editor .head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.editor h1{font-size:28px}
+.editor textarea{width:100%;max-width:560px;margin-top:16px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font:15px/1.5 var(--font-body);resize:none;min-height:96px}
+
+/* ---------- 1 · indicador de guardado (no es un aviso) ---------- */
+.save-ind{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted);min-height:20px;position:relative}
+.save-ind svg{width:16px;height:16px;flex:none}
+.save-ind .lbl{transition:opacity 200ms var(--ease-out)}
+.save-ind[data-state="idle"]{opacity:0}
+.save-ind[data-state="saving"] .spin{opacity:1}.save-ind .spin{opacity:0;transition:opacity 150ms}
+.save-ind[data-state="saving"] .spin circle{animation:spin 900ms linear infinite;stroke-dasharray:.62 1;stroke-dashoffset:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.save-ind .spin circle{transform-origin:center}
+.save-ind .ok{position:absolute;left:0;top:2px;opacity:0}
+.save-ind[data-state="saved"] .ok{opacity:1;transition:opacity 120ms}
+.save-ind[data-state="saved"] .ok path{stroke-dasharray:1;stroke-dashoffset:0;animation:draw 260ms var(--ease-draw) 60ms both}
+.save-ind[data-state="saved"] .spin{opacity:0}
+.save-ind[data-state="saved"] .ok circle{animation:fade 200ms var(--ease-out) both}
+.save-ind[data-state="error"]{color:var(--danger)}.save-ind[data-state="error"] .err{opacity:1}.save-ind .err{position:absolute;left:0;top:2px;opacity:0}
+.save-ind[data-state="error"] .retry{display:inline}.save-ind .retry{display:none;background:none;border:0;color:var(--text);text-decoration:underline;font:inherit;cursor:pointer;padding:0 2px;min-height:24px}
+@keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes sink{from{opacity:1;transform:none}to{opacity:0;transform:translateY(8px)}}
+
+/* ---------- avisos ligeros (2, 3, 4) y error ---------- */
+.toasts{position:absolute;z-index:5;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.phone .toasts{left:12px;right:12px;bottom:calc(64px + 12px)}
+.desk .toasts{right:24px;bottom:24px;width:380px}
+.toast{pointer-events:auto;display:grid;grid-template-columns:24px 1fr auto;gap:12px;align-items:center;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 8px 12px 14px;box-shadow:0 10px 30px -10px rgba(0,0,0,.7);color:var(--text);font-size:14px;animation:rise 220ms var(--ease-out) both}
+.toast.out{animation:sink 160ms var(--ease-in) both}
+.toast .ic{width:24px;height:24px;display:block}
+.toast .ic .draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 320ms var(--ease-draw) 120ms forwards}
+.toast .ic .draw2{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 320ms var(--ease-draw) 260ms forwards}
+.toast .ic .lit{opacity:0;animation:fade 260ms var(--ease-out) 380ms forwards}
+.toast .ic .pop{transform-origin:center;transform:scale(.6);opacity:0;animation:pop 220ms var(--ease-out) 60ms forwards}
+@keyframes pop{to{transform:none;opacity:1}}
+.toast .msg b{display:block;font-weight:600}.toast .msg span{color:var(--text-muted);font-size:13px}
+.toast .actions{display:flex;align-items:center;gap:2px}
+.toast .act{background:none;border:0;color:var(--light);font:600 13px var(--font-body);padding:0 10px;min-height:36px;border-radius:8px;cursor:pointer}.toast .act:hover{background:var(--accent-soft)}
+.toast .x{width:36px;height:36px;border:0;background:none;color:var(--text-muted);border-radius:8px;cursor:pointer;display:grid;place-items:center}.toast .x:hover{background:var(--surface);color:var(--text)}
+.toast .x svg{width:16px;height:16px}
+.toast:focus-within,.toast:hover{border-color:#3a3844}
+.toast.error{border-left:3px solid var(--danger);padding-left:12px}
+.toast.error .ic .draw{animation-delay:80ms}.toast.error .ic .dot{opacity:0;animation:fade 120ms linear 420ms forwards}
+.toast .bar{grid-column:1/-1;height:2px;background:var(--border);border-radius:2px;overflow:hidden;margin:4px -8px -6px -14px;opacity:.6}
+.toast .bar i{display:block;height:100%;background:var(--accent);transform-origin:left;animation:bar linear forwards}
+.toast.paused .bar i{animation-play-state:paused}
+@keyframes bar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+:focus-visible{outline:2px solid var(--light);outline-offset:2px}
+
+/* ---------- 5 · ruta terminada ---------- */
+.fin{position:absolute;inset:0;z-index:6;display:grid;place-items:end center;background:rgba(15,14,19,.86);animation:fade 300ms var(--ease-out) both}
+.desk .fin{place-items:center}
+.fin.out{animation:fadeout 200ms var(--ease-in) both}
+@keyframes fadeout{to{opacity:0}}
+.fin .card{width:100%;max-width:560px;background:var(--surface);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:24px 20px 20px;animation:rise 360ms var(--ease-out) 120ms both;position:relative}
+.desk .fin .card{border-radius:20px;padding:32px 32px 28px}
+.phone .fin .nums{display:grid;grid-template-columns:repeat(5,44px)}
+.fin .mark{width:56px;height:56px;margin:0 auto 8px;display:block}
+.fin .mark .f1,.fin .mark .f2{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 420ms var(--ease-draw) both}
+.fin .mark .f1{animation-delay:300ms}.fin .mark .f2{animation-delay:520ms}
+.fin .mark .f3{opacity:0;transform-origin:48px 12px;animation:lit 360ms var(--ease-out) 800ms both}
+@keyframes lit{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+.fin .eyebrow{text-align:center;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--light);animation:rise 320ms var(--ease-out) 1000ms both}
+.fin h2{text-align:center;font-size:34px;margin:4px 0 0;animation:rise 360ms var(--ease-out) 1080ms both}
+.fin .sub{text-align:center;color:var(--text-muted);margin:6px 0 20px;animation:rise 320ms var(--ease-out) 1180ms both}
+.fin .strip{display:block;width:100%;height:auto;margin:0 auto}
+.fin .strip .fr{opacity:0;transform-origin:center;animation:lit 300ms var(--ease-out) both}
+.fin .cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:center;margin:20px 0 8px;animation:rise 320ms var(--ease-out) 1900ms both}
+.fin .cmp .who{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em}
+.fin .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:4px 9px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border)}
+.chip svg{width:12px;height:12px}.chip.same{border-color:var(--accent);background:var(--accent-soft);color:var(--light)}
+.fin p.match.late{animation:rise 320ms var(--ease-out) 1950ms both}.fin .match{text-align:center;font-family:var(--font-display);font-size:18px;color:var(--light)}
+.fin .rate{margin-top:16px;animation:rise 320ms var(--ease-out) 2050ms both}
+.fin .rate p{margin:0 0 8px;font-size:13px;color:var(--text-muted);text-align:center}
+.fin .nums{display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+.fin .nums button{width:44px;height:44px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font:600 14px var(--font-body);cursor:pointer}
+.fin .nums button:hover{border-color:var(--accent);color:var(--light)}
+.fin .close{position:absolute;top:12px;right:12px;width:44px;height:44px;border:0;background:none;color:var(--text-muted);border-radius:10px;cursor:pointer;display:grid;place-items:center}
+.fin .close:hover{background:var(--surface-2);color:var(--text)}.fin .close svg{width:18px;height:18px}
+.fin .later{display:block;margin:14px auto 0;background:none;border:0;color:var(--text-muted);font:14px var(--font-body);text-decoration:underline;cursor:pointer;min-height:44px}
+
+/* ---------- prefers-reduced-motion: solo opacidad, o nada ---------- */
+@media (prefers-reduced-motion:reduce){
+  .toast,.toast.out,.fin,.fin.out,.fin .card,.fin .eyebrow,.fin h2,.fin .sub,.fin .cmp,.fin .rate{animation-name:fade;animation-duration:200ms;animation-delay:0ms;transform:none}
+  .toast.out,.fin.out{animation-name:fadeout}
+  .toast .ic .draw,.toast .ic .draw2,.fin .mark .f1,.fin .mark .f2,.save-ind[data-state="saved"] .ok path{animation:none;stroke-dashoffset:0}
+  .toast .ic .lit,.toast .ic .pop,.toast .ic .dot,.fin .mark .f3,.fin .strip .fr{animation:fade 200ms linear both;transform:none}
+  .save-ind[data-state="saving"] .spin circle{animation:none;stroke-dasharray:none}
+  .toast .bar i{animation-duration:0s;transform:scaleX(1)}
+  .fin .strip .fr,.fin p.match.late{animation:fade 200ms linear both!important;animation-delay:0ms!important;transform:none}
+}
+html.rm .toast,html.rm .toast.out,html.rm .fin,html.rm .fin.out,html.rm .fin .card,html.rm .fin .eyebrow,html.rm .fin h2,html.rm .fin .sub,html.rm .fin .cmp,html.rm .fin .rate{animation-name:fade;animation-duration:200ms;animation-delay:0ms;transform:none}
+html.rm .toast.out,html.rm .fin.out{animation-name:fadeout}
+html.rm .toast .ic .draw,html.rm .toast .ic .draw2,html.rm .fin .mark .f1,html.rm .fin .mark .f2,html.rm .save-ind[data-state="saved"] .ok path{animation:none;stroke-dashoffset:0}
+html.rm .toast .ic .lit,html.rm .toast .ic .pop,html.rm .toast .ic .dot,html.rm .fin .mark .f3,html.rm .fin .strip .fr{animation:fade 200ms linear both;transform:none}
+html.rm .save-ind[data-state="saving"] .spin circle{animation:none;stroke-dasharray:none}
+html.rm .toast .bar i{animation-duration:0s;transform:scaleX(1)}
+html.rm .fin .strip .fr,html.rm .fin p.match.late{animation:fade 200ms linear both!important;animation-delay:0ms!important;transform:none}
+
+/* ---------- fichas de especificación ---------- */
+.spec{display:grid;grid-template-columns:160px 1fr;gap:6px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;font-size:14px;max-width:960px;margin-top:16px}
+.spec dt{color:var(--text-muted)}.spec dd{margin:0}
+table{border-collapse:collapse;font-size:13px;margin-top:8px}th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);vertical-align:top}th{color:var(--text-muted);font-weight:500}
+details{background:var(--surface);border-radius:8px;margin:8px 0;max-width:960px}summary{padding:12px 16px;cursor:pointer}pre{margin:0;padding:16px;overflow:auto;font-size:12px;line-height:1.45;color:#c9c3b6;border-top:1px solid var(--border)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<h1>Filmgrim · confirmaciones</h1>
+<p class="idea">Seis momentos: un indicador de guardado (no es un aviso), tres avisos ligeros, el aviso de error y la celebración de ruta terminada. Cada uno se reproduce a 390 px (con barra inferior) y a 1280 px. Todo es SVG + CSS; en la app los mismos valores se pasan a Motion.</p>
+<div class="controls">
+  <label><input type="checkbox" id="rm"> Simular <code>prefers-reduced-motion</code></label>
+  <span class="lang"><button class="on" data-lang="es">ES</button><button data-lang="en">EN</button></span>
+  <span style="color:var(--text-muted);font-size:13px">Pasa el ratón o enfoca un aviso: se pausa. Esc lo cierra.</span>
+</div>
+
+<div id="sections"></div>
+
+<h2>Archivos SVG</h2>
+<p class="idea">Los iconos se dibujan con <code>pathLength="1"</code>: en la app, Motion anima <code>pathLength</code> de 0 a 1 con la misma duración y curva. Las clases <code>draw</code>, <code>draw2</code>, <code>lit</code>, <code>pop</code> y <code>dot</code> son los ganchos de animación.</p>
+<div id="files"></div>
+
+<script>
+/* ===================== SVG (fuente única: también se vuelcan como archivos) ===================== */
+const SVG = {
+"icon-check.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="ic"><circle class="pop" cx="12" cy="12" r="9.5" stroke="var(--success, #7ccf94)"/><path class="draw" pathLength="1" d="M7.5 12.5l3 3L16.5 9" stroke="var(--success, #7ccf94)"/></svg>`,
+"icon-link.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="ic"><path class="draw" pathLength="1" d="M10.5 13.5a3.5 3.5 0 0 0 5 0l3-3a3.5 3.5 0 0 0-5-5l-1 1" stroke="var(--light, #f1d9a3)"/><path class="draw2" pathLength="1" d="M13.5 10.5a3.5 3.5 0 0 0-5 0l-3 3a3.5 3.5 0 0 0 5 5l1-1" stroke="var(--light, #f1d9a3)"/></svg>`,
+"icon-invite.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="ic"><rect class="lit" x="3" y="6" width="18" height="12" rx="2" fill="var(--accent, #e3a93a)"/><rect class="draw" pathLength="1" x="3" y="6" width="18" height="12" rx="2" stroke="var(--light, #f1d9a3)" stroke-width="2"/><g fill="var(--surface-2, #201f28)" class="lit"><rect x="7" y="6" width="2" height="1.6"/><rect x="15" y="6" width="2" height="1.6"/><rect x="7" y="16.4" width="2" height="1.6"/><rect x="15" y="16.4" width="2" height="1.6"/></g></svg>`,
+"icon-error.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--danger, #f2796b)" stroke-width="2" stroke-linecap="round" aria-hidden="true" class="ic"><circle class="pop" cx="12" cy="12" r="9.5"/><path class="draw" pathLength="1" d="M12 7.5v5.5"/><path class="dot" d="M12 16.2v.3"/></svg>`,
+"icon-saving.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><g class="spin"><circle cx="12" cy="12" r="8" pathLength="1"/></g><g class="ok"><circle cx="12" cy="12" r="8" stroke="var(--success, #7ccf94)" opacity=".5"/><path pathLength="1" d="M8.5 12.3l2.4 2.4L15.5 10" stroke="var(--success, #7ccf94)"/></g><g class="err"><circle cx="12" cy="12" r="8"/><path d="M12 8.5v4.5M12 15.6v.3"/></g></svg>`,
+"icon-close.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>`,
+"logo-mark-animated.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" aria-hidden="true" class="mark"><rect class="f1" pathLength="1" x="2" y="43" width="28" height="18" rx="2.5" stroke="currentColor" stroke-width="4"/><rect class="f2" pathLength="1" x="18" y="23" width="28" height="18" rx="2.5" stroke="currentColor" stroke-width="4"/><g class="f3"><rect x="34" y="3" width="28" height="18" rx="2.5" fill="var(--accent, #e3a93a)"/><g fill="var(--surface, #17161d)"><rect x="40" y="3" width="3" height="2.5"/><rect x="40" y="18.5" width="3" height="2.5"/><rect x="53" y="3" width="3" height="2.5"/><rect x="53" y="18.5" width="3" height="2.5"/></g></g></svg>`,
+"film-strip-complete.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 64" aria-hidden="true" class="strip"><rect width="320" height="64" rx="6" fill="var(--bg, #0f0e13)"/><g fill="var(--surface-2, #201f28)"><rect x="10" y="5" width="6" height="4" rx="1"/><rect x="34" y="5" width="6" height="4" rx="1"/><rect x="58" y="5" width="6" height="4" rx="1"/><rect x="82" y="5" width="6" height="4" rx="1"/><rect x="106" y="5" width="6" height="4" rx="1"/><rect x="130" y="5" width="6" height="4" rx="1"/><rect x="154" y="5" width="6" height="4" rx="1"/><rect x="178" y="5" width="6" height="4" rx="1"/><rect x="202" y="5" width="6" height="4" rx="1"/><rect x="226" y="5" width="6" height="4" rx="1"/><rect x="250" y="5" width="6" height="4" rx="1"/><rect x="274" y="5" width="6" height="4" rx="1"/><rect x="298" y="5" width="6" height="4" rx="1"/><rect x="10" y="55" width="6" height="4" rx="1"/><rect x="34" y="55" width="6" height="4" rx="1"/><rect x="58" y="55" width="6" height="4" rx="1"/><rect x="82" y="55" width="6" height="4" rx="1"/><rect x="106" y="55" width="6" height="4" rx="1"/><rect x="130" y="55" width="6" height="4" rx="1"/><rect x="154" y="55" width="6" height="4" rx="1"/><rect x="178" y="55" width="6" height="4" rx="1"/><rect x="202" y="55" width="6" height="4" rx="1"/><rect x="226" y="55" width="6" height="4" rx="1"/><rect x="250" y="55" width="6" height="4" rx="1"/><rect x="274" y="55" width="6" height="4" rx="1"/><rect x="298" y="55" width="6" height="4" rx="1"/></g><g class="frames"><rect class="fr" x="14" y="14" width="66" height="36" rx="3" fill="var(--accent, #e3a93a)" style="animation-delay:1300ms"/><rect class="fr" x="88" y="14" width="66" height="36" rx="3" fill="var(--accent, #e3a93a)" style="animation-delay:1450ms"/><rect class="fr" x="162" y="14" width="66" height="36" rx="3" fill="var(--accent, #e3a93a)" style="animation-delay:1600ms"/><rect class="fr" x="236" y="14" width="66" height="36" rx="3" fill="var(--accent, #e3a93a)" style="animation-delay:1750ms"/></g></svg>`
+};
+const LOGO_LOCKUP = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true" style="width:28px;height:28px;vertical-align:middle"><rect x="2" y="43" width="28" height="18" rx="2.5" fill="none" stroke="currentColor" stroke-width="4"/><rect x="18" y="23" width="28" height="18" rx="2.5" fill="none" stroke="currentColor" stroke-width="4"/><rect x="34" y="3" width="28" height="18" rx="2.5" fill="#e3a93a"/><rect x="40" y="3" width="3" height="2.5" fill="#0f0e13"/><rect x="40" y="18.5" width="3" height="2.5" fill="#0f0e13"/><rect x="53" y="3" width="3" height="2.5" fill="#0f0e13"/><rect x="53" y="18.5" width="3" height="2.5" fill="#0f0e13"/></svg><span style="font-family:var(--font-display);font-weight:600;font-size:22px;margin-left:8px;vertical-align:middle">Filmgrim</span>`;
+
+/* ===================== textos ===================== */
+const T = {
+  es:{saving:"Guardando…",saved:"Guardado",saveErr:"No se pudo guardar",retry:"Reintentar",
+      changes:"Cambios guardados",changesSub:{vis:"La ruta ahora es pública",order:"Nuevo orden de las películas",remove:"Película quitada",trav:"Viajero quitado"},
+      copied:"Enlace copiado",copiedSub:"Pégalo donde quieras",
+      invite:"Invitación creada",inviteSub:"1 uso · caduca en 30 días",copy:"Copiar enlace",
+      err:"No se pudo guardar",errSub:"Revisa la conexión y vuelve a intentarlo",
+      undo:"Deshacer",close:"Cerrar aviso",
+      finEyebrow:"Ruta terminada",finTitle:"Has llegado al final",finSub:"4 de 4 películas · una ruta de demo_guia",
+      you:"Tú",guide:"demo_guia",match:"Coincidisteis en 3 de 4",rate:"¿Cómo ha sido el viaje? Del 1 al 10",later:"Más tarde",closeFin:"Cerrar"},
+  en:{saving:"Saving…",saved:"Saved",saveErr:"Couldn't save",retry:"Retry",
+      changes:"Changes saved",changesSub:{vis:"The route is now public",order:"New film order",remove:"Film removed",trav:"Traveller removed"},
+      copied:"Link copied",copiedSub:"Paste it wherever you like",
+      invite:"Invite created",inviteSub:"1 use · expires in 30 days",copy:"Copy link",
+      err:"Couldn't save",errSub:"Check your connection and try again",
+      undo:"Undo",close:"Dismiss",
+      finEyebrow:"Route complete",finTitle:"You reached the end",finSub:"4 of 4 films · a route by demo_guia",
+      you:"You",guide:"demo_guia",match:"You matched on 3 of 4",rate:"How was the journey? 1 to 10",later:"Later",closeFin:"Close"}
+};
+let lang = "es"; const t = k => T[lang][k];
+
+/* ===================== momentos ===================== */
+const MOMENTS = [
+ {id:"m1",title:"1 · Guardado (indicador, no aviso)",idea:"El autoguardado ocurre decenas de veces por sesión: no lanza avisos. Un indicador junto al título cambia de estado y se queda en “Guardado”. Solo el error reclama atención, y lo hace en el mismo sitio.",kind:"indicator"},
+ {id:"m2",title:"2 · Cambios guardados",idea:"Tras una acción explícita (visibilidad, orden, quitar película o viajero). Lleva una segunda línea con qué ha cambiado y, cuando se puede, “Deshacer”.",kind:"toast",variant:"changes"},
+ {id:"m3",title:"3 · Enlace copiado",idea:"El icono de enlace se dibuja en dos trazos, uno por eslabón. Corto: la persona ya sabe lo que ha hecho.",kind:"toast",variant:"copied"},
+ {id:"m4",title:"4 · Invitación creada",idea:"Es el único aviso con color de acento: el fotograma se enciende, como el último paso del logo. Lleva la acción “Copiar enlace”, que es lo siguiente que se hace siempre.",kind:"toast",variant:"invite"},
+ {id:"m4e",title:"Error (misma pieza, otra voz)",idea:"Borde izquierdo en peligro, icono en peligro, role=\"alert\", sin cuenta atrás: se queda hasta que se cierra o se reintenta.",kind:"toast",variant:"error"},
+ {id:"m5",title:"5 · Ruta terminada",idea:"Créditos finales: el logo se dibuja y se enciende, el título sube, la tira de película se ilumina fotograma a fotograma, y después la comparación con la guía y la valoración. Unos 2,1 s en total; se queda hasta que la persona lo cierra.",kind:"fin"},
+];
+
+function device(kind, momentId){
+  const isPhone = kind === "phone";
+  const nav = isPhone
+    ? `<header class="topnav"><span class="brand">${LOGO_LOCKUP}</span><div class="me"><span>ES</span><span class="av">N</span></div></header>`
+    : `<header class="topnav"><span class="brand">${LOGO_LOCKUP}</span><nav><a class="on">Explorar</a><a>Mis viajes</a><a>Mis rutas</a></nav><div class="me"><span>ES</span><span class="av">N</span><b>Salir</b></div></header>`;
+  const tab = isPhone ? `<div class="tabbar"><a class="on">${tabIcon()}Explorar</a><a>${tabIcon()}Mis viajes</a><a>${tabIcon()}Mis rutas</a></div>` : "";
+  const m = MOMENTS.find(x=>x.id===momentId);
+  const body = m.kind==="indicator"
+    ? `<div class="editor"><div class="head"><h1>Ghibli para días grises</h1><span class="save-ind" data-state="idle" role="status" aria-live="polite">${SVG["icon-saving.svg"]}<span class="lbl"></span><button class="retry" type="button"></button></span></div><textarea aria-label="Descripción">Para cuando necesitas que alguien te cuide un rato. Cuatro películas que consuelan sin ser tontas.</textarea></div>`
+    : `<div class="page"><h1>Ghibli para días grises</h1><p>Para cuando necesitas que alguien te cuide un rato.</p></div>`;
+  return `<div class="device ${kind}" data-moment="${momentId}">${nav}${body}<button class="play" type="button">Reproducir</button><div class="toasts" aria-live="polite" role="status"></div>${tab}</div>`;
+}
+function tabIcon(){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="6" width="16" height="12" rx="2"/></svg>`}
+
+/* --- 1 indicador --- */
+function playIndicator(dev){
+  const ind = dev.querySelector(".save-ind"), lbl = ind.querySelector(".lbl"), retry = ind.querySelector(".retry");
+  const seq = dev.dataset.seq = ((+dev.dataset.seq||0)+1);
+  ind.dataset.state="saving"; lbl.textContent=t("saving"); retry.textContent=t("retry");
+  setTimeout(()=>{ if(+dev.dataset.seq!==seq) return;
+    if(seq%3===0){ ind.dataset.state="error"; lbl.textContent=t("saveErr"); ind.setAttribute("aria-live","assertive"); }
+    else { ind.dataset.state="saved"; lbl.textContent=t("saved"); ind.setAttribute("aria-live","polite"); }
+  }, 700);
+  retry.onclick = () => playIndicator(dev);
+}
+
+/* --- avisos --- */
+function toast(dev, variant){
+  const host = dev.querySelector(".toasts");
+  host.querySelectorAll(".toast").forEach(x=>dismiss(x));
+  const el = document.createElement("div");
+  const isErr = variant==="error";
+  el.className = "toast" + (isErr?" error":"");
+  el.setAttribute("role", isErr?"alert":"status");
+  el.setAttribute("aria-live", isErr?"assertive":"polite");
+  el.tabIndex = -1;
+  const icon = {changes:SVG["icon-check.svg"], copied:SVG["icon-link.svg"], invite:SVG["icon-invite.svg"], error:SVG["icon-error.svg"]}[variant];
+  const title = {changes:t("changes"), copied:t("copied"), invite:t("invite"), error:t("err")}[variant];
+  const sub = {changes:t("changesSub").vis, copied:t("copiedSub"), invite:t("inviteSub"), error:t("errSub")}[variant];
+  const action = {changes:t("undo"), invite:t("copy"), error:t("retry")}[variant];
+  const dur = {changes:6000, copied:5000, invite:8000}[variant];
+  el.innerHTML = `${icon}<div class="msg"><b>${title}</b>${sub?`<span>${sub}</span>`:""}</div><div class="actions">${action?`<button class="act" type="button">${action}</button>`:""}<button class="x" type="button" aria-label="${t("close")}">${SVG["icon-close.svg"]}</button></div>${dur?`<div class="bar" aria-hidden="true"><i style="animation-duration:${dur}ms"></i></div>`:""}`;
+  host.appendChild(el);
+  let left = dur, started = Date.now(), timer = dur ? setTimeout(()=>dismiss(el), dur) : null;
+  const pause = () => { if(!timer) return; clearTimeout(timer); timer=null; left -= Date.now()-started; el.classList.add("paused"); };
+  const resume = () => { if(timer || !dur || left<=0) return; started=Date.now(); el.classList.remove("paused"); timer=setTimeout(()=>dismiss(el), Math.max(left,1500)); };
+  el.addEventListener("mouseenter",pause); el.addEventListener("mouseleave",resume);
+  el.addEventListener("focusin",pause); el.addEventListener("focusout",resume);
+  el.querySelector(".x").onclick = () => dismiss(el);
+  const act = el.querySelector(".act"); if(act) act.onclick = () => dismiss(el);
+  el.addEventListener("keydown", e => { if(e.key==="Escape") dismiss(el); });
+  if(isErr) el.querySelector(".act").focus({preventScroll:true});
+}
+function dismiss(el){ if(!el || el.classList.contains("out")) return; el.classList.add("out"); el.addEventListener("animationend",()=>el.remove(),{once:true}); setTimeout(()=>el.remove(),400); }
+
+/* --- 5 ruta terminada --- */
+function emo(name, icon, same){ return `<span class="chip ${same?"same":""}"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">${icon}</svg>${name}</span>`; }
+const EMO = { alegria:[lang==="en"?"Joy":"Alegría",'<circle cx="6" cy="6" r="2.5"/><path d="M6 1v1.5M6 9.5V11M1 6h1.5M9.5 6H11"/>'], ternura:[lang==="en"?"Tenderness":"Ternura",'<path d="M6 10S1.5 7 1.5 4a2.3 2.3 0 0 1 4.5-.8A2.3 2.3 0 0 1 10.5 4C10.5 7 6 10 6 10z"/>'], asombro:[lang==="en"?"Awe":"Asombro",'<path d="M6 1l1.2 3.8L11 6l-3.8 1.2L6 11 4.8 7.2 1 6l3.8-1.2z"/>'], reflexivo:[lang==="en"?"Thoughtful":"Reflexiva",'<circle cx="6" cy="6" r="4.5"/><path d="M6 3.5v3l2 1"/>'] };
+function fin(dev){
+  dev.querySelector(".fin")?.remove();
+  const e = (k,same)=>{const n=EMO[k];return emo(lang==="en"?{alegria:"Joy",ternura:"Tenderness",asombro:"Awe",reflexivo:"Thoughtful"}[k]:n[0], n[1], same)};
+  const o = document.createElement("div"); o.className="fin"; o.setAttribute("role","dialog"); o.setAttribute("aria-modal","true"); o.setAttribute("aria-labelledby","fin-title-"+dev.dataset.moment+dev.className.replace(/\s/g,""));
+  const titleId = o.getAttribute("aria-labelledby");
+  o.innerHTML = `<div class="card">
+    <button class="close" type="button" aria-label="${t("closeFin")}">${SVG["icon-close.svg"]}</button>
+    ${SVG["logo-mark-animated.svg"]}
+    <p class="eyebrow">${t("finEyebrow")}</p>
+    <h2 id="${titleId}">${t("finTitle")}</h2>
+    <p class="sub">${t("finSub")}</p>
+    ${SVG["film-strip-complete.svg"]}
+    <div class="cmp"><div><div class="who">${t("you")}</div><div class="chips">${e("alegria",true)}${e("ternura",true)}${e("asombro",false)}${e("reflexivo",true)}</div></div><div><div class="who">${t("guide")}</div><div class="chips">${e("alegria",true)}${e("ternura",true)}${e("reflexivo",false)}${e("reflexivo",true)}</div></div></div>
+    <p class="match late">${t("match")}</p>
+    <div class="rate"><p>${t("rate")}</p><div class="nums">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button type="button">${n}</button>`).join("")}</div><button class="later" type="button">${t("later")}</button></div>
+  </div>`;
+  dev.appendChild(o);
+  const close = () => { o.classList.add("out"); setTimeout(()=>o.remove(),250); dev.querySelector(".play").focus({preventScroll:true}); };
+  o.querySelector(".close").onclick = close; o.querySelector(".later").onclick = close;
+  o.querySelectorAll(".nums button").forEach(b=>b.onclick=close);
+  o.addEventListener("keydown", ev => { if(ev.key==="Escape") close(); });
+  setTimeout(()=>o.querySelector(".close").focus({preventScroll:true}), 2200);
+}
+
+/* ===================== fichas ===================== */
+const SPECS = {
+m1:`<dl class="spec"><dt>Dónde</dt><dd>En línea con el título del editor, a la derecha (390 y 1280 px). Nunca un aviso flotante.</dd>
+<dt>Tamaño y tipo</dt><dd>Instrument Sans 13 px, color <code>--text-muted</code>; icono 16 px. Error: texto <code>--danger</code> + enlace “Reintentar” en <code>--text</code> subrayado (zona de 24 px de alto; en móvil el enlace es el único control y mide 44 px de ancho).</dd>
+<dt>Animación</dt><dd><table><tr><th>Qué</th><th>Cuándo</th><th>Duración</th><th>Curva</th></tr>
+<tr><td>Aparece “Guardando…” con un arco girando</td><td>al empezar la petición</td><td>opacidad 150 ms; giro 900 ms lineal, continuo</td><td>linear</td></tr>
+<tr><td>El arco se funde y el check se dibuja (<code>pathLength</code> 0→1)</td><td>al responder la API</td><td>fundido 120 ms; trazo 260 ms, retardo 60 ms</td><td>cubic-bezier(.65,0,.35,1)</td></tr>
+<tr><td>Texto pasa a “Guardado”</td><td>junto con el check</td><td>200 ms</td><td>cubic-bezier(.2,.8,.2,1)</td></tr></table>
+Se queda en “Guardado” hasta la siguiente edición. No parpadea si hay dos guardados seguidos: la petición en vuelo manda.</dd>
+<dt>Reduced motion</dt><dd>Sin giro (arco estático) y sin dibujo: el check aparece con fundido de 200 ms.</dd>
+<dt>Textos</dt><dd>ES: Guardando… · Guardado · No se pudo guardar · Reintentar. EN: Saving… · Saved · Couldn't save · Retry.</dd>
+<dt>Accesibilidad</dt><dd><code>role="status" aria-live="polite"</code>; pasa a <code>assertive</code> solo en error. El lector anuncia “Guardado” una vez por cambio real, no por cada tecla (el texto solo cambia al responder la API).</dd>
+<dt>Regla de uso</dt><dd>Sí: autoguardado de título, descripción, notas y emoción. No: nunca un aviso por autoguardado; el aviso del momento 2 es solo para acciones explícitas.</dd></dl>`,
+m2:`<dl class="spec"><dt>Dónde</dt><dd>390 px: abajo, centrado, 12 px por encima de la barra inferior, márgenes laterales 12 px. 1280 px: abajo a la derecha, 24 px de margen, 380 px de ancho. Los avisos se apilan hacia arriba; nunca más de dos.</dd>
+<dt>Tamaño y tipo</dt><dd>Fondo <code>--surface-2</code>, borde 1 px <code>--border</code>, radio 12, sombra suave. Título Instrument Sans 14 px 600 <code>--text</code>; segunda línea 13 px <code>--text-muted</code>. Icono 24 px (<code>icon-check.svg</code>, en <code>--success</code>). Acción “Deshacer” en <code>--light</code>, 36 px de alto; cierre × 36 px. Cuenta atrás de 2 px en <code>--accent</code> abajo.</dd>
+<dt>Animación</dt><dd><table><tr><th>Qué</th><th>Retardo</th><th>Duración</th><th>Curva</th></tr>
+<tr><td>Tarjeta: opacidad 0→1 y translateY 12→0 px</td><td>0</td><td>220 ms</td><td>cubic-bezier(.2,.8,.2,1)</td></tr>
+<tr><td>Círculo: scale .6→1 y opacidad</td><td>60 ms</td><td>220 ms</td><td>cubic-bezier(.2,.8,.2,1)</td></tr>
+<tr><td>Check: <code>pathLength</code> 0→1</td><td>120 ms</td><td>320 ms</td><td>cubic-bezier(.65,0,.35,1)</td></tr>
+<tr><td>Cuenta atrás: scaleX 1→0</td><td>0</td><td>6000 ms</td><td>linear</td></tr>
+<tr><td>Salida: opacidad 1→0 y translateY 0→8 px</td><td>al cumplir o cerrar</td><td>160 ms</td><td>cubic-bezier(.4,0,1,1)</td></tr></table></dd>
+<dt>Reduced motion</dt><dd>Entrada y salida solo con opacidad (200 ms); el icono aparece completo; la cuenta atrás no se anima (barra estática) pero el tiempo sigue contando.</dd>
+<dt>Textos</dt><dd>ES: Cambios guardados · La ruta ahora es pública / Nuevo orden de las películas / Película quitada / Viajero quitado · Deshacer. EN: Changes saved · The route is now public / New film order / Film removed / Traveller removed · Undo.</dd>
+<dt>Accesibilidad</dt><dd><code>role="status" aria-live="polite"</code>. 6 s en pantalla; se pausa con hover o foco dentro, y al salir sigue con el tiempo que quedaba (mínimo 1,5 s). Esc o el botón × lo cierran. El foco no se mueve al aviso.</dd>
+<dt>Regla de uso</dt><dd>Sí: una acción explícita con resultado que no se ve en pantalla de inmediato. No: cuando el cambio ya es evidente (la película desaparece de la lista a la vista) y no hay “Deshacer” que ofrecer.</dd></dl>`,
+m3:`<dl class="spec"><dt>Dónde / tamaño</dt><dd>Igual que el momento 2. Sin acción; solo cierre.</dd>
+<dt>Animación</dt><dd><table><tr><th>Qué</th><th>Retardo</th><th>Duración</th><th>Curva</th></tr>
+<tr><td>Tarjeta: entrada</td><td>0</td><td>220 ms</td><td>cubic-bezier(.2,.8,.2,1)</td></tr>
+<tr><td>Eslabón 1: <code>pathLength</code> 0→1</td><td>120 ms</td><td>320 ms</td><td>cubic-bezier(.65,0,.35,1)</td></tr>
+<tr><td>Eslabón 2: <code>pathLength</code> 0→1</td><td>260 ms</td><td>320 ms</td><td>cubic-bezier(.65,0,.35,1)</td></tr>
+<tr><td>Cuenta atrás</td><td>0</td><td>5000 ms</td><td>linear</td></tr></table></dd>
+<dt>Reduced motion</dt><dd>Opacidad 200 ms; icono completo.</dd>
+<dt>Textos</dt><dd>ES: Enlace copiado · Pégalo donde quieras. EN: Link copied · Paste it wherever you like.</dd>
+<dt>Accesibilidad</dt><dd><code>polite</code>, 5 s, pausa con hover/foco, Esc cierra. El botón que copió también cambia su etiqueta a “Copiado” durante 2 s, para quien no mira la esquina.</dd>
+<dt>Regla de uso</dt><dd>Sí: copiar el enlace público o un enlace de invitación. No: no se acumula; si se copia dos veces seguidas, el aviso anterior se cierra y entra el nuevo.</dd></dl>`,
+m4:`<dl class="spec"><dt>Dónde / tamaño</dt><dd>Igual que el momento 2, con la acción “Copiar enlace” (36 px de alto) a la derecha. 8 s en pantalla porque lleva acción.</dd>
+<dt>Animación</dt><dd><table><tr><th>Qué</th><th>Retardo</th><th>Duración</th><th>Curva</th></tr>
+<tr><td>Tarjeta: entrada</td><td>0</td><td>220 ms</td><td>cubic-bezier(.2,.8,.2,1)</td></tr>
+<tr><td>Marco del fotograma: <code>pathLength</code> 0→1 en <code>--light</code></td><td>120 ms</td><td>320 ms</td><td>cubic-bezier(.65,0,.35,1)</td></tr>
+<tr><td>Relleno ámbar y perforaciones: opacidad 0→1 (“se enciende”)</td><td>380 ms</td><td>260 ms</td><td>cubic-bezier(.2,.8,.2,1)</td></tr></table></dd>
+<dt>Reduced motion</dt><dd>Opacidad 200 ms; el fotograma aparece ya encendido.</dd>
+<dt>Textos</dt><dd>ES: Invitación creada · 1 uso · caduca en 30 días · Copiar enlace. EN: Invite created · 1 use · expires in 30 days · Copy link. (La segunda línea se compone con los valores reales: “Sin tope · sin caducidad”, etc.)</dd>
+<dt>Accesibilidad</dt><dd><code>polite</code>. Al pulsar “Copiar enlace” el aviso se cierra y entra el del momento 3. Tab llega a la acción y al cierre; Esc cierra.</dd>
+<dt>Regla de uso</dt><dd>Sí: crear un enlace de invitación. No: si la hoja de crear invitación ya muestra el enlace en grande con su botón de copiar, este aviso sobra: elige uno de los dos (recomiendo la hoja en móvil y este aviso en escritorio, donde el panel es lateral).</dd></dl>`,
+m4e:`<dl class="spec"><dt>Dónde / tamaño</dt><dd>Mismo sitio y pieza, con borde izquierdo de 3 px en <code>--danger</code>, icono en <code>--danger</code> y acción “Reintentar”. Sin cuenta atrás.</dd>
+<dt>Animación</dt><dd>Entrada 220 ms igual; círculo 220 ms; barra vertical <code>pathLength</code> 320 ms (80 ms); el punto aparece a los 420 ms. Nada vibra ni tiembla.</dd>
+<dt>Reduced motion</dt><dd>Opacidad 200 ms, icono completo.</dd>
+<dt>Textos</dt><dd>ES: No se pudo guardar · Revisa la conexión y vuelve a intentarlo · Reintentar. EN: Couldn't save · Check your connection and try again · Retry. (El título cambia según la acción: “No se pudo copiar”, “No se pudo crear la invitación”.)</dd>
+<dt>Accesibilidad</dt><dd><code>role="alert" aria-live="assertive"</code>. No desaparece solo. El foco va a “Reintentar”; Esc cierra y devuelve el foco a donde estaba. Nunca dos errores apilados: el nuevo sustituye al anterior.</dd>
+<dt>Regla de uso</dt><dd>Sí: cualquier fallo de una acción explícita. No: el fallo del autoguardado va al indicador del momento 1, no aquí.</dd></dl>`,
+m5:`<dl class="spec"><dt>Dónde</dt><dd>390 px: hoja inferior sobre un velo <code>rgba(15,14,19,.86)</code>, radio 20 arriba, con hueco para la barra inferior. 1280 px: tarjeta centrada de 560 px, radio 20, padding 32. Fondo <code>--surface</code>, borde <code>--border</code>.</dd>
+<dt>Tipo</dt><dd>Antetítulo 12 px mayúsculas espaciadas en <code>--light</code>; título Fraunces 34 px; subtítulo 15 px <code>--text-muted</code>; “Coincidisteis en 3 de 4” Fraunces 18 px <code>--light</code>; botones 1–10 de 44×44 px.</dd>
+<dt>Animación (2,1 s)</dt><dd><table><tr><th>Qué</th><th>Empieza</th><th>Duración</th><th>Curva</th></tr>
+<tr><td>Velo: opacidad 0→1</td><td>0</td><td>300 ms</td><td>cubic-bezier(.2,.8,.2,1)</td></tr>
+<tr><td>Tarjeta: opacidad y translateY 12→0</td><td>120 ms</td><td>360 ms</td><td>cubic-bezier(.2,.8,.2,1)</td></tr>
+<tr><td>Logo, fotograma 1: <code>pathLength</code> 0→1</td><td>300 ms</td><td>420 ms</td><td>cubic-bezier(.65,0,.35,1)</td></tr>
+<tr><td>Logo, fotograma 2: <code>pathLength</code> 0→1</td><td>520 ms</td><td>420 ms</td><td>cubic-bezier(.65,0,.35,1)</td></tr>
+<tr><td>Logo, fotograma 3 se enciende: opacidad + scale .85→1</td><td>800 ms</td><td>360 ms</td><td>cubic-bezier(.2,.8,.2,1)</td></tr>
+<tr><td>Antetítulo, título, subtítulo: suben 12 px y aparecen</td><td>1000 / 1080 / 1180 ms</td><td>320–360 ms</td><td>cubic-bezier(.2,.8,.2,1)</td></tr>
+<tr><td>Tira de película: cada fotograma se enciende (opacidad + scale .85→1)</td><td>1300 ms, +150 ms por fotograma</td><td>300 ms</td><td>cubic-bezier(.2,.8,.2,1)</td></tr>
+<tr><td>Comparación de emociones y “Coincidisteis…”</td><td>1900 / 1950 ms</td><td>320 ms</td><td>cubic-bezier(.2,.8,.2,1)</td></tr>
+<tr><td>Valoración 1–10 y “Más tarde”</td><td>2050 ms</td><td>320 ms</td><td>cubic-bezier(.2,.8,.2,1)</td></tr>
+<tr><td>Cierre: opacidad 1→0</td><td>al cerrar</td><td>200 ms</td><td>cubic-bezier(.4,0,1,1)</td></tr></table>
+Con N películas, la tira tiene N fotogramas y el paso entre encendidos es 150 ms (10 películas: 1,5 s de tira; el total sube a 3 s, aceptable por ser una vez por ruta).</dd>
+<dt>Reduced motion</dt><dd>Todo con opacidad de 200 ms y sin retardos: velo, tarjeta y contenido completo a la vez; el logo aparece dibujado y encendido; la tira, toda iluminada.</dd>
+<dt>Textos</dt><dd>ES: Ruta terminada · Has llegado al final · 4 de 4 películas · una ruta de demo_guia · Tú / demo_guia · Coincidisteis en 3 de 4 · ¿Cómo ha sido el viaje? Del 1 al 10 · Más tarde · Cerrar. EN: Route complete · You reached the end · 4 of 4 films · a route by demo_guia · You / demo_guia · You matched on 3 of 4 · How was the journey? 1 to 10 · Later · Close.</dd>
+<dt>Accesibilidad</dt><dd><code>role="dialog" aria-modal="true"</code> con el título como etiqueta; el foco entra en el botón de cierre cuando termina la secuencia (2,2 s) y vuelve a la vista de viaje al cerrar. Esc, ×, “Más tarde” o una valoración lo cierran. La comparación lleva icono + nombre de emoción; el “igual” se marca con borde ámbar y además con el “3 de 4” en texto. Sin límite de tiempo.</dd>
+<dt>Regla de uso</dt><dd>Sí: una sola vez, al cerrar la última película de una ruta (no al volver a entrar en una ruta ya terminada: ahí se ve la comparación en la página, sin velo). No: no se lanza si el cierre de la película ha fallado en la API. Nunca se combina con un aviso ligero a la vez.</dd></dl>`
+};
+
+/* ===================== montaje ===================== */
+const sections = document.getElementById("sections");
+MOMENTS.forEach(m=>{
+  const s = document.createElement("section"); s.id = m.id;
+  s.innerHTML = `<h2>${m.title}</h2><p class="idea">${m.idea}</p><div class="devices">${device("phone",m.id)}<div class="desk-wrap">${device("desk",m.id)}</div></div>${SPECS[m.id]}`;
+  sections.appendChild(s);
+});
+document.querySelectorAll(".device").forEach(dev=>{
+  const m = MOMENTS.find(x=>x.id===dev.dataset.moment);
+  dev.querySelector(".play").onclick = () => { if(m.kind==="indicator") playIndicator(dev); else if(m.kind==="toast") toast(dev,m.variant); else fin(dev); };
+});
+document.getElementById("rm").onchange = e => document.documentElement.classList.toggle("rm", e.target.checked);
+document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{lang=b.dataset.lang;document.querySelectorAll(".lang button").forEach(x=>x.classList.toggle("on",x===b));});
+const files = document.getElementById("files");
+Object.entries(SVG).forEach(([name,src])=>{
+  const d = document.createElement("details");
+  d.innerHTML = `<summary><code>${name}</code></summary><pre><code></code></pre>`;
+  d.querySelector("code:last-child").textContent = src.replace(/ class="(ic|mark|strip)"/,"");
+  files.appendChild(d);
+});
+</script>
+</body>
+</html>
