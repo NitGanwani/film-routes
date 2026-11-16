@@ -9,6 +9,7 @@ import { Avatar } from './Avatar.js';
 import { BottomNav } from './BottomNav.js';
 import { IconSprite } from './Icon.js';
 import { Logo } from './Logo.js';
+import { Toaster } from './toast/Toaster.js';
 import { NAV_LINKS } from './navLinks.js';
 import { VerifyBanner } from './VerifyBanner.js';
 
@@ -97,6 +98,7 @@ export function Layout() {
       </footer>
 
       {signedIn && <BottomNav />}
+      <Toaster />
     </div>
   );
 }

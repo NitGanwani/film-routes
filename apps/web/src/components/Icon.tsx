@@ -29,6 +29,7 @@ export type IconName =
   | 'grip'
   | 'search'
   | 'plus'
+  | 'close'
   | 'arrow-up'
   | 'arrow-down'
   | 'chevron'
@@ -232,6 +233,9 @@ export function IconSprite() {
       </symbol>
       <symbol id="i-plus" viewBox="0 0 24 24" {...line} strokeLinecap="round">
         <path d="M12 5v14M5 12h14" />
+      </symbol>
+      <symbol id="i-close" viewBox="0 0 24 24" {...line} strokeLinecap="round">
+        <path d="M6 6l12 12M18 6L6 18" />
       </symbol>
       <symbol
         id="i-arrow-up"

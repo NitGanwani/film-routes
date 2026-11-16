@@ -5,15 +5,21 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { useRevokeInvite } from '../api/mutations.js';
 import { useInvites } from '../api/queries.js';
-import type { AuthorRouteDetail, Invite, InviteStatus } from '../api/types.js';
+import type {
+  AuthorRouteDetail,
+  CreatedInvite,
+  Invite,
+  InviteStatus,
+} from '../api/types.js';
 import { errorMessage } from '../components/errorMessage.js';
 import { Icon, type IconName } from '../components/Icon.js';
 import { EmptyState, ErrorBox } from '../components/States.js';
+import { useToast } from '../components/toast/useToast.js';
 import { useMediaQuery } from '../components/useMediaQuery.js';
 import { useSession } from '../session/SessionProvider.js';
 import { InviteCreator } from './InviteCreator.js';
 import { InviteSheet } from './InviteSheet.js';
-import { formatDay, sortInvites } from './invites.js';
+import { formatDay, inviteLink, sortInvites } from './invites.js';
 import { shareRequirements } from './share.js';
 import { tabPath } from './tabs.js';
 
@@ -31,14 +37,35 @@ const STATUS_ICON = {
  * when it is made; the server keeps no way to show it again.
  */
 export function InvitesPanel({ route }: { route: AuthorRouteDetail }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useSession();
+  const toast = useToast();
   const invites = useInvites(route.id);
   const wide = useMediaQuery('(min-width: 720px)');
   const [creating, setCreating] = useState(false);
   // The link just made, so the list can bring its row in softly.
   const [freshId, setFreshId] = useState<string | null>(null);
   const newButton = useRef<HTMLButtonElement>(null);
+  // On a wide screen the panel is at the side of the page and the link is a
+  // long way from the pointer: a notice says it is made and offers to copy it.
+  // On a phone the sheet already shows the link in big, so it adds nothing.
+  function announce(invite: CreatedInvite) {
+    const link = inviteLink(window.location.origin, invite.token);
+    const copy = () =>
+      void navigator.clipboard.writeText(link).then(toast.copied, () => {
+        toast.copyFailed(copy);
+      });
+    const uses =
+      invite.maxUses === null
+        ? t('toast.inviteNoLimit')
+        : t('invites.usesCount', { count: invite.maxUses });
+    const expiry = invite.expiresAt
+      ? t('toast.inviteExpires', {
+          date: formatDay(invite.expiresAt, i18n.language, new Date()),
+        })
+      : t('toast.inviteNoExpiry');
+    toast.inviteCreated(`${uses} · ${expiry}`, copy);
+  }
   const panelRef = useRef<HTMLElement>(null);
   const panelId = useId();
   // The form opens in the page, away from the button that asked for it: the
@@ -137,7 +164,10 @@ export function InvitesPanel({ route }: { route: AuthorRouteDetail }) {
           <InviteCreator
             routeId={route.id}
             routeTitle={route.title}
-            onCreated={(invite) => setFreshId(invite.id)}
+            onCreated={(invite) => {
+              setFreshId(invite.id);
+              announce(invite);
+            }}
             onDone={() => {
               closeCreator();
               newButton.current?.focus();

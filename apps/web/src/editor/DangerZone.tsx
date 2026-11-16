@@ -8,6 +8,7 @@ import type { AuthorRouteDetail } from '../api/types.js';
 import { ConfirmDialog } from '../components/ConfirmDialog.js';
 import { errorMessage } from '../components/errorMessage.js';
 import { Icon } from '../components/Icon.js';
+import { useToast } from '../components/toast/useToast.js';
 import { isLockedRefusal } from './films.js';
 import { deleteNeedsTitle, titleMatches } from './share.js';
 
@@ -22,6 +23,7 @@ export function DangerZone({ route }: { route: AuthorRouteDetail }) {
   const queryClient = useQueryClient();
   const remove = useDeleteRoute(route.id, route.title);
   const makePrivate = useChangeVisibility(route.id);
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [typed, setTyped] = useState('');
   const trigger = useRef<HTMLButtonElement>(null);
@@ -62,7 +64,11 @@ export function DangerZone({ route }: { route: AuthorRouteDetail }) {
               type="button"
               className="btn btn-secondary"
               disabled={makePrivate.isPending}
-              onClick={() => makePrivate.mutate('private')}
+              onClick={() =>
+                makePrivate.mutate('private', {
+                  onSuccess: () => toast.visibilityChanged('private'),
+                })
+              }
             >
               {t('danger.makePrivate')}
             </button>

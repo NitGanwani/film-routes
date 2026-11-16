@@ -9,6 +9,7 @@ import { ConfirmDialog } from '../components/ConfirmDialog.js';
 import { errorMessage } from '../components/errorMessage.js';
 import { Icon } from '../components/Icon.js';
 import { useCopied } from '../components/useCopied.js';
+import { useToast } from '../components/toast/useToast.js';
 import { useResendVerification } from '../components/useResendVerification.js';
 import { VISIBILITY_ICON } from '../myRoutes/model.js';
 import { useSession } from '../session/SessionProvider.js';
@@ -31,6 +32,7 @@ export function ShareSection({ route }: { route: AuthorRouteDetail }) {
   const groupId = useId();
   const { user } = useSession();
   const change = useChangeVisibility(route.id);
+  const toast = useToast();
   const resend = useResendVerification();
   const requirements = shareRequirements({
     stepCount: route.steps.length,
@@ -41,6 +43,12 @@ export function ShareSection({ route }: { route: AuthorRouteDetail }) {
   // The option waiting for a yes in the warning, and where the focus returns.
   const [asking, setAsking] = useState<RouteVisibility | null>(null);
   const trigger = useRef<HTMLElement | null>(null);
+
+  function apply(option: RouteVisibility) {
+    change.mutate(option, {
+      onSuccess: () => toast.visibilityChanged(option),
+    });
+  }
 
   function choose(option: RouteVisibility) {
     if (option === route.visibility || change.isPending) return;
@@ -57,7 +65,7 @@ export function ShareSection({ route }: { route: AuthorRouteDetail }) {
       setAsking(option);
       return;
     }
-    change.mutate(option);
+    apply(option);
   }
 
   if (hidden) {
@@ -197,7 +205,7 @@ export function ShareSection({ route }: { route: AuthorRouteDetail }) {
             confirmLabel={t('share.confirm.ok')}
             cancelLabel={t('share.confirm.cancel')}
             onConfirm={() => {
-              change.mutate(asking);
+              apply(asking);
               setAsking(null);
             }}
             onCancel={() => setAsking(null)}
@@ -234,9 +242,7 @@ function ShareLink({ routeId }: { routeId: string }) {
           onClick={() => void copy()}
         >
           {copied && <Icon name="check" size={16} />}
-          <span aria-live="polite">
-            {copied ? t('share.copied') : t('share.copy')}
-          </span>
+          <span>{copied ? t('share.copied') : t('share.copy')}</span>
         </button>
       </div>
       <Link className="share-invite-link" to={tabPath(routeId, 'invites')}>

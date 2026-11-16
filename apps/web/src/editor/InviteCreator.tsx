@@ -254,9 +254,7 @@ function InviteResult({
           onClick={() => void copy()}
         >
           {copied && <Icon name="check" size={16} />}
-          <span aria-live="polite">
-            {copied ? t('invites.copied') : t('invites.copy')}
-          </span>
+          <span>{copied ? t('invites.copied') : t('invites.copy')}</span>
         </button>
         {canShare && (
           <button

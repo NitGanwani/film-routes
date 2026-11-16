@@ -3543,3 +3543,137 @@ fieldset.field legend {
 .explore-title > * {
   min-width: 0;
 }
+
+/* ---------- Notices (see components/toast) ---------- */
+.toasts {
+  position: fixed;
+  z-index: 50;
+  inset: auto var(--sp-3) calc(var(--bottom-nav-h, 0px) + var(--sp-3));
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  pointer-events: none;
+}
+@media (min-width: 900px) {
+  .toasts {
+    inset: auto var(--sp-6) var(--sp-6) auto;
+    width: 380px;
+  }
+}
+.toast {
+  pointer-events: auto;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  gap: var(--sp-3);
+  align-items: center;
+  padding: var(--sp-3) var(--sp-2) var(--sp-3) 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-2);
+  color: var(--text);
+  font-size: var(--fs-sm);
+}
+.toast[data-kind='error'] {
+  border-left: 3px solid var(--danger);
+  padding-left: 12px;
+}
+.toast:hover,
+.toast:focus-within {
+  border-color: color-mix(in srgb, var(--text) 24%, var(--border));
+}
+.toast-icon {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+.toast-icon .stroke-success {
+  stroke: var(--success);
+}
+.toast-icon .stroke-light {
+  stroke: var(--primary);
+}
+.toast-icon .stroke-danger {
+  stroke: var(--danger);
+}
+.toast-icon .fill-accent {
+  fill: var(--accent);
+}
+.toast-icon .fill-notch {
+  fill: var(--surface-2);
+}
+.toast-msg {
+  min-width: 0;
+}
+.toast-msg strong {
+  display: block;
+  font-weight: 600;
+}
+.toast-msg span {
+  display: block;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+.toast-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.toast-act {
+  min-height: 36px;
+  padding: 0 var(--sp-3);
+  background: none;
+  border: 0;
+  border-radius: var(--r-sm);
+  color: var(--primary);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.toast-act:hover {
+  background: var(--accent-soft);
+}
+.toast-x {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: 0;
+  border-radius: var(--r-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.toast-x:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+/* The time left, as a thin line that empties. Reduced motion leaves it full
+   (the rule in base.css stops every animation) but the time still runs. */
+.toast-bar {
+  grid-column: 1 / -1;
+  height: 2px;
+  margin: 4px -8px -6px -14px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  opacity: 0.6;
+}
+.toast-bar i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform-origin: left;
+  animation: toast-bar linear forwards;
+}
+.toast[data-paused='true'] .toast-bar i {
+  animation-play-state: paused;
+}
+@keyframes toast-bar {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
