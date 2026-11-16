@@ -1,3 +1,5 @@
+import type { EnvelopeState } from './model.js';
+
 /** Where the perforations of the film sit along its top and bottom edge. */
 const HOLES = Array.from({ length: 8 }, (_, index) => 16 + index * 18);
 const FRAMES = [16, 60, 104];
@@ -5,15 +7,19 @@ const FRAMES = [16, 60, 104];
 /**
  * The picture of the invitation: a closed envelope that is a strip of film
  * with its frames switched off, and a flap with the amber frame of the logo.
- * Accepting opens it: the flap turns up and the frames light one after another
- * (the CSS does it, and drops it with reduced motion). It shows nothing of the
- * route, because the API does not say anything about it before it is accepted.
+ * Accepting opens it (`open`): the flap turns up and the frames light one
+ * after another. The problems have their own variant of the strip, so the
+ * picture says what the words say: a frame crossed out (the link is used up or
+ * switched off), switched off (it ran out or you are out), lit (the route is
+ * yours) or locked (it was taken down). The CSS does the motion, and drops it
+ * with reduced motion. It shows nothing of the route, because the API does not
+ * say anything about it before it is accepted.
  */
-export function InviteEnvelope({ open }: { open: boolean }) {
+export function InviteEnvelope({ state }: { state: EnvelopeState }) {
   return (
     <svg
       className="invite-env"
-      data-open={open || undefined}
+      data-state={state}
       viewBox="0 0 160 100"
       aria-hidden="true"
       focusable="false"
@@ -69,6 +75,28 @@ export function InviteEnvelope({ open }: { open: boolean }) {
           <rect x="85" y="32" width="3" height="2.5" />
           <rect x="85" y="47.5" width="3" height="2.5" />
         </g>
+      </g>
+      <path
+        className="env-strike"
+        d="M58 76 L102 40"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      <g className="env-lock">
+        <rect
+          className="env-lock-plate"
+          x="68"
+          y="47"
+          width="24"
+          height="22"
+          rx="3"
+        />
+        <rect x="72" y="56" width="16" height="11" rx="2" strokeWidth="2" />
+        <path
+          d="M75 56v-3a5 5 0 0 1 10 0v3"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
       </g>
     </svg>
   );

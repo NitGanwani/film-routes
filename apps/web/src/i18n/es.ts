@@ -521,28 +521,47 @@ export const es = {
     joinAs: 'Entrarás como @{{name}}',
     opening: 'Abriendo la ruta…',
     done: 'Ya es tuya',
-    problem: {
-      not_found:
-        'Este enlace no existe. Puede que esté incompleto: pídele a quien te lo envió que lo comparta otra vez.',
-      expired: 'Este enlace ha caducado. Pídele a quien te lo envió uno nuevo.',
-      revoked:
-        'Quien te envió este enlace lo ha retirado. Si aún quieres la ruta, pídele uno nuevo.',
-      exhausted:
-        'Este enlace ya se ha usado todas las veces que se podía. Pídele a quien te lo envió uno nuevo.',
-      unavailable: 'Esta ruta ya no está disponible.',
-      own: 'Esta invitación es de tu propia ruta: tú ya eres su guía.',
-      removed:
-        'El autor te ha quitado de esta ruta, así que no puedes volver a entrar.',
-      session:
-        'Tu sesión ha terminado. Entra de nuevo para aceptar la invitación.',
-      offline:
-        'No hemos podido conectar. Revisa tu conexión y vuelve a intentarlo.',
-      unknown: 'Algo ha salido mal. Inténtalo de nuevo.',
-    },
-    wayOut: {
+    askAgainText:
+      'Hola, el enlace de Filmgrim que me pasaste ya no funciona, ¿me mandas otro?',
+    action: {
+      askAgain: 'Pídele otro enlace',
       explore: 'Explorar rutas',
-      myRoutes: 'Ir a mis rutas',
-      login: 'Entrar',
+      editor: 'Ir a mis rutas',
+      retry: 'Reintentar',
+    },
+    state: {
+      expired: {
+        title: 'Este enlace ha caducado',
+        body: 'Quien te lo envió puede hacerte otro en un momento.',
+      },
+      exhausted: {
+        title: 'Este enlace ya se ha usado',
+        body: 'Tenía un número limitado de usos y se han gastado.',
+      },
+      revoked: {
+        title: 'Este enlace ya no sirve',
+        body: 'Quien lo creó lo ha desactivado. Si crees que es un error, escríbele.',
+      },
+      own: {
+        title: 'Esta ruta es tuya',
+        body: 'La has hecho tú, así que no puedes recorrerla como viajero.',
+      },
+      removed: {
+        title: 'Ya no estás en esta ruta',
+        body: 'Quien la hizo te quitó de ella. Puedes pedirle otro enlace si quieres volver.',
+      },
+      hidden: {
+        title: 'Esta ruta no está disponible',
+        body: 'Se ha retirado por incumplir las normas. No es nada que hayas hecho tú.',
+      },
+      offline: {
+        title: 'No hay conexión',
+        body: 'La invitación sigue ahí: vuelve a intentarlo cuando tengas red.',
+      },
+      broken: {
+        title: 'Este enlace no funciona',
+        body: 'Puede que esté incompleto o que algo falle por nuestra parte. Si crees que es un error, pídele otro a quien te lo envió.',
+      },
     },
   },
   rating: {
@@ -567,6 +586,9 @@ export const es = {
     inviteNoLimit: 'Sin tope de usos',
     inviteExpires: 'caduca el {{date}}',
     inviteNoExpiry: 'no caduca',
+    textCopied: 'Texto copiado',
+    textCopiedDetail: 'Pégalo en un mensaje',
+    textCopyFailedDetail: 'Escríbelo tú, o inténtalo de nuevo',
   },
   common: {
     loading: 'Cargando…',

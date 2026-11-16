@@ -26,6 +26,21 @@ export function useToast() {
           title: t('toast.copied'),
           detail: t('toast.copiedDetail'),
         }),
+      /** A text (not a link) is on the clipboard. */
+      textCopied: () =>
+        showToast({
+          kind: 'copied',
+          title: t('toast.textCopied'),
+          detail: t('toast.textCopiedDetail'),
+        }),
+      /** The clipboard said no for a text: it cannot be selected for them. */
+      textCopyFailed: (retry: () => void) =>
+        showToast({
+          kind: 'error',
+          title: t('toast.copyFailed'),
+          detail: t('toast.textCopyFailedDetail'),
+          action: { label: t('common.retry'), run: retry },
+        }),
       /** The clipboard said no: the link is selected for copying by hand. */
       copyFailed: (retry: () => void) =>
         showToast({

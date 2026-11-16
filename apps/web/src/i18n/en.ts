@@ -520,27 +520,47 @@ export const en: Translations = {
     joinAs: "You'll join as @{{name}}",
     opening: 'Opening the route…',
     done: "It's yours",
-    problem: {
-      not_found:
-        'This link does not exist. It may be incomplete: ask whoever sent it to share it again.',
-      expired: 'This link has expired. Ask whoever sent it for a new one.',
-      revoked:
-        'The person who sent this link has withdrawn it. If you still want the route, ask for a new one.',
-      exhausted:
-        'This link has been used as many times as it could be. Ask whoever sent it for a new one.',
-      unavailable: 'This route is no longer available.',
-      own: 'This invitation is for your own route: you are already its guide.',
-      removed:
-        'The author has removed you from this route, so you cannot join again.',
-      session:
-        'Your session has ended. Sign in again to accept the invitation.',
-      offline: 'We could not connect. Check your connection and try again.',
-      unknown: 'Something went wrong. Try again.',
-    },
-    wayOut: {
+    askAgainText:
+      "Hi, the Filmgrim link you sent me doesn't work anymore. Could you send me another?",
+    action: {
+      askAgain: 'Ask for another link',
       explore: 'Explore routes',
-      myRoutes: 'Go to my routes',
-      login: 'Sign in',
+      editor: 'Go to my routes',
+      retry: 'Try again',
+    },
+    state: {
+      expired: {
+        title: 'This link has expired',
+        body: 'Whoever sent it can make you a new one in a moment.',
+      },
+      exhausted: {
+        title: 'This link has already been used',
+        body: "It had a limited number of uses and they're all taken.",
+      },
+      revoked: {
+        title: 'This link no longer works',
+        body: 'The person who made it turned it off. If that seems wrong, ask them.',
+      },
+      own: {
+        title: 'This route is yours',
+        body: "You made it, so you can't travel it yourself.",
+      },
+      removed: {
+        title: "You're no longer on this route",
+        body: "The person who made it removed you. Ask them for a new link if you'd like back in.",
+      },
+      hidden: {
+        title: "This route isn't available",
+        body: 'It was removed for breaking the rules. Nothing you did.',
+      },
+      offline: {
+        title: "You're offline",
+        body: "The invite is still here: try again when you're back online.",
+      },
+      broken: {
+        title: "This link doesn't work",
+        body: 'It may be incomplete, or something may be wrong on our side. If you think this is a mistake, ask whoever sent it for another.',
+      },
     },
   },
   rating: {
@@ -565,6 +585,9 @@ export const en: Translations = {
     inviteNoLimit: 'No use limit',
     inviteExpires: 'expires {{date}}',
     inviteNoExpiry: 'never expires',
+    textCopied: 'Text copied',
+    textCopiedDetail: 'Paste it into a message',
+    textCopyFailedDetail: 'Write it yourself, or try again',
   },
   common: {
     loading: 'Loading…',

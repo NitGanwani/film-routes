@@ -3961,20 +3961,48 @@ fieldset.field legend {
 .env-frame {
   transition: fill 0.3s ease;
 }
-.invite-env[data-open] .env-flap {
+.invite-env[data-state='open'] .env-flap,
+.invite-env[data-state='lit'] .env-flap {
   transform: scaleY(-1);
 }
-.invite-env[data-open] .env-frame {
+.invite-env[data-state='open'] .env-frame,
+.invite-env[data-state='lit'] .env-frame {
   fill: var(--accent);
 }
-.invite-env[data-open] .env-frame:nth-child(1) {
+.invite-env[data-state='open'] .env-frame:nth-child(1) {
   transition-delay: 0.45s;
 }
-.invite-env[data-open] .env-frame:nth-child(2) {
+.invite-env[data-state='open'] .env-frame:nth-child(2) {
   transition-delay: 0.6s;
 }
-.invite-env[data-open] .env-frame:nth-child(3) {
+.invite-env[data-state='open'] .env-frame:nth-child(3) {
   transition-delay: 0.75s;
+}
+/* The problems: the amber frame of the flap goes out, and nothing moves. */
+.invite-env[data-state='off'] .env-stamp,
+.invite-env[data-state='crossed'] .env-stamp,
+.invite-env[data-state='lock'] .env-stamp {
+  fill: var(--border);
+}
+.env-strike,
+.env-lock {
+  display: none;
+}
+.env-strike {
+  stroke: var(--danger);
+  fill: none;
+}
+.invite-env[data-state='crossed'] .env-strike,
+.invite-env[data-state='lock'] .env-lock {
+  display: inline;
+}
+.env-lock {
+  fill: none;
+  stroke: var(--text-muted);
+}
+.env-lock-plate {
+  fill: var(--surface);
+  stroke: none;
 }
 .invite-action {
   width: 100%;
@@ -3996,8 +4024,7 @@ fieldset.field legend {
   color: var(--bg);
 }
 .invite-accept,
-.invite-buttons .btn,
-.invite-problem .btn {
+.invite-buttons .btn {
   width: 100%;
 }
 @media (min-width: 720px) {
@@ -4005,11 +4032,10 @@ fieldset.field legend {
     padding: var(--sp-4) var(--sp-8);
   }
   .invite-buttons {
-    grid-template-columns: repeat(2, 220px);
+    grid-template-columns: repeat(auto-fit, 220px);
     justify-content: center;
   }
-  .invite-accept,
-  .invite-problem .btn {
+  .invite-accept {
     width: 220px;
   }
 }
@@ -4028,26 +4054,30 @@ fieldset.field legend {
   color: var(--success);
   font-weight: 600;
 }
-.invite-problem {
+.invite-state {
   display: grid;
-  gap: var(--sp-4);
   justify-items: center;
   width: 100%;
+  margin-top: var(--sp-6);
 }
-.invite-problem p {
-  display: flex;
-  gap: var(--sp-2);
-  align-items: flex-start;
-  margin: 0;
-  max-width: 36ch;
-  text-align: left;
-  color: var(--text);
-  font-size: 15px;
-}
-.invite-problem p svg {
-  flex: none;
-  margin-top: 1px;
+.invite-state-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
   color: var(--danger);
+}
+.invite-state[data-tone='muted'] .invite-state-icon {
+  color: var(--text-muted);
+}
+.invite-state h1 {
+  margin-top: var(--sp-3);
+}
+.invite-state h1:focus {
+  outline: none;
+}
+.invite-state .invite-buttons {
+  margin-top: var(--sp-6);
 }
 .invite-spin {
   width: 18px;

@@ -34,7 +34,12 @@ export type IconName =
   | 'arrow-down'
   | 'chevron'
   | 'eye'
-  | 'pending';
+  | 'pending'
+  | 'clock'
+  | 'signal'
+  | 'frame-x'
+  | 'frame-off'
+  | 'frame-lit';
 
 export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   return (
@@ -114,6 +119,47 @@ export function IconSprite() {
       <symbol id="i-lock" viewBox="0 0 24 24" {...line} strokeLinecap="round">
         <rect x="5" y="11" width="14" height="10" rx="2" />
         <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+      </symbol>
+      <symbol
+        id="i-clock"
+        viewBox="0 0 24 24"
+        {...line}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3 2" />
+      </symbol>
+      <symbol id="i-signal" viewBox="0 0 24 24" {...line} strokeLinecap="round">
+        <path d="M5 19v-3M10 19v-6M15 19V9" />
+        <path d="M4 4l16 16" />
+      </symbol>
+      <symbol
+        id="i-frame-x"
+        viewBox="0 0 24 24"
+        {...line}
+        strokeLinecap="round"
+      >
+        <rect x="3" y="6" width="18" height="12" rx="2.5" />
+        <path d="M5 20L19 4" />
+      </symbol>
+      <symbol
+        id="i-frame-off"
+        viewBox="0 0 24 24"
+        {...line}
+        strokeLinecap="round"
+      >
+        <rect
+          x="3"
+          y="6"
+          width="18"
+          height="12"
+          rx="2.5"
+          strokeDasharray="3 3"
+        />
+      </symbol>
+      <symbol id="i-frame-lit" viewBox="0 0 24 24" fill="currentColor">
+        <rect x="3" y="6" width="18" height="12" rx="2.5" />
       </symbol>
       <symbol id="i-alert" viewBox="0 0 24 24" {...line} strokeLinecap="round">
         <path d="M12 3 2 21h20L12 3z" />
