@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence } from 'motion/react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
 import { ApiError } from '../api/client.js';
@@ -14,6 +14,9 @@ import { Shared } from '../components/Shared.js';
 import { FilmStrip } from '../components/FilmStrip.js';
 import { ErrorBox } from '../components/States.js';
 import { CloseDialog } from '../journey/CloseDialog.js';
+import { FinishedDialog } from '../journey/FinishedDialog.js';
+import { justCompleted } from '../journey/finish.js';
+import { RatingPicker } from '../journey/RatingPicker.js';
 import { StepItem } from '../journey/StepItem.js';
 
 type Closing = { stepId: string; seenBefore: boolean };
@@ -32,6 +35,10 @@ export function JourneyPage() {
 
   const [closing, setClosing] = useState<Closing | null>(null);
   const [confirmingLeave, setConfirmingLeave] = useState(false);
+  // The scene of the last film: only when closing it is what completes the
+  // route (coming back to a finished route shows the page, with no veil).
+  const [finished, setFinished] = useState(false);
+  const heading = useRef<HTMLHeadingElement>(null);
 
   const journey = useQuery(journeyQuery(routeId));
 
@@ -65,8 +72,17 @@ export function JourneyPage() {
     mutationFn: (input: { stepId: string; body: CloseStepBody }) =>
       post<{ journey: Journey }>(`steps/${input.stepId}/close`, input.body),
     onSuccess: (response) => {
+      const before = queryClient.getQueryData<Journey>(queryKey);
       show(response.journey);
       setClosing(null);
+      if (
+        justCompleted(
+          before?.enrollment.status,
+          response.journey.enrollment.status,
+        )
+      ) {
+        setFinished(true);
+      }
     },
     onError: refreshIfStale,
   });
@@ -155,7 +171,9 @@ export function JourneyPage() {
         <aside className="journey-side">
           <div className="card card-pad">
             <Shared name={titleName} kind="title">
-              <h1>{route.title}</h1>
+              <h1 ref={heading} tabIndex={-1}>
+                {route.title}
+              </h1>
             </Shared>
             <div className="author" style={{ marginTop: 0 }}>
               <Avatar name={route.author} />
@@ -176,10 +194,15 @@ export function JourneyPage() {
             <p className="note">{t('journey.orderIsAdvice')}</p>
           </div>
           {enrollment.status === 'completed' && (
-            <div className="banner banner-success">
-              <Icon name="check" />
-              <div>{t('journey.completed')}</div>
-            </div>
+            <>
+              <div className="banner banner-success">
+                <Icon name="check" />
+                <div>{t('journey.completed')}</div>
+              </div>
+              <div className="card card-pad">
+                <RatingPicker routeId={routeId} />
+              </div>
+            </>
           )}
           {enrollment.status === 'abandoned' && (
             <div className="banner banner-info">
@@ -261,6 +284,17 @@ export function JourneyPage() {
           )}
         </div>
       </div>
+
+      {/* The scene of the last film; the focus goes to the title when it leaves. */}
+      <AnimatePresence onExitComplete={() => heading.current?.focus()}>
+        {finished && (
+          <FinishedDialog
+            key="finished"
+            journey={journey.data}
+            onClose={() => setFinished(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* AnimatePresence keeps the sheet on screen while it slides away. */}
       <AnimatePresence>

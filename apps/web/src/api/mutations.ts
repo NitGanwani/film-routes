@@ -19,6 +19,7 @@ import type {
   CreatedInvite,
   FilmSearchResult,
   Invite,
+  MyRating,
 } from './types.js';
 
 /**
@@ -334,4 +335,30 @@ export function useRouteFilms(routeId: string) {
   });
 
   return { add, remove, reorder, update };
+}
+
+/**
+ * Give a route a score from 1 to 10, or change it (one vote per person). The
+ * answer carries the new average, so the route's page is asked again.
+ */
+export function useRateRoute(routeId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (score: number) =>
+      api.request<{ rating: { score: number } }>(`/routes/${routeId}/rating`, {
+        method: 'PUT',
+        auth: true,
+        body: { score },
+      }),
+    onSuccess: (response) => {
+      queryClient.setQueryData<MyRating>(['rating', routeId], (before) =>
+        before ? { ...before, rating: response.rating } : before,
+      );
+      void queryClient.invalidateQueries({ queryKey: ['rating', routeId] });
+      void queryClient.invalidateQueries({
+        queryKey: ['public-route', routeId],
+      });
+      void queryClient.invalidateQueries({ queryKey: ['public-routes'] });
+    },
+  });
 }

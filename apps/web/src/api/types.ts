@@ -17,6 +17,14 @@ export type User = {
 
 export type RatingSummary = { average: number | null; votes: number };
 
+/** The person's own vote on a route (`GET /routes/:id/rating`). */
+export type MyRating = {
+  rating: { score: number } | null;
+  /** Only someone who completed the route can vote. */
+  canRate: boolean;
+  summary: RatingSummary;
+};
+
 export type PublicRouteSummary = {
   id: string;
   title: string;

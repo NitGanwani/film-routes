@@ -431,6 +431,16 @@ export const es = {
     completed: 'Has completado esta ruta.',
     abandoned:
       'Has abandonado esta ruta. Tu progreso se conserva: vuelve a entrar con su enlace.',
+    finished: {
+      eyebrow: 'Ruta terminada',
+      title: 'Has llegado al final',
+      sub_one: '{{count}} película · una ruta de {{author}}',
+      sub_other: '{{count}} películas · una ruta de {{author}}',
+      noEmotion: 'Sin emoción',
+      match: 'Coincidisteis en {{same}} de {{total}}',
+      later: 'Más tarde',
+      close: 'Cerrar',
+    },
     closeForm: {
       title: 'Cerrar {{film}}',
       position: 'Película {{position}} de {{total}}',
@@ -499,6 +509,11 @@ export const es = {
     createAccount: 'Crea una cuenta',
     haveAccount: '¿Ya tienes cuenta?',
     enter: 'Entra',
+  },
+  rating: {
+    prompt: '¿Cómo ha sido el viaje? Del {{min}} al {{max}}',
+    score: '{{score}} de {{max}}',
+    yours: 'Tu valoración: {{score}} de {{max}}. Puedes cambiarla.',
   },
   toast: {
     close: 'Cerrar aviso',

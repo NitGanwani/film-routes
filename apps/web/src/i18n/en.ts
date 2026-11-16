@@ -431,6 +431,16 @@ export const en: Translations = {
     completed: 'You completed this route.',
     abandoned:
       'You left this route. Your progress is kept: come back with its link.',
+    finished: {
+      eyebrow: 'Route complete',
+      title: 'You reached the end',
+      sub_one: '{{count}} film · a route by {{author}}',
+      sub_other: '{{count}} films · a route by {{author}}',
+      noEmotion: 'No emotion',
+      match: 'You matched on {{same}} of {{total}}',
+      later: 'Later',
+      close: 'Close',
+    },
     closeForm: {
       title: 'Close {{film}}',
       position: 'Film {{position}} of {{total}}',
@@ -498,6 +508,11 @@ export const en: Translations = {
     createAccount: 'Create an account',
     haveAccount: 'Already have an account?',
     enter: 'Log in',
+  },
+  rating: {
+    prompt: 'How was the journey? {{min}} to {{max}}',
+    score: '{{score}} out of {{max}}',
+    yours: 'Your score: {{score}} out of {{max}}. You can change it.',
   },
   toast: {
     close: 'Dismiss',

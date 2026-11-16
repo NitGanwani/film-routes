@@ -3677,3 +3677,194 @@ fieldset.field legend {
     transform: scaleX(0);
   }
 }
+
+/* ---------- Score: 1 to 10 (the finished scene and the completed route) ---------- */
+.rating {
+  display: grid;
+  gap: var(--sp-2);
+}
+.rating-prompt {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+.rating-nums {
+  display: grid;
+  grid-template-columns: repeat(5, var(--tap));
+  gap: var(--sp-1);
+  justify-content: center;
+}
+@media (min-width: 720px) {
+  .rating-nums {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+.rating-nums button {
+  width: var(--tap);
+  height: var(--tap);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.rating-nums button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--primary);
+}
+.rating-nums button[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--primary-ink);
+}
+.rating-nums button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.rating-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+  min-height: 1.5em;
+  margin: 0;
+  color: var(--success);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+
+/* ---------- Route complete (a native <dialog>, on top of .sheet) ---------- */
+.finish-panel {
+  padding: var(--sp-6) var(--sp-4) var(--sp-4);
+  text-align: center;
+}
+@media (min-width: 720px) {
+  .finish-panel {
+    max-width: 560px;
+    padding: var(--sp-8) var(--sp-8) var(--sp-6);
+  }
+}
+.finish-close {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-3);
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  background: none;
+  border: 0;
+  border-radius: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.finish-close:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.finish-mark {
+  display: block;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto var(--sp-2);
+  color: var(--text);
+}
+.finish-lit {
+  fill: var(--accent);
+}
+.finish-notch {
+  fill: var(--surface);
+}
+.finish-eyebrow {
+  margin: 0;
+  color: var(--primary);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.finish-title {
+  margin: var(--sp-1) 0 0;
+  font-size: var(--fs-2xl);
+}
+@media (min-width: 720px) {
+  .finish-title {
+    font-size: 2.125rem;
+  }
+}
+.finish-sub {
+  margin: var(--sp-1) 0 var(--sp-5);
+  color: var(--text-muted);
+}
+.finish-strip {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.finish-film {
+  fill: var(--bg);
+}
+.finish-hole {
+  fill: var(--surface-2);
+}
+.finish-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+  margin: var(--sp-5) 0 var(--sp-2);
+  text-align: left;
+}
+.finish-who {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+.finish-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  margin: var(--sp-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.finish-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+}
+.finish-chip[data-same] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--primary);
+}
+.finish-match {
+  margin: 0;
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+}
+.finish-rate {
+  margin-top: var(--sp-4);
+}
+.finish-later {
+  display: block;
+  min-height: var(--tap);
+  margin: var(--sp-2) auto 0;
+  padding: 0 var(--sp-3);
+  background: none;
+  border: 0;
+  color: var(--text-muted);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}

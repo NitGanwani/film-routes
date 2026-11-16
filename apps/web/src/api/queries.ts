@@ -7,6 +7,7 @@ import type {
   FilmSearchPage,
   Invite,
   Journey,
+  MyRating,
   PublicRouteDetail,
   PublicRoutesPage,
   Traveler,
@@ -25,6 +26,13 @@ export const publicRouteQuery = (routeId: string) => ({
     api
       .request<{ route: PublicRouteDetail }>(`/public/routes/${routeId}`)
       .then((response) => response.route),
+});
+
+/** The signed-in person's score for a route they follow, if they gave one. */
+export const ratingQuery = (routeId: string) => ({
+  queryKey: ['rating', routeId],
+  queryFn: () =>
+    api.request<MyRating>(`/routes/${routeId}/rating`, { auth: true }),
 });
 
 export const journeyQuery = (routeId: string) => ({
