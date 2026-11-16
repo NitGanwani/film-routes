@@ -18,6 +18,13 @@ export type InviteProblem =
   | 'offline'
   | 'broken';
 
+/** The x of the perforations (8 on each edge) and of the frames in the 160 x 100 envelope. */
+export const ENVELOPE_HOLES = Array.from(
+  { length: 8 },
+  (_, index) => 16 + index * 18,
+);
+export const ENVELOPE_FRAMES = [16, 60, 104];
+
 /** The variants of the film-strip picture (`InviteEnvelope`). */
 export type EnvelopeState =
   'closed' | 'open' | 'off' | 'crossed' | 'lit' | 'lock';

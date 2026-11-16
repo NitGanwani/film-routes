@@ -3761,12 +3761,16 @@ fieldset.field legend {
 /* Off frames keep a border, so they can be counted without the colour. */
 .rating-frame {
   fill: var(--surface-2);
-  stroke: var(--border);
+  stroke: transparent;
   stroke-width: 1;
   transition:
     fill 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
     stroke 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
   transition-delay: var(--d, 0ms);
+}
+/* Once there is a score, the frames that are off get a border so they can be counted. */
+.rating-strip[data-rated] .rating-frame:not([data-on]) {
+  stroke: var(--border);
 }
 .rating-frame[data-on] {
   fill: var(--accent);
@@ -4152,10 +4156,16 @@ fieldset.field legend {
   }
 }
 /* The problems: the amber frame of the flap goes out, and nothing moves. */
-.invite-env[data-state='off'] .env-stamp,
+.invite-env[data-state='off'] .env-stamp {
+  fill: var(--text-muted);
+}
 .invite-env[data-state='crossed'] .env-stamp,
 .invite-env[data-state='lock'] .env-stamp {
   fill: var(--border);
+}
+/* A link switched off or used up: its frames are dimmed under the strike. */
+.invite-env[data-state='crossed'] .frames {
+  opacity: 0.4;
 }
 .env-strike,
 .env-lock {

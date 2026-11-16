@@ -3,6 +3,16 @@ import { RATING } from '@film-routes/shared';
 /** How many frames the strip has: one per point of the scale. */
 export const FRAME_COUNT = RATING.max - RATING.min + 1;
 
+/** The x of the perforations (20 on each edge) and of the frames in the 340 x 56 drawing. */
+export const STRIP_HOLES = Array.from(
+  { length: 20 },
+  (_, index) => 8 + index * 17,
+);
+export const STRIP_FRAMES = Array.from(
+  { length: FRAME_COUNT },
+  (_, index) => 7 + index * 33,
+);
+
 /** Nothing chosen yet. The range itself cannot be empty, so the state keeps 0. */
 export const UNRATED = 0;
 

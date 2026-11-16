@@ -1,8 +1,8 @@
-import type { EnvelopeState } from './model.js';
-
-/** Where the perforations of the film sit along its top and bottom edge. */
-const HOLES = Array.from({ length: 8 }, (_, index) => 16 + index * 18);
-const FRAMES = [16, 60, 104];
+import {
+  ENVELOPE_FRAMES,
+  ENVELOPE_HOLES,
+  type EnvelopeState,
+} from './model.js';
 
 /**
  * The picture of the invitation: a closed envelope that is a strip of film
@@ -34,15 +34,15 @@ export function InviteEnvelope({ state }: { state: EnvelopeState }) {
         strokeWidth="1.5"
       />
       <g className="env-hole">
-        {HOLES.map((x) => (
+        {ENVELOPE_HOLES.map((x) => (
           <g key={x}>
             <rect x={x} y="35" width="5" height="3.5" rx="1" />
             <rect x={x} y="77.5" width="5" height="3.5" rx="1" />
           </g>
         ))}
       </g>
-      <g>
-        {FRAMES.map((x) => (
+      <g className="frames">
+        {ENVELOPE_FRAMES.map((x) => (
           <rect
             key={x}
             className="env-frame"
@@ -55,7 +55,7 @@ export function InviteEnvelope({ state }: { state: EnvelopeState }) {
         ))}
       </g>
       <g>
-        {FRAMES.map((x) => (
+        {ENVELOPE_FRAMES.map((x) => (
           <rect
             key={x}
             className="env-lit"

@@ -1,12 +1,5 @@
 import { useEffect, useRef, type CSSProperties } from 'react';
-import { FRAME_COUNT, frameDelays } from './rating.js';
-
-/** Where the perforations (20 on each edge) and the frames sit, in the 340 x 56 drawing. */
-const HOLES = Array.from({ length: 20 }, (_, index) => 8 + index * 17);
-const FRAMES = Array.from(
-  { length: FRAME_COUNT },
-  (_, index) => 7 + index * 33,
-);
+import { frameDelays, STRIP_FRAMES, STRIP_HOLES } from './rating.js';
 
 /**
  * The strip of film of the score (rating-strip.svg): ten frames that light up
@@ -27,20 +20,21 @@ export function RatingStrip({ value }: { value: number }) {
   return (
     <svg
       className="rating-strip"
+      data-rated={value > 0 || undefined}
       viewBox="0 0 340 56"
       aria-hidden="true"
       focusable="false"
     >
       <rect className="rating-film" width="340" height="56" rx="6" />
       <g className="rating-hole">
-        {HOLES.map((x) => (
+        {STRIP_HOLES.map((x) => (
           <g key={x}>
             <rect x={x} y="4" width="5" height="3.5" rx="1" />
             <rect x={x} y="48.5" width="5" height="3.5" rx="1" />
           </g>
         ))}
       </g>
-      {FRAMES.map((x, index) => (
+      {STRIP_FRAMES.map((x, index) => (
         <rect
           key={x}
           className="rating-frame"
