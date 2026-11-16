@@ -509,6 +509,40 @@ export const en: Translations = {
     haveAccount: 'Already have an account?',
     enter: 'Log in',
   },
+  invite: {
+    eyebrow: 'You have an invitation',
+    title: 'Someone made a route of films for you',
+    lead: 'On Filmgrim one person picks 3 to 10 films for another and walks you through them with a note before and another after each one.',
+    foot: 'A person sent you this link; we do not know who until you accept.',
+    register: 'Create account',
+    login: 'I have an account',
+    accept: 'Accept invite',
+    joinAs: "You'll join as @{{name}}",
+    opening: 'Opening the route…',
+    done: "It's yours",
+    problem: {
+      not_found:
+        'This link does not exist. It may be incomplete: ask whoever sent it to share it again.',
+      expired: 'This link has expired. Ask whoever sent it for a new one.',
+      revoked:
+        'The person who sent this link has withdrawn it. If you still want the route, ask for a new one.',
+      exhausted:
+        'This link has been used as many times as it could be. Ask whoever sent it for a new one.',
+      unavailable: 'This route is no longer available.',
+      own: 'This invitation is for your own route: you are already its guide.',
+      removed:
+        'The author has removed you from this route, so you cannot join again.',
+      session:
+        'Your session has ended. Sign in again to accept the invitation.',
+      offline: 'We could not connect. Check your connection and try again.',
+      unknown: 'Something went wrong. Try again.',
+    },
+    wayOut: {
+      explore: 'Explore routes',
+      myRoutes: 'Go to my routes',
+      login: 'Sign in',
+    },
+  },
   rating: {
     prompt: 'How was the journey? {{min}} to {{max}}',
     score: '{{score}} out of {{max}}',

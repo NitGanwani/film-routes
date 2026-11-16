@@ -362,3 +362,26 @@ export function useRateRoute(routeId: string) {
     },
   });
 }
+
+/** What accepting an invitation answers: the route joined, with its title. */
+type AcceptedInvite = {
+  created: boolean;
+  route: { id: string; title: string; author: string; stepCount: number };
+};
+
+/**
+ * Join a route with an invitation link. Joining twice (or coming back after
+ * leaving) is not an error: the answer is the same route.
+ */
+export function useAcceptInvite() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (token: string) =>
+      api.request<AcceptedInvite>('/invites/accept', {
+        method: 'POST',
+        auth: true,
+        body: { token },
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['journeys'] }),
+  });
+}

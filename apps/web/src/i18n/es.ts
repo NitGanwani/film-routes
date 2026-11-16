@@ -510,6 +510,41 @@ export const es = {
     haveAccount: '¿Ya tienes cuenta?',
     enter: 'Entra',
   },
+  invite: {
+    eyebrow: 'Tienes una invitación',
+    title: 'Alguien ha hecho una ruta de películas para ti',
+    lead: 'En Filmgrim una persona elige entre 3 y 10 películas para otra y te acompaña con una nota antes y otra después de cada una.',
+    foot: 'El enlace te lo ha enviado una persona; nosotros no sabemos quién es hasta que aceptes.',
+    register: 'Crear cuenta',
+    login: 'Ya tengo cuenta',
+    accept: 'Aceptar invitación',
+    joinAs: 'Entrarás como @{{name}}',
+    opening: 'Abriendo la ruta…',
+    done: 'Ya es tuya',
+    problem: {
+      not_found:
+        'Este enlace no existe. Puede que esté incompleto: pídele a quien te lo envió que lo comparta otra vez.',
+      expired: 'Este enlace ha caducado. Pídele a quien te lo envió uno nuevo.',
+      revoked:
+        'Quien te envió este enlace lo ha retirado. Si aún quieres la ruta, pídele uno nuevo.',
+      exhausted:
+        'Este enlace ya se ha usado todas las veces que se podía. Pídele a quien te lo envió uno nuevo.',
+      unavailable: 'Esta ruta ya no está disponible.',
+      own: 'Esta invitación es de tu propia ruta: tú ya eres su guía.',
+      removed:
+        'El autor te ha quitado de esta ruta, así que no puedes volver a entrar.',
+      session:
+        'Tu sesión ha terminado. Entra de nuevo para aceptar la invitación.',
+      offline:
+        'No hemos podido conectar. Revisa tu conexión y vuelve a intentarlo.',
+      unknown: 'Algo ha salido mal. Inténtalo de nuevo.',
+    },
+    wayOut: {
+      explore: 'Explorar rutas',
+      myRoutes: 'Ir a mis rutas',
+      login: 'Entrar',
+    },
+  },
   rating: {
     prompt: '¿Cómo ha sido el viaje? Del {{min}} al {{max}}',
     score: '{{score}} de {{max}}',

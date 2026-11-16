@@ -10,6 +10,7 @@ import {
 } from './pages/AccountPages.js';
 import { LoginPage, RegisterPage } from './pages/AuthPages.js';
 import { ExplorePage } from './pages/ExplorePage.js';
+import { InvitePage } from './pages/InvitePage.js';
 import { JourneyPage } from './pages/JourneyPage.js';
 import { EditRoutePage } from './pages/EditRoutePage.js';
 import { JourneysPage } from './pages/JourneysPage.js';
@@ -42,6 +43,8 @@ function Home() {
 export function App() {
   return (
     <Routes>
+      {/* Outside the layout: someone with an invitation is not a user yet. */}
+      <Route path="invite/:token" element={<InvitePage />} />
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="explore" element={<ExplorePage />} />
