@@ -136,7 +136,11 @@ export function FinishedDialog({
         )}
 
         <m.div className="finish-rate" {...rise(timing.rating)}>
-          <RatingPicker routeId={journey.route.id} onRated={setVoted} />
+          <RatingPicker
+            routeId={journey.route.id}
+            author={journey.route.author}
+            onRated={setVoted}
+          />
           <button type="button" className="finish-later" onClick={onClose}>
             {t(voted ? 'journey.finished.close' : 'journey.finished.later')}
           </button>

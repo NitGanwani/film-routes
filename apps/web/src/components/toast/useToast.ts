@@ -1,6 +1,7 @@
 import type { RouteVisibility } from '@film-routes/shared';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { errorMessage } from '../errorMessage.js';
 import { showToast } from './store.js';
 
 /**
@@ -25,6 +26,14 @@ export function useToast() {
           kind: 'copied',
           title: t('toast.copied'),
           detail: t('toast.copiedDetail'),
+        }),
+      /** The vote did not save: the strip keeps the value, this offers to try again. */
+      ratingFailed: (error: unknown, retry: () => void) =>
+        showToast({
+          kind: 'error',
+          title: t('toast.ratingFailed'),
+          detail: errorMessage(t, error),
+          action: { label: t('common.retry'), run: retry },
         }),
       /** A text (not a link) is on the clipboard. */
       textCopied: () =>

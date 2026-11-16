@@ -203,7 +203,7 @@ export function JourneyPage() {
                 <div>{t('journey.completed')}</div>
               </div>
               <div className="card card-pad">
-                <RatingPicker routeId={routeId} />
+                <RatingPicker routeId={routeId} author={route.author} />
               </div>
             </>
           )}

@@ -184,7 +184,7 @@ export function InvitePage() {
                     {busy ? (
                       <span className="invite-fade">
                         <svg
-                          className="invite-spin"
+                          className="arc-spin"
                           viewBox="0 0 24 24"
                           aria-hidden="true"
                           focusable="false"

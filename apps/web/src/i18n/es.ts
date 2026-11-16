@@ -566,9 +566,16 @@ export const es = {
     },
   },
   rating: {
-    prompt: '¿Cómo ha sido el viaje? Del {{min}} al {{max}}',
-    score: '{{score}} de {{max}}',
-    yours: 'Tu valoración: {{score}} de {{max}}. Puedes cambiarla.',
+    prompt: '¿Cómo ha sido el viaje?',
+    hint: 'Desliza o pulsa un fotograma',
+    save: 'Guardar valoración',
+    thanks: 'Gracias. Tu nota cuenta para la ruta de {{guide}}.',
+    visibility:
+      'La nota de una ruta se muestra cuando la han valorado al menos {{n}} personas.',
+    yours: 'Tu valoración: {{score}}',
+    change: 'Cambiar',
+    valueText: '{{score}} de {{max}}',
+    unrated: 'Sin valorar',
   },
   toast: {
     close: 'Cerrar aviso',
@@ -587,6 +594,7 @@ export const es = {
     inviteNoLimit: 'Sin tope de usos',
     inviteExpires: 'caduca el {{date}}',
     inviteNoExpiry: 'no caduca',
+    ratingFailed: 'No se pudo guardar la valoración',
     textCopied: 'Texto copiado',
     textCopiedDetail: 'Pégalo en un mensaje',
     textCopyFailedDetail: 'Escríbelo tú, o inténtalo de nuevo',

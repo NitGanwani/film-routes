@@ -7,6 +7,7 @@ import {
   useSyncExternalStore,
   type KeyboardEvent,
 } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Icon } from '../Icon.js';
 import { timeAfterResume, type Toast } from './model.js';
@@ -22,7 +23,7 @@ const LEAVE = { duration: 0.16, ease: [0.4, 0, 1, 1] } as const;
  */
 export function Toaster() {
   const toasts = useSyncExternalStore(subscribeToasts, getToasts, getToasts);
-  return (
+  const list = (
     <div className="toasts">
       <AnimatePresence initial={false}>
         {toasts.map((toast) => (
@@ -31,6 +32,11 @@ export function Toaster() {
       </AnimatePresence>
     </div>
   );
+  // A modal dialog covers the page and blocks what is outside it: while one is
+  // open the notices live inside it, where they can be seen and pressed.
+  const modal =
+    toasts.length > 0 ? document.querySelector('dialog:modal') : null;
+  return modal ? createPortal(list, modal) : list;
 }
 
 function ToastItem({ toast }: { toast: Toast }) {

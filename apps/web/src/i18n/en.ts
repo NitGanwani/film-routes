@@ -565,9 +565,16 @@ export const en: Translations = {
     },
   },
   rating: {
-    prompt: 'How was the journey? {{min}} to {{max}}',
-    score: '{{score}} out of {{max}}',
-    yours: 'Your score: {{score}} out of {{max}}. You can change it.',
+    prompt: 'How was the journey?',
+    hint: 'Slide or tap a frame',
+    save: 'Save rating',
+    thanks: "Thanks. Your rating counts towards {{guide}}'s route.",
+    visibility:
+      "A route's rating shows once at least {{n}} people have rated it.",
+    yours: 'Your rating: {{score}}',
+    change: 'Change',
+    valueText: '{{score}} out of {{max}}',
+    unrated: 'Not rated',
   },
   toast: {
     close: 'Dismiss',
@@ -586,6 +593,7 @@ export const en: Translations = {
     inviteNoLimit: 'No use limit',
     inviteExpires: 'expires {{date}}',
     inviteNoExpiry: 'never expires',
+    ratingFailed: "Couldn't save your rating",
     textCopied: 'Text copied',
     textCopiedDetail: 'Paste it into a message',
     textCopyFailedDetail: 'Write it yourself, or try again',
