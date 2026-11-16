@@ -521,6 +521,7 @@ export const es = {
     joinAs: 'Entrarás como @{{name}}',
     opening: 'Abriendo la ruta…',
     done: 'Ya es tuya',
+    doneAnnounce: 'Ya es tuya. Abriendo {{title}}',
     askAgainText:
       'Hola, el enlace de Filmgrim que me pasaste ya no funciona, ¿me mandas otro?',
     action: {

@@ -7,8 +7,8 @@ const FRAMES = [16, 60, 104];
 /**
  * The picture of the invitation: a closed envelope that is a strip of film
  * with its frames switched off, and a flap with the amber frame of the logo.
- * Accepting opens it (`open`): the flap turns up and the frames light one
- * after another. The problems have their own variant of the strip, so the
+ * Accepting opens it (`open`): the flap tilts back and the frames light one
+ * after another (the amber layers of `env-lit` fade and grow in). The problems have their own variant of the strip, so the
  * picture says what the words say: a frame crossed out (the link is used up or
  * switched off), switched off (it ran out or you are out), lit (the route is
  * yours) or locked (it was taken down). The CSS does the motion, and drops it
@@ -46,6 +46,19 @@ export function InviteEnvelope({ state }: { state: EnvelopeState }) {
           <rect
             key={x}
             className="env-frame"
+            x={x}
+            y="43"
+            width="40"
+            height="30"
+            rx="2.5"
+          />
+        ))}
+      </g>
+      <g>
+        {FRAMES.map((x) => (
+          <rect
+            key={x}
+            className="env-lit"
             x={x}
             y="43"
             width="40"

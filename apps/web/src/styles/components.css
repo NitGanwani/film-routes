@@ -3952,31 +3952,47 @@ fieldset.field legend {
 .env-notch {
   fill: var(--bg);
 }
-/* Opening: the flap turns up, then the frames light one after another. With
-   reduced motion the rule in base.css stops the transitions: it is just open. */
+/* Opening (Fable, "Movimiento"): the flap tilts back 60 degrees over its top
+   edge in 360 ms; 200 ms later the frames light one after another (a new one
+   every 120 ms, 260 ms each, fading in while they grow from .85 to 1). The
+   title that follows is in InvitePage (`openingTimeline`). Reduced motion: no
+   flap and no steps, the frames are simply lit. */
 .env-flap {
   transform-origin: 80px 30px;
-  transition: transform 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+  transition: transform 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.env-frame {
-  transition: fill 0.3s ease;
+.env-lit {
+  fill: var(--accent);
+  opacity: 0;
+  transform: scale(0.85);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    opacity 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .invite-env[data-state='open'] .env-flap,
 .invite-env[data-state='lit'] .env-flap {
-  transform: scaleY(-1);
+  transform: perspective(300px) rotateX(-60deg);
 }
-.invite-env[data-state='open'] .env-frame,
-.invite-env[data-state='lit'] .env-frame {
-  fill: var(--accent);
+.invite-env[data-state='open'] .env-lit,
+.invite-env[data-state='lit'] .env-lit {
+  opacity: 1;
+  transform: none;
 }
-.invite-env[data-state='open'] .env-frame:nth-child(1) {
-  transition-delay: 0.45s;
+.invite-env[data-state='open'] .env-lit:nth-child(1) {
+  transition-delay: 560ms;
 }
-.invite-env[data-state='open'] .env-frame:nth-child(2) {
-  transition-delay: 0.6s;
+.invite-env[data-state='open'] .env-lit:nth-child(2) {
+  transition-delay: 680ms;
 }
-.invite-env[data-state='open'] .env-frame:nth-child(3) {
-  transition-delay: 0.75s;
+.invite-env[data-state='open'] .env-lit:nth-child(3) {
+  transition-delay: 800ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .invite-env[data-state='open'] .env-flap {
+    transform: none;
+  }
 }
 /* The problems: the amber frame of the flap goes out, and nothing moves. */
 .invite-env[data-state='off'] .env-stamp,
@@ -4019,9 +4035,16 @@ fieldset.field legend {
   width: 100%;
 }
 .invite-primary {
-  min-height: 48px;
   background: var(--accent);
   color: var(--bg);
+}
+.invite-accept,
+.invite-buttons .btn {
+  min-height: 48px;
+}
+.invite-accept[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 .invite-accept,
 .invite-buttons .btn {
@@ -4038,6 +4061,10 @@ fieldset.field legend {
   .invite-accept {
     width: 220px;
   }
+  .invite-accept,
+  .invite-buttons .btn {
+    min-height: 44px;
+  }
 }
 .invite-foot,
 .invite-as {
@@ -4045,14 +4072,46 @@ fieldset.field legend {
   color: var(--text-muted);
   font-size: 13px;
 }
-.invite-done {
-  display: flex;
+.invite-title {
+  /* Two lines, so "It's yours" does not move the envelope when it arrives. */
+  min-height: 2.3em;
+  display: grid;
+  align-content: center;
+}
+.invite-route {
+  max-width: 28ch;
+  margin: var(--sp-4) 0 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  line-height: var(--lh-tight);
+}
+/* What arrives when the route is opened: it rises 12 px while it fades in. */
+.invite-rise {
+  animation: invite-rise 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes invite-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@keyframes invite-fade {
+  from {
+    opacity: 0;
+  }
+}
+/* Asked for less motion: no rise, only a fade of 200 ms (a fade is not the
+   kind of movement that makes anyone ill, and the change is still seen). */
+@media (prefers-reduced-motion: reduce) {
+  .invite-rise {
+    animation: invite-fade 200ms linear both !important;
+  }
+}
+.invite-fade {
+  display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
-  min-height: 48px;
-  margin: 0;
-  color: var(--success);
-  font-weight: 600;
+  animation: invite-fade 150ms linear both;
 }
 .invite-state {
   display: grid;
@@ -4084,10 +4143,10 @@ fieldset.field legend {
   height: 18px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2.5;
+  stroke-width: 2;
   stroke-linecap: round;
-  stroke-dasharray: 38 100;
-  animation: invite-spin 0.9s linear infinite;
+  stroke-dasharray: 0.62 1;
+  animation: invite-spin 900ms linear infinite;
 }
 @keyframes invite-spin {
   to {

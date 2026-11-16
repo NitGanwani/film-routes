@@ -1,11 +1,14 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useReducedMotion } from 'motion/react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
 import { ApiError } from '../api/client.js';
 import { useAcceptInvite } from '../api/mutations.js';
+import { journeyQuery } from '../api/queries.js';
 import { Icon, IconSprite } from '../components/Icon.js';
 import { Logo } from '../components/Logo.js';
+import { Shared } from '../components/Shared.js';
 import { Toaster } from '../components/toast/Toaster.js';
 import { useToast } from '../components/toast/useToast.js';
 import { setLanguage } from '../i18n/index.js';
@@ -14,8 +17,7 @@ import { InviteEnvelope } from '../invite/InviteEnvelope.js';
 import {
   invitePath,
   inviteProblem,
-  OPEN_MS,
-  OPEN_MS_STILL,
+  openingTimeline,
   PROBLEM_VIEW,
   type InviteAction,
   type InviteProblem,
@@ -27,19 +29,25 @@ import { useSession } from '../session/SessionProvider.js';
  * `/invite/:token`: the first screen of someone who was sent a link. The API
  * says nothing about the route or the person before the link is accepted, so
  * the page does not pretend to: a closed envelope, what Filmgrim is, and one
- * thing to do. When the link does not open, the same page says why, in the
- * words of the problem and never as the visitor's fault. It lives outside the
- * app's layout: the guest is not a user yet, so there is no navigation to
- * offer.
+ * thing to do. It loads still: the only movement is the answer to "Accept"
+ * (the envelope opens, the title becomes "It's yours", and the strip of the
+ * envelope turns into the one of the journey). When the link does not open,
+ * the same page says why, in the words of the problem and never as the
+ * visitor's fault. It lives outside the app's layout: the guest is not a user
+ * yet, so there is no navigation to offer.
  */
 export function InvitePage() {
   const { t, i18n } = useTranslation();
   const { token = '' } = useParams();
   const session = useSession();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const accept = useAcceptInvite();
   const still = useReducedMotion() === true;
   const path = invitePath(token);
+  // The title of the invitation gives way to "It's yours" a moment after the
+  // envelope starts to open (see `openingTimeline`).
+  const [titleShown, setTitleShown] = useState(false);
 
   const problem: InviteProblem | null = accept.isError
     ? inviteProblem(accept.error instanceof ApiError ? accept.error.code : '')
@@ -47,18 +55,30 @@ export function InvitePage() {
 
   // A different link starts from a clean page (a problem is not carried over).
   const { reset, mutate } = accept;
-  useEffect(() => reset(), [token, reset]);
+  useEffect(() => {
+    reset();
+    setTitleShown(false);
+  }, [token, reset]);
 
-  // Once it is accepted, the envelope opens and, a moment later, the route.
+  // Accepted: the envelope opens, the title changes and the route follows. The
+  // journey is fetched meanwhile so its strip is already there when the page
+  // arrives (otherwise the move from one strip to the other has nothing to
+  // land on).
   useEffect(() => {
     if (!accept.isSuccess) return;
     const routeId = accept.data.route.id;
-    const timer = window.setTimeout(
+    const { titleAt, navigateAt } = openingTimeline(still);
+    void queryClient.prefetchQuery(journeyQuery(routeId));
+    const title = window.setTimeout(() => setTitleShown(true), titleAt);
+    const go = window.setTimeout(
       () => void navigate(`/journeys/${routeId}`, { replace: true }),
-      still ? OPEN_MS_STILL : OPEN_MS,
+      navigateAt,
     );
-    return () => window.clearTimeout(timer);
-  }, [accept.isSuccess, accept.data, navigate, still]);
+    return () => {
+      window.clearTimeout(title);
+      window.clearTimeout(go);
+    };
+  }, [accept.isSuccess, accept.data, navigate, queryClient, still]);
 
   // Offline, the page tries again by itself as soon as the network is back.
   useEffect(() => {
@@ -73,6 +93,14 @@ export function InvitePage() {
     : accept.isSuccess
       ? 'open'
       : 'closed';
+  // From the press until the title changes the button stays, busy.
+  const busy = accept.isPending || (accept.isSuccess && !titleShown);
+  const accepted = accept.isSuccess ? accept.data.route : null;
+  const announce = accepted
+    ? t('invite.doneAnnounce', { title: accepted.title })
+    : accept.isPending
+      ? t('invite.opening')
+      : '';
 
   return (
     <div className="invite-page">
@@ -95,14 +123,31 @@ export function InvitePage() {
       </header>
 
       <main className="invite-main">
-        <InviteEnvelope state={strip} />
+        <Shared name="strip" kind="strip">
+          <InviteEnvelope state={strip} />
+        </Shared>
+
+        {/* Always there, so what is put in it is read out (a live region that
+            appears with its text is not reliably announced). */}
+        <p className="visually-hidden" aria-live="polite">
+          {announce}
+        </p>
 
         {session.status === 'authenticated' && problem ? (
           <ProblemBlock problem={problem} onRetry={() => mutate(token)} />
+        ) : accepted && titleShown ? (
+          <>
+            <p className="invite-eyebrow invite-rise">
+              {t('journey.by', { author: accepted.author })}
+            </p>
+            <h1 className="invite-title invite-rise">{t('invite.done')}</h1>
+            <p className="invite-route invite-rise">{accepted.title}</p>
+            <div className="invite-action" />
+          </>
         ) : (
           <>
             <p className="invite-eyebrow">{t('invite.eyebrow')}</p>
-            <h1>{t('invite.title')}</h1>
+            <h1 className="invite-title">{t('invite.title')}</h1>
             <p className="invite-lead">{t('invite.lead')}</p>
 
             <div className="invite-action">
@@ -123,34 +168,31 @@ export function InvitePage() {
                 </>
               )}
 
-              {session.status === 'authenticated' && accept.isSuccess && (
-                <p className="invite-done" role="status">
-                  <Icon name="check" size={18} />
-                  {t('invite.done')}
-                </p>
-              )}
-
-              {session.status === 'authenticated' && !accept.isSuccess && (
+              {session.status === 'authenticated' && (
                 <>
+                  {/* aria-disabled, not disabled: the button keeps the focus
+                      while it works. */}
                   <button
                     type="button"
                     className="btn invite-primary invite-accept"
-                    disabled={accept.isPending}
-                    aria-busy={accept.isPending}
-                    onClick={() => mutate(token)}
+                    aria-disabled={busy || undefined}
+                    aria-busy={busy || undefined}
+                    onClick={() => {
+                      if (!busy) mutate(token);
+                    }}
                   >
-                    {accept.isPending ? (
-                      <>
+                    {busy ? (
+                      <span className="invite-fade">
                         <svg
                           className="invite-spin"
                           viewBox="0 0 24 24"
                           aria-hidden="true"
                           focusable="false"
                         >
-                          <circle cx="12" cy="12" r="8" />
+                          <circle cx="12" cy="12" r="8" pathLength="1" />
                         </svg>
                         {t('invite.opening')}
-                      </>
+                      </span>
                     ) : (
                       t('invite.accept')
                     )}

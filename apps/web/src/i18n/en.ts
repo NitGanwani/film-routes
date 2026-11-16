@@ -520,6 +520,7 @@ export const en: Translations = {
     joinAs: "You'll join as @{{name}}",
     opening: 'Opening the route…',
     done: "It's yours",
+    doneAnnounce: "It's yours. Opening {{title}}",
     askAgainText:
       "Hi, the Filmgrim link you sent me doesn't work anymore. Could you send me another?",
     action: {

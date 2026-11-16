@@ -131,7 +131,25 @@ export function inviteProblem(code: string): InviteProblem {
   }
 }
 
-/** How long the opened envelope stays before the route appears (ms). */
-export const OPEN_MS = 1400;
-/** Without motion there is nothing to wait for: just long enough to read it. */
-export const OPEN_MS_STILL = 500;
+/**
+ * What happens, and when, after the API says yes (ms from the answer). The
+ * envelope part (flap 0-360, frames from 560, one every 120, 260 each) is in
+ * the CSS of `.invite-env`; this is the rest: the title that changes to "It's
+ * yours", and the move to the route, which then takes 400 more (the strip of
+ * the envelope becomes the strip of the journey). About 1.6 s in all, and the
+ * only place of the app where going somewhere is not immediate: on purpose,
+ * the envelope opens once.
+ */
+export type OpeningTimeline = {
+  /** The title and the route's name replace the invitation's. */
+  titleAt: number;
+  /** The router goes to the journey. */
+  navigateAt: number;
+};
+
+export const OPENING: OpeningTimeline = { titleAt: 900, navigateAt: 1200 };
+/** Asked for less motion: no flap, no steps; just time to read it. */
+export const OPENING_STILL: OpeningTimeline = { titleAt: 0, navigateAt: 800 };
+
+export const openingTimeline = (still: boolean) =>
+  still ? OPENING_STILL : OPENING;

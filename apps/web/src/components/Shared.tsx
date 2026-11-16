@@ -15,7 +15,7 @@ export function Shared({
 }: {
   /** Same on both pages, e.g. "poster-<routeId>"; null = not shared. */
   name: string | null;
-  kind: 'poster' | 'title';
+  kind: 'poster' | 'title' | 'strip';
   children: ReactElement;
 }) {
   if (!name) return children;

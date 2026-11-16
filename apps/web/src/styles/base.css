@@ -104,12 +104,19 @@ img {
   animation-duration: 220ms;
   animation-timing-function: ease-out;
 }
+/* The lit strip of the invitation becomes the strip of the journey: 400 ms. */
+::view-transition-group(.shared-strip) {
+  animation-duration: 400ms;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
 ::view-transition-group(.shared-poster),
 ::view-transition-group(.shared-title) {
   animation-duration: 320ms;
   animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 /* A poster becomes a wide backdrop and back: crop the picture, never stretch it. */
+::view-transition-old(.shared-strip),
+::view-transition-new(.shared-strip),
 ::view-transition-old(.shared-poster),
 ::view-transition-new(.shared-poster) {
   height: 100%;

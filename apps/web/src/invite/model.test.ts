@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { safeNextPath } from '../session/nextPath.js';
-import { invitePath, inviteProblem, PROBLEM_VIEW } from './model.js';
+import {
+  invitePath,
+  inviteProblem,
+  openingTimeline,
+  PROBLEM_VIEW,
+} from './model.js';
 
 describe('invitePath', () => {
   it('is a path the sign-in page accepts as "next"', () => {
@@ -45,6 +50,23 @@ describe('inviteProblem', () => {
     ]) {
       expect(inviteProblem(code)).toBe('broken');
     }
+  });
+});
+
+describe('openingTimeline', () => {
+  it('shows the new title before it leaves for the route', () => {
+    for (const still of [false, true]) {
+      const { titleAt, navigateAt } = openingTimeline(still);
+      expect(titleAt).toBeLessThan(navigateAt);
+    }
+  });
+
+  it('takes about 1.6 s, with the 400 ms of the move to the strip', () => {
+    expect(openingTimeline(false).navigateAt + 400).toBe(1600);
+  });
+
+  it('leaves the steps out when motion is reduced', () => {
+    expect(openingTimeline(true)).toEqual({ titleAt: 0, navigateAt: 800 });
   });
 });
 

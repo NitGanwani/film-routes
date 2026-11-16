@@ -181,13 +181,16 @@ export function JourneyPage() {
             </div>
             {route.description && <p>{route.description}</p>}
             <div className="progress">
-              <FilmStrip
-                frames={steps.map((step) => ({
-                  state: step.state,
-                  posterUrl: step.film.posterUrl,
-                }))}
-                label={progressLabel}
-              />
+              {/* The strip of the invitation becomes this one (see InvitePage). */}
+              <Shared name="strip" kind="strip">
+                <FilmStrip
+                  frames={steps.map((step) => ({
+                    state: step.state,
+                    posterUrl: step.film.posterUrl,
+                  }))}
+                  label={progressLabel}
+                />
+              </Shared>
               {/* The strip already says it to a screen reader. */}
               <span aria-hidden="true">{progressLabel}</span>
             </div>
