@@ -85,8 +85,8 @@ export const PROBLEM_VIEW: Record<InviteProblem, ProblemView> = {
     icon: 'frame-off',
     tone: 'danger',
     role: 'alert',
-    primary: 'explore',
-    secondary: 'askAgain',
+    primary: 'askAgain',
+    secondary: 'explore',
   },
   hidden: {
     strip: 'lock',

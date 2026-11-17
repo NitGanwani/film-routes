@@ -33,7 +33,7 @@ export function useToast() {
           kind: 'error',
           title: t('toast.ratingFailed'),
           detail: errorMessage(t, error),
-          action: { label: t('common.retry'), run: retry },
+          action: { label: t('toast.retry'), run: retry },
         }),
       /** A text (not a link) is on the clipboard. */
       textCopied: () =>
@@ -48,7 +48,7 @@ export function useToast() {
           kind: 'error',
           title: t('toast.copyFailed'),
           detail: t('toast.textCopyFailedDetail'),
-          action: { label: t('common.retry'), run: retry },
+          action: { label: t('toast.retry'), run: retry },
         }),
       /** The clipboard said no: the link is selected for copying by hand. */
       copyFailed: (retry: () => void) =>
@@ -56,7 +56,7 @@ export function useToast() {
           kind: 'error',
           title: t('toast.copyFailed'),
           detail: t('toast.copyFailedDetail'),
-          action: { label: t('common.retry'), run: retry },
+          action: { label: t('toast.retry'), run: retry },
         }),
       /** An invitation was made; `copy` is what everybody does next. */
       inviteCreated: (detail: string, copy: () => void) =>

@@ -93,16 +93,20 @@ describe('PROBLEM_VIEW', () => {
     }
   });
 
-  it('asks for another link first only when nobody decided anything', () => {
-    expect(PROBLEM_VIEW.expired.primary).toBe('askAgain');
-    expect(PROBLEM_VIEW.exhausted.primary).toBe('askAgain');
-    for (const problem of ['revoked', 'removed', 'hidden', 'broken'] as const) {
+  it('asks for another link first where asking can still change something', () => {
+    // Expired, used up, and the person was removed from the route.
+    for (const problem of ['expired', 'exhausted', 'removed'] as const) {
+      expect(PROBLEM_VIEW[problem].primary).toBe('askAgain');
+    }
+    for (const problem of ['revoked', 'hidden', 'broken'] as const) {
       expect(PROBLEM_VIEW[problem].primary).toBe('explore');
     }
   });
 
-  it('offers to ask again as a second way out where it fits', () => {
-    expect(PROBLEM_VIEW.removed.secondary).toBe('askAgain');
+  it('offers to explore as the second way out where there is one', () => {
+    expect(PROBLEM_VIEW.expired.secondary).toBe('explore');
+    expect(PROBLEM_VIEW.exhausted.secondary).toBe('explore');
+    expect(PROBLEM_VIEW.removed.secondary).toBe('explore');
     expect(PROBLEM_VIEW.revoked.secondary).toBeUndefined();
     expect(PROBLEM_VIEW.hidden.secondary).toBeUndefined();
   });

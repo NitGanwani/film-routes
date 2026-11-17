@@ -577,6 +577,7 @@ export const en: Translations = {
     unrated: 'Not rated',
   },
   toast: {
+    retry: 'Retry',
     close: 'Dismiss',
     changes: 'Changes saved',
     visibility: {

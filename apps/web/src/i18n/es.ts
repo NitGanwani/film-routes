@@ -579,6 +579,7 @@ export const es = {
   },
   toast: {
     close: 'Cerrar aviso',
+    retry: 'Reintentar',
     changes: 'Cambios guardados',
     visibility: {
       private: 'La ruta ahora es privada',

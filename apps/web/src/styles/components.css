@@ -1145,7 +1145,8 @@ span.skel.route-step-n {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
-  margin-bottom: var(--sp-4);
+  min-height: var(--tap);
+  margin-bottom: var(--sp-2);
   font-size: var(--fs-sm);
   color: var(--text-muted);
   cursor: pointer;
@@ -1261,15 +1262,28 @@ span.skel.route-step-n {
 
 .journey-layout {
   display: grid;
+  /* A track of `auto` would grow with a long word; this one never does. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-4);
+  /* A title or a note with a word that does not fit (a long link) breaks it
+     instead of pushing the card, or the page, wider. */
+  overflow-wrap: anywhere;
 }
 .journey-side {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-4);
   align-content: start;
+  min-width: 0;
+}
+/* In the 300 px column, "cinematográfica" at 44 px does not fit. */
+.journey-side h1 {
+  font-size: 2rem;
+  hyphens: auto;
 }
 .journey-side .card-pad {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-3);
 }
 @media (min-width: 900px) {
@@ -3620,7 +3634,7 @@ fieldset.field legend {
   gap: 2px;
 }
 .toast-act {
-  min-height: 36px;
+  min-height: var(--tap);
   padding: 0 var(--sp-3);
   background: none;
   border: 0;
@@ -3636,8 +3650,8 @@ fieldset.field legend {
 .toast-x {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: var(--tap);
+  height: var(--tap);
   background: none;
   border: 0;
   border-radius: var(--r-sm);
@@ -4017,6 +4031,32 @@ fieldset.field legend {
 .finish-rate {
   margin-top: var(--sp-4);
 }
+/* The score, "Save" and "Later" stay at the bottom of the sheet while what is
+   above them (the comparison) scrolls: on a phone the whole scene is taller
+   than the screen, and the way out must never be below the fold. On a very
+   short screen it goes back to the flow, or it would take all of it. */
+@media (min-height: 600px) {
+  .finish-rate {
+    position: sticky;
+    bottom: calc(-1 * var(--sp-4));
+    z-index: 1;
+    margin: var(--sp-4) calc(-1 * var(--sp-4)) calc(-1 * var(--sp-4));
+    padding: var(--sp-3) var(--sp-4) var(--sp-4);
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+}
+@media (min-height: 600px) and (min-width: 720px) {
+  .finish-rate {
+    bottom: calc(-1 * var(--sp-6));
+    margin: var(--sp-4) calc(-1 * var(--sp-8)) calc(-1 * var(--sp-6));
+    padding: var(--sp-3) var(--sp-8) var(--sp-6);
+  }
+}
+.finish-panel {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
 .finish-later {
   display: block;
   min-height: var(--tap);
@@ -4052,7 +4092,7 @@ fieldset.field legend {
 }
 .invite-bar select {
   justify-self: end;
-  min-height: 36px;
+  min-height: var(--tap);
   padding: 0 var(--sp-2);
   border-radius: var(--r-pill);
   border: 1px solid var(--border);
@@ -4217,9 +4257,20 @@ fieldset.field legend {
 .invite-buttons .btn {
   width: 100%;
 }
+/* On a phone the envelope sits near the top, not in the middle of the screen. */
+@media (max-width: 719px) {
+  .invite-main {
+    justify-content: flex-start;
+    padding-top: var(--sp-4);
+  }
+}
 @media (min-width: 720px) {
   .invite-bar {
     padding: var(--sp-4) var(--sp-8);
+  }
+  /* Two buttons of 220 px and the gap between them have to fit in a row. */
+  .invite-main {
+    max-width: 540px;
   }
   .invite-buttons {
     grid-template-columns: repeat(auto-fit, 220px);
