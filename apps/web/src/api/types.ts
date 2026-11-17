@@ -63,7 +63,8 @@ export type AuthorStep = {
   position: number;
   noteBefore: string | null;
   noteAfter: string | null;
-  authorEmotion: Emotion | null;
+  /** How the author felt: none, one or two. */
+  authorEmotions: Emotion[];
   film: Film;
 };
 
@@ -145,11 +146,11 @@ export type JourneyStep = {
   noteBefore: string | null;
   noteAfter: string | null;
   noteAfterLocked: boolean;
-  authorEmotion: Emotion | null;
+  authorEmotions: Emotion[];
   seenBefore: boolean;
   startedAt: string | null;
   watchedAt: string | null;
-  myEmotion: Emotion | null;
+  myEmotions: Emotion[];
   myComment: string | null;
 };
 
@@ -192,7 +193,8 @@ export type JourneySummary = {
 };
 
 export type CloseStepBody = {
-  emotion: Emotion;
+  /** One or two. */
+  emotions: Emotion[];
   comment?: string;
   seenBefore: boolean;
 };
@@ -258,14 +260,14 @@ export type TravelerStep = {
   position: number;
   film: Film;
   state: StepState;
-  /** What the author felt (null when they never said). */
-  authorEmotion: Emotion | null;
-  travelerEmotion: Emotion | null;
+  /** What the author felt (empty when they never said). */
+  authorEmotions: Emotion[];
+  travelerEmotions: Emotion[];
   travelerComment: string | null;
   seenBefore: boolean;
   watchedAt: string | null;
-  /** null until both sides have an emotion. */
-  sameEmotion: boolean | null;
+  /** What they felt in common (they match when it is not empty); null until both sides have an emotion. */
+  sharedEmotions: Emotion[] | null;
 };
 
 /** `GET /routes/:id/travelers/:enrollmentId/journey` */

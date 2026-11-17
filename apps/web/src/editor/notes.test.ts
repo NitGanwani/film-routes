@@ -35,13 +35,17 @@ describe('draftFromStep', () => {
     expect(draftFromStep(step())).toEqual({
       noteBefore: '',
       noteAfter: '',
-      emotion: null,
+      emotions: [],
     });
     expect(
       draftFromStep(
-        step({ noteBefore: 'Mira el árbol', authorEmotion: 'awe' }),
+        step({ noteBefore: 'Mira el árbol', authorEmotions: ['awe'] }),
       ),
-    ).toEqual({ noteBefore: 'Mira el árbol', noteAfter: '', emotion: 'awe' });
+    ).toEqual({
+      noteBefore: 'Mira el árbol',
+      noteAfter: '',
+      emotions: ['awe'],
+    });
   });
 });
 
@@ -65,7 +69,7 @@ describe('stepPatch', () => {
   const saved = step({
     noteBefore: 'Antes',
     noteAfter: null,
-    authorEmotion: 'joy',
+    authorEmotions: ['joy'],
   });
 
   it('is empty when nothing changed', () => {
@@ -77,12 +81,16 @@ describe('stepPatch', () => {
       stepPatch(saved, {
         noteBefore: 'Antes',
         noteAfter: 'Final',
-        emotion: 'joy',
+        emotions: ['joy'],
       }),
     ).toEqual({ noteAfter: 'Final' });
     expect(
-      stepPatch(saved, { noteBefore: 'Antes', noteAfter: '', emotion: 'fear' }),
-    ).toEqual({ authorEmotion: 'fear' });
+      stepPatch(saved, {
+        noteBefore: 'Antes',
+        noteAfter: '',
+        emotions: ['fear'],
+      }),
+    ).toEqual({ authorEmotions: ['fear'] });
   });
 
   it('ignores the spaces around a note, as the API does', () => {
@@ -90,15 +98,36 @@ describe('stepPatch', () => {
       stepPatch(saved, {
         noteBefore: '  Antes  ',
         noteAfter: '',
-        emotion: 'joy',
+        emotions: ['joy'],
+      }),
+    ).toEqual({});
+  });
+
+  it('sends the whole list when an emotion is added, and nothing when only the order changes', () => {
+    const two = {
+      ...saved,
+      authorEmotions: ['joy', 'awe'] as AuthorStep['authorEmotions'],
+    };
+    expect(
+      stepPatch(saved, {
+        noteBefore: 'Antes',
+        noteAfter: '',
+        emotions: ['joy', 'awe'],
+      }),
+    ).toEqual({ authorEmotions: ['joy', 'awe'] });
+    expect(
+      stepPatch(two, {
+        noteBefore: 'Antes',
+        noteAfter: '',
+        emotions: ['awe', 'joy'],
       }),
     ).toEqual({});
   });
 
   it('clears a note that was emptied, and an emotion that is "not known yet"', () => {
     expect(
-      stepPatch(saved, { noteBefore: '   ', noteAfter: '', emotion: null }),
-    ).toEqual({ noteBefore: null, authorEmotion: null });
+      stepPatch(saved, { noteBefore: '   ', noteAfter: '', emotions: [] }),
+    ).toEqual({ noteBefore: null, authorEmotions: [] });
   });
 
   it('holds back a note that is too long without stopping the rest', () => {
@@ -107,46 +136,48 @@ describe('stepPatch', () => {
       stepPatch(saved, {
         noteBefore: tooLong,
         noteAfter: 'Final',
-        emotion: 'awe',
+        emotions: ['awe'],
       }),
-    ).toEqual({ noteAfter: 'Final', authorEmotion: 'awe' });
+    ).toEqual({ noteAfter: 'Final', authorEmotions: ['awe'] });
   });
 });
 
 describe('contentOf and completeness', () => {
   it('reads the saved film when there is no draft', () => {
-    expect(contentOf(step({ noteBefore: 'x', authorEmotion: 'joy' }))).toEqual({
+    expect(
+      contentOf(step({ noteBefore: 'x', authorEmotions: ['joy'] })),
+    ).toEqual({
       hasBefore: true,
       hasAfter: false,
-      emotion: 'joy',
+      emotions: ['joy'],
     });
   });
 
   it('prefers what is being typed, and an empty note counts as none', () => {
     const saved = step({ noteBefore: 'x' });
     expect(
-      contentOf(saved, { noteBefore: '  ', noteAfter: 'y', emotion: null }),
-    ).toEqual({ hasBefore: false, hasAfter: true, emotion: null });
+      contentOf(saved, { noteBefore: '  ', noteAfter: 'y', emotions: [] }),
+    ).toEqual({ hasBefore: false, hasAfter: true, emotions: [] });
   });
 
   it('is complete with a note before and an emotion; the note after is optional', () => {
     expect(
-      isComplete({ hasBefore: true, hasAfter: false, emotion: 'joy' }),
+      isComplete({ hasBefore: true, hasAfter: false, emotions: ['joy'] }),
     ).toBe(true);
-    expect(isComplete({ hasBefore: true, hasAfter: true, emotion: null })).toBe(
+    expect(isComplete({ hasBefore: true, hasAfter: true, emotions: [] })).toBe(
       false,
     );
     expect(
-      isComplete({ hasBefore: false, hasAfter: true, emotion: 'joy' }),
+      isComplete({ hasBefore: false, hasAfter: true, emotions: ['joy'] }),
     ).toBe(false);
   });
 
   it('counts the complete films', () => {
     expect(
       notesProgress([
-        { hasBefore: true, hasAfter: false, emotion: 'joy' },
-        { hasBefore: true, hasAfter: true, emotion: null },
-        { hasBefore: true, hasAfter: true, emotion: 'awe' },
+        { hasBefore: true, hasAfter: false, emotions: ['joy'] },
+        { hasBefore: true, hasAfter: true, emotions: [] },
+        { hasBefore: true, hasAfter: true, emotions: ['awe'] },
       ]),
     ).toEqual({ done: 2, total: 3 });
     expect(notesProgress([])).toEqual({ done: 0, total: 0 });
@@ -164,7 +195,7 @@ describe('combineSaveState', () => {
 describe('previewStep', () => {
   it('opens the note before, locks the note after and hides the author emotion', () => {
     const preview = previewStep(
-      step({ noteAfter: 'El final', authorEmotion: 'tension' }),
+      step({ noteAfter: 'El final', authorEmotions: ['tension'] }),
       { noteBefore: ' Mira el árbol ' },
     );
     expect(preview).toMatchObject({
@@ -172,7 +203,7 @@ describe('previewStep', () => {
       noteBefore: 'Mira el árbol',
       noteAfter: null,
       noteAfterLocked: true,
-      authorEmotion: null,
+      authorEmotions: [],
     });
   });
 

@@ -21,6 +21,20 @@ export const EMOTIONS = [
 ] as const;
 export type Emotion = (typeof EMOTIONS)[number];
 
+/** A film can be felt as two things at once, never more. */
+export const MAX_EMOTIONS = 2;
+
+/**
+ * What two people felt in common: the emotions that are in both lists, in the
+ * order of the first. Two people "match" on a film when this is not empty.
+ */
+export function sharedEmotions(
+  a: readonly Emotion[],
+  b: readonly Emotion[],
+): Emotion[] {
+  return a.filter((emotion) => b.includes(emotion));
+}
+
 export const ROUTE_VISIBILITIES = ['private', 'unlisted', 'public'] as const;
 export type RouteVisibility = (typeof ROUTE_VISIBILITIES)[number];
 

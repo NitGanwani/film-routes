@@ -1,7 +1,7 @@
-import type { Emotion, EnrollmentStatus, Locale } from '@film-routes/shared';
+import type { EnrollmentStatus, Locale } from '@film-routes/shared';
 import type { Prisma } from '../../generated/prisma/client.js';
-import type { Emotion as DbEmotion } from '../../generated/prisma/enums.js';
 import type { Db } from '../db.js';
+import { fromColumns, sharedOrNull, toColumns } from '../emotions.js';
 import { HttpError } from '../errors.js';
 import { countsAsTraveler, type Tx } from '../routes/locking.js';
 import { postersSelect, toCoverUrl, toPosters } from '../routes/posters.js';
@@ -19,8 +19,6 @@ const stepAlreadyClosed = () =>
 
 const lower = <T extends string>(value: T) =>
   value.toLowerCase() as Lowercase<T>;
-const toEmotion = (emotion: DbEmotion | null) =>
-  emotion ? (lower(emotion) as Emotion) : null;
 
 const closedProgress = { emotion: { not: null } } as const;
 
@@ -187,11 +185,16 @@ export function createProgressService(
           noteBefore: step.noteBefore,
           noteAfter: closed ? step.noteAfter : null,
           noteAfterLocked: !closed,
-          authorEmotion: closed ? toEmotion(step.authorEmotion) : null,
+          authorEmotions: closed
+            ? fromColumns(step.authorEmotion, step.authorEmotion2)
+            : [],
           seenBefore: progress?.seenBefore ?? false,
           startedAt: progress?.startedAt ?? null,
           watchedAt: progress?.watchedAt ?? null,
-          myEmotion: toEmotion(progress?.emotion ?? null),
+          myEmotions: fromColumns(
+            progress?.emotion ?? null,
+            progress?.emotion2 ?? null,
+          ),
           myComment: progress?.comment ?? null,
         };
       }),
@@ -300,10 +303,12 @@ export function createProgressService(
         }
 
         const closedAt = now();
+        const columns = toColumns(input.emotions);
         const data = {
           watchedAt: closedAt,
           seenBefore: input.seenBefore ?? false,
-          emotion: input.emotion.toUpperCase() as DbEmotion,
+          emotion: columns.first,
+          emotion2: columns.second,
           comment: input.comment ?? null,
         };
         if (existing) {
@@ -383,23 +388,27 @@ export function createProgressService(
       const steps = full.steps.map((step) => {
         const progress = step.progress[0];
         const state = stepState(progress);
-        const authorEmotion = toEmotion(step.authorEmotion);
-        const travelerEmotion = toEmotion(progress?.emotion ?? null);
+        const authorEmotions = fromColumns(
+          step.authorEmotion,
+          step.authorEmotion2,
+        );
+        const travelerEmotions = fromColumns(
+          progress?.emotion ?? null,
+          progress?.emotion2 ?? null,
+        );
         return {
           id: step.id,
           position: step.position,
           film: toFilm(step.film, full.locale),
           state,
-          authorEmotion,
-          travelerEmotion,
+          authorEmotions,
+          travelerEmotions,
           travelerComment: progress?.comment ?? null,
           seenBefore: progress?.seenBefore ?? false,
           watchedAt: progress?.watchedAt ?? null,
-          // Only comparable once both sides have an emotion.
-          sameEmotion:
-            authorEmotion && travelerEmotion
-              ? authorEmotion === travelerEmotion
-              : null,
+          // What they felt in common (they match when it is not empty); null
+          // until both sides have an emotion to compare.
+          sharedEmotions: sharedOrNull(authorEmotions, travelerEmotions),
         };
       });
 

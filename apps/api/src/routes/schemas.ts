@@ -1,10 +1,6 @@
-import {
-  EMOTIONS,
-  LOCALES,
-  ROUTE_LIMITS,
-  ROUTE_VISIBILITIES,
-} from '@film-routes/shared';
+import { LOCALES, ROUTE_LIMITS, ROUTE_VISIBILITIES } from '@film-routes/shared';
 import { z } from 'zod';
+import { emotionList } from '../emotions.js';
 
 export const routeParamsSchema = z.object({ routeId: z.uuid() });
 export const stepParamsSchema = routeParamsSchema.extend({
@@ -23,7 +19,6 @@ const text = (max: number) =>
 
 const description = text(ROUTE_LIMITS.descriptionMaxLength);
 const note = text(ROUTE_LIMITS.noteMaxLength);
-const emotion = z.enum(EMOTIONS);
 
 const hasAnyField = (value: Record<string, unknown>) =>
   Object.values(value).some((field) => field !== undefined);
@@ -49,14 +44,15 @@ export const addStepSchema = z.object({
   tmdbId: z.number().int().positive(),
   noteBefore: note.optional(),
   noteAfter: note.optional(),
-  authorEmotion: emotion.nullable().optional(),
+  authorEmotions: emotionList(0).optional(),
 });
 
 export const updateStepSchema = z
   .object({
     noteBefore: note.nullable().optional(),
     noteAfter: note.nullable().optional(),
-    authorEmotion: emotion.nullable().optional(),
+    /** One or two; an empty list takes them away. Left out: unchanged. */
+    authorEmotions: emotionList(0).optional(),
   })
   .refine(hasAnyField, atLeastOne);
 

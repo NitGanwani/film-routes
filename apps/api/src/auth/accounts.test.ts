@@ -502,7 +502,7 @@ describe('deleting the account', () => {
       await request(app)
         .post(`/routes/${routeId}/journey/steps/${step.id}/close`)
         .set(bob.auth)
-        .send({ emotion: 'joy' });
+        .send({ emotions: ['joy'] });
     }
     await request(app)
       .put(`/routes/${routeId}/rating`)

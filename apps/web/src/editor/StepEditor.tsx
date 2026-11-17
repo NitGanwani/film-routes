@@ -102,14 +102,11 @@ export function StepEditor({
         </p>
         <EmotionPicker
           name={`${id}-emotion`}
-          value={draft.emotion}
+          value={draft.emotions}
           labelledBy={`${id}-emotion`}
           describedBy={`${id}-emotion-hint`}
-          onChange={(emotion) => notes.setEmotion(step, emotion)}
-          none={{
-            label: t('editor.emotion.unknown'),
-            onChoose: () => notes.setEmotion(step, null),
-          }}
+          onChange={(emotions) => notes.setEmotions(step, emotions)}
+          none={{ label: t('editor.emotion.unknown') }}
         />
       </fieldset>
 

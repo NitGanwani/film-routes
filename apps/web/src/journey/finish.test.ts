@@ -11,23 +11,36 @@ import {
 
 const step = (
   position: number,
-  myEmotion: JourneyStep['myEmotion'],
-  authorEmotion: JourneyStep['authorEmotion'],
-) => ({ position, myEmotion, authorEmotion }) as JourneyStep;
+  myEmotions: JourneyStep['myEmotions'],
+  authorEmotions: JourneyStep['authorEmotions'],
+) => ({ position, myEmotions, authorEmotions }) as JourneyStep;
 
 describe('finishPairs and finishSummary', () => {
   it('marks the films where both chose the same emotion', () => {
     const pairs = finishPairs([
-      step(1, 'joy', 'joy'),
-      step(2, 'awe', 'tenderness'),
-      step(3, 'sadness', 'sadness'),
+      step(1, ['joy'], ['joy']),
+      step(2, ['awe'], ['tenderness']),
+      step(3, ['sadness'], ['sadness']),
     ]);
     expect(pairs.map((pair) => pair.same)).toEqual([true, false, true]);
     expect(finishSummary(pairs)).toEqual({ compared: 3, same: 2 });
   });
 
+  it('matches on a shared emotion out of two, and says which', () => {
+    const pairs = finishPairs([
+      step(1, ['joy', 'awe'], ['awe', 'fear']),
+      step(2, ['joy', 'awe'], ['fear', 'sadness']),
+    ]);
+    expect(pairs.map((pair) => pair.shared)).toEqual([['awe'], []]);
+    expect(pairs.map((pair) => pair.same)).toEqual([true, false]);
+    expect(finishSummary(pairs)).toEqual({ compared: 2, same: 1 });
+  });
+
   it('does not count a film the author left without an emotion', () => {
-    const pairs = finishPairs([step(1, 'joy', null), step(2, 'joy', 'joy')]);
+    const pairs = finishPairs([
+      step(1, ['joy'], []),
+      step(2, ['joy'], ['joy']),
+    ]);
     expect(pairs[0]?.same).toBe(false);
     expect(finishSummary(pairs)).toEqual({ compared: 1, same: 1 });
   });

@@ -167,11 +167,11 @@ describe('withStepUpdated', () => {
   it('changes the notes and emotion of one film only', () => {
     const next = withStepUpdated(route(1, 2), {
       stepId: 'step-2',
-      patch: { noteBefore: 'Antes', authorEmotion: 'awe' },
+      patch: { noteBefore: 'Antes', authorEmotions: ['awe'] },
     });
     expect(next.steps[1]).toMatchObject({
       noteBefore: 'Antes',
-      authorEmotion: 'awe',
+      authorEmotions: ['awe'],
       noteAfter: null,
     });
     expect(next.steps[0]?.noteBefore).toBeNull();

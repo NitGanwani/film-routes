@@ -116,14 +116,18 @@ function Figure({ id }: { id: TutorialStepId }): ReactNode {
         </div>
       );
     case 'emotion':
-      // One emotion is picked; the others wait, dimmed.
+      // Two emotions are picked (the most there can be); the others wait, dimmed.
       return (
         <div className="tutorial-emotions">
           {EMOTIONS.map((emotion) => (
             <EmotionBadge
               key={emotion}
               emotion={emotion}
-              state={emotion === 'tenderness' ? 'chosen' : 'dimmed'}
+              state={
+                emotion === 'tenderness' || emotion === 'thoughtful'
+                  ? 'chosen'
+                  : 'dimmed'
+              }
             />
           ))}
         </div>

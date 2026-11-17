@@ -140,8 +140,8 @@ export function useStepNotes(
       rerender((n) => n + 1);
       schedule(stepKey(step));
     },
-    setEmotion(step: AuthorStep, emotion: Emotion | null) {
-      draftOf(step).emotion = emotion;
+    setEmotions(step: AuthorStep, emotions: Emotion[]) {
+      draftOf(step).emotions = emotions;
       rerender((n) => n + 1);
       flushKey(stepKey(step));
     },

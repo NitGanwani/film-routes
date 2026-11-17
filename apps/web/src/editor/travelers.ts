@@ -32,15 +32,16 @@ export function travelersSummary(travelers: readonly Traveler[]) {
 }
 
 /**
- * How many films they felt the same about, out of the ones that can be
- * compared (both of you have an emotion). Null when there is nothing to
+ * How many films they matched on (at least one emotion in common), out of the
+ * ones that can be compared (both of you have an emotion). Null when there is nothing to
  * compare yet, so the page says nothing instead of "0 of 0".
  */
 export function matchSummary(steps: readonly TravelerStep[]) {
-  const comparable = steps.filter((step) => step.sameEmotion !== null);
+  const comparable = steps.filter((step) => step.sharedEmotions !== null);
   if (comparable.length === 0) return null;
   return {
-    same: comparable.filter((step) => step.sameEmotion).length,
+    same: comparable.filter((step) => (step.sharedEmotions ?? []).length > 0)
+      .length,
     total: comparable.length,
   };
 }

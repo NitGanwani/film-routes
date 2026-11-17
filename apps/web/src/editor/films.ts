@@ -68,7 +68,7 @@ export function stepFromResult(
     position,
     noteBefore: null,
     noteAfter: null,
-    authorEmotion: null,
+    authorEmotions: [],
     film: {
       tmdbId: result.tmdbId,
       title: result.title,
@@ -163,7 +163,7 @@ export function withStepUpdated(
     patch: {
       noteBefore?: string | null;
       noteAfter?: string | null;
-      authorEmotion?: Emotion | null;
+      authorEmotions?: Emotion[];
     };
   },
 ): AuthorRouteDetail {

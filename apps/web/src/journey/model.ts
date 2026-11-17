@@ -1,4 +1,8 @@
-import { ROUTE_LIMITS, type Emotion } from '@film-routes/shared';
+import {
+  ROUTE_LIMITS,
+  sharedEmotions,
+  type Emotion,
+} from '@film-routes/shared';
 import type { CloseStepBody, JourneyStep } from '../api/types.js';
 
 export type StepActions = {
@@ -42,17 +46,30 @@ export function progressPercent(closed: number, total: number): number {
   return Math.min(100, Math.round((closed / total) * 100));
 }
 
+/** What two people felt: they match when they share at least one emotion. */
+export type Comparison = {
+  result: 'same' | 'different';
+  /** The emotions in both lists; empty when the result is "different". */
+  shared: Emotion[];
+};
+
 /** Null until both sides have an emotion to compare. */
 export function compareEmotions(
-  mine: Emotion | null,
-  authors: Emotion | null,
-): 'same' | 'different' | null {
-  if (!mine || !authors) return null;
-  return mine === authors ? 'same' : 'different';
+  mine: readonly Emotion[],
+  authors: readonly Emotion[],
+): Comparison | null {
+  if (mine.length === 0 || authors.length === 0) return null;
+  return comparisonOf(sharedEmotions(mine, authors));
+}
+
+/** The same comparison when the API has already worked out what is shared. */
+export function comparisonOf(shared: Emotion[] | null): Comparison | null {
+  if (shared === null) return null;
+  return { result: shared.length > 0 ? 'same' : 'different', shared };
 }
 
 export type CloseForm = {
-  emotion: Emotion | null;
+  emotions: Emotion[];
   comment: string;
   seenBefore: boolean;
 };
@@ -61,7 +78,7 @@ export type CloseFormProblem = 'emotion_required' | 'comment_too_long';
 
 /** The same two rules the API enforces, so the person hears it before sending. */
 export function closeFormProblem(form: CloseForm): CloseFormProblem | null {
-  if (!form.emotion) return 'emotion_required';
+  if (form.emotions.length === 0) return 'emotion_required';
   if (form.comment.trim().length > ROUTE_LIMITS.commentMaxLength) {
     return 'comment_too_long';
   }
@@ -70,10 +87,10 @@ export function closeFormProblem(form: CloseForm): CloseFormProblem | null {
 
 /** The request body for a valid form. Returns null if the form is not valid. */
 export function closeBody(form: CloseForm): CloseStepBody | null {
-  if (closeFormProblem(form) !== null || !form.emotion) return null;
+  if (closeFormProblem(form) !== null) return null;
   const comment = form.comment.trim();
   return {
-    emotion: form.emotion,
+    emotions: form.emotions,
     seenBefore: form.seenBefore,
     ...(comment === '' ? {} : { comment }),
   };

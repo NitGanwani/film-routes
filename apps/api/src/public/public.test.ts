@@ -53,7 +53,7 @@ async function routeOf(
         tmdbId,
         noteBefore: `before-${index + 1}`,
         noteAfter: `after-${index + 1}`,
-        authorEmotion: 'joy',
+        authorEmotions: ['joy'],
       });
   }
   if (visibility !== 'private') {
@@ -80,7 +80,7 @@ async function complete(auth: Auth, routeId: string) {
     await request(app)
       .post(`/routes/${routeId}/journey/steps/${step.id}/close`)
       .set(auth)
-      .send({ emotion: 'joy' });
+      .send({ emotions: ['joy'] });
   }
 }
 
@@ -514,7 +514,7 @@ describe('starting a public route without an invitation', () => {
     await request(app)
       .post(`/routes/${routeId}/journey/steps/${firstStep}/close`)
       .set(bob.auth)
-      .send({ emotion: 'awe' });
+      .send({ emotions: ['awe'] });
     await request(app).post(`/routes/${routeId}/journey/leave`).set(bob.auth);
 
     const back = await joinPublic(bob.auth, routeId);
@@ -527,7 +527,7 @@ describe('starting a public route without an invitation', () => {
       id: joined.body.enrollment.id,
       status: 'active',
     });
-    expect(after.body.journey.steps[0].myEmotion).toBe('awe');
+    expect(after.body.journey.steps[0].myEmotions).toEqual(['awe']);
   });
 
   it('locks the films of the route, as joining by link does', async () => {

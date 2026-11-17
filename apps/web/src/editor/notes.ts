@@ -1,5 +1,6 @@
 import { ROUTE_LIMITS, type Emotion } from '@film-routes/shared';
 import type { AuthorStep, JourneyStep } from '../api/types.js';
+import { sameEmotions } from '../components/emotionPick.js';
 import { measure, type Problem } from './model.js';
 import type { SaveState } from './useRouteAutosave.js';
 
@@ -7,22 +8,23 @@ import type { SaveState } from './useRouteAutosave.js';
 export type StepDraft = {
   noteBefore: string;
   noteAfter: string;
-  /** The author's own emotion; null = "I do not know yet". */
-  emotion: Emotion | null;
+  /** The author's own emotions: none = "I do not know yet", at most two. */
+  emotions: Emotion[];
 };
 
 /** The fields of a film that the author can change (as the API names them). */
 export type StepPatch = {
   noteBefore?: string | null;
   noteAfter?: string | null;
-  authorEmotion?: Emotion | null;
+  /** The whole list: an empty one takes them away. */
+  authorEmotions?: Emotion[];
 };
 
 export function draftFromStep(step: AuthorStep): StepDraft {
   return {
     noteBefore: step.noteBefore ?? '',
     noteAfter: step.noteAfter ?? '',
-    emotion: step.authorEmotion,
+    emotions: step.authorEmotions,
   };
 }
 
@@ -39,7 +41,7 @@ const keep = (value: string) => value.trim() || null;
  * back (the message under it says why) without stopping the other fields.
  */
 export function stepPatch(
-  saved: Pick<AuthorStep, 'noteBefore' | 'noteAfter' | 'authorEmotion'>,
+  saved: Pick<AuthorStep, 'noteBefore' | 'noteAfter' | 'authorEmotions'>,
   draft: StepDraft,
 ): StepPatch {
   const patch: StepPatch = {};
@@ -51,8 +53,8 @@ export function stepPatch(
     const next = keep(draft.noteAfter);
     if (next !== saved.noteAfter) patch.noteAfter = next;
   }
-  if (draft.emotion !== saved.authorEmotion)
-    patch.authorEmotion = draft.emotion;
+  if (!sameEmotions(draft.emotions, saved.authorEmotions))
+    patch.authorEmotions = draft.emotions;
   return patch;
 }
 
@@ -60,23 +62,23 @@ export function stepPatch(
 export type StepContent = {
   hasBefore: boolean;
   hasAfter: boolean;
-  emotion: Emotion | null;
+  emotions: Emotion[];
 };
 
 export function contentOf(
-  step: Pick<AuthorStep, 'noteBefore' | 'noteAfter' | 'authorEmotion'>,
+  step: Pick<AuthorStep, 'noteBefore' | 'noteAfter' | 'authorEmotions'>,
   draft?: StepDraft,
 ): StepContent {
   return draft
     ? {
         hasBefore: keep(draft.noteBefore) !== null,
         hasAfter: keep(draft.noteAfter) !== null,
-        emotion: draft.emotion,
+        emotions: draft.emotions,
       }
     : {
         hasBefore: step.noteBefore !== null,
         hasAfter: step.noteAfter !== null,
-        emotion: step.authorEmotion,
+        emotions: step.authorEmotions,
       };
 }
 
@@ -85,7 +87,7 @@ export function contentOf(
  * recommended but not needed, and nothing here keeps a route from being shared.
  */
 export const isComplete = (content: StepContent) =>
-  content.hasBefore && content.emotion !== null;
+  content.hasBefore && content.emotions.length > 0;
 
 export function notesProgress(contents: StepContent[]) {
   return { done: contents.filter(isComplete).length, total: contents.length };
@@ -116,11 +118,11 @@ export function previewStep(
     noteBefore: keep(content.noteBefore),
     noteAfter: null,
     noteAfterLocked: true,
-    authorEmotion: null,
+    authorEmotions: [],
     seenBefore: false,
     startedAt: null,
     watchedAt: null,
-    myEmotion: null,
+    myEmotions: [],
     myComment: null,
   };
 }

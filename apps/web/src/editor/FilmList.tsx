@@ -19,7 +19,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { AuthorStep } from '../api/types.js';
-import { EmotionBadge } from '../components/EmotionBadge.js';
+import { EmotionBadges } from '../components/EmotionBadge.js';
 import { Icon } from '../components/Icon.js';
 import { Poster } from '../components/Poster.js';
 import { useMediaQuery } from '../components/useMediaQuery.js';
@@ -137,8 +137,8 @@ function RowMain({
             label={t('editor.notes.status.after')}
             done={content.hasAfter}
           />
-          {content.emotion ? (
-            <EmotionBadge emotion={content.emotion} />
+          {content.emotions.length > 0 ? (
+            <EmotionBadges emotions={content.emotions} />
           ) : (
             <span className="film-status-none">
               {t('editor.notes.status.noEmotion')}

@@ -67,7 +67,7 @@ async function complete(auth: Auth, routeId: string) {
     await request(app)
       .post(`/routes/${routeId}/journey/steps/${step.id}/close`)
       .set(auth)
-      .send({ emotion: 'joy' });
+      .send({ emotions: ['joy'] });
   }
 }
 

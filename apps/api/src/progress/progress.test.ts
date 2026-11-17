@@ -52,7 +52,7 @@ async function sharedRoute(auth: Auth) {
         tmdbId,
         noteBefore: `before-${index + 1}`,
         noteAfter: `after-${index + 1}`,
-        authorEmotion: AUTHOR_EMOTIONS[index],
+        authorEmotions: [AUTHOR_EMOTIONS[index]],
       });
   }
   await request(app)
@@ -102,9 +102,9 @@ type JourneyStep = {
   noteBefore: string | null;
   noteAfter: string | null;
   noteAfterLocked: boolean;
-  authorEmotion: string | null;
+  authorEmotions: string[];
   seenBefore: boolean;
-  myEmotion: string | null;
+  myEmotions: string[];
   myComment: string | null;
 };
 
@@ -189,7 +189,7 @@ describe('the traveler view', () => {
     const text = JSON.stringify(response.body);
     expect(text).not.toContain('after-');
     for (const step of response.body.journey.steps as JourneyStep[]) {
-      expect(step.authorEmotion).toBeNull();
+      expect(step.authorEmotions).toEqual([]);
       expect(step.noteAfterLocked).toBe(true);
     }
   });
@@ -287,8 +287,13 @@ describe('closing a film', () => {
       {},
       { seenBefore: true },
       { comment: 'loved it' },
-      { emotion: 'angry' },
-      { emotion: null },
+      { emotions: ['angry'] },
+      { emotions: null },
+      // One or two, never none, repeated, or more than two.
+      { emotions: [] },
+      { emotions: 'joy' },
+      { emotions: ['joy', 'joy'] },
+      { emotions: ['joy', 'awe', 'fear'] },
     ]) {
       const response = await close(bob.auth, routeId, steps[0]!.id, body);
       expect(response.status, JSON.stringify(body)).toBe(400);
@@ -300,11 +305,11 @@ describe('closing a film', () => {
     const { bob, routeId, steps } = await followedRoute();
 
     const tooLong = await close(bob.auth, routeId, steps[0]!.id, {
-      emotion: 'joy',
+      emotions: ['joy'],
       comment: 'x'.repeat(ROUTE_LIMITS.commentMaxLength + 1),
     });
     const justRight = await close(bob.auth, routeId, steps[0]!.id, {
-      emotion: 'joy',
+      emotions: ['joy'],
       comment: 'x'.repeat(ROUTE_LIMITS.commentMaxLength),
     });
 
@@ -316,7 +321,7 @@ describe('closing a film', () => {
     const { bob, routeId, steps } = await followedRoute();
 
     const response = await close(bob.auth, routeId, steps[0]!.id, {
-      emotion: 'tension',
+      emotions: ['tension'],
       comment: 'I held my breath',
     });
     const after = response.body.journey.steps as JourneyStep[];
@@ -326,21 +331,45 @@ describe('closing a film', () => {
       state: 'closed',
       noteAfter: 'after-1',
       noteAfterLocked: false,
-      authorEmotion: 'joy',
-      myEmotion: 'tension',
+      authorEmotions: ['joy'],
+      myEmotions: ['tension'],
       myComment: 'I held my breath',
       seenBefore: false,
     });
     expect(after[1]!.noteAfter).toBeNull();
-    expect(after[1]!.authorEmotion).toBeNull();
+    expect(after[1]!.authorEmotions).toEqual([]);
     expect(JSON.stringify(response.body)).not.toContain('after-2');
+  });
+
+  it('closes a film with two emotions and shows both, in the order chosen', async () => {
+    const { bob, routeId, steps } = await followedRoute();
+
+    const response = await close(bob.auth, routeId, steps[0]!.id, {
+      emotions: ['awe', 'sadness'],
+    });
+    const after = response.body.journey.steps as JourneyStep[];
+    const row = await db.stepProgress.findFirstOrThrow({
+      where: { stepId: steps[0]!.id },
+    });
+
+    expect(response.status).toBe(200);
+    expect(after[0]!.myEmotions).toEqual(['awe', 'sadness']);
+    // The second one lives in its own column; the first is what closes a film.
+    expect([row.emotion, row.emotion2]).toEqual(['AWE', 'SADNESS']);
+    // One emotion leaves the second column empty.
+    const one = await close(bob.auth, routeId, steps[1]!.id, {
+      emotions: ['joy'],
+    });
+    expect((one.body.journey.steps as JourneyStep[])[1]!.myEmotions).toEqual([
+      'joy',
+    ]);
   });
 
   it('moves the recommendation to the next film', async () => {
     const { bob, routeId, steps } = await followedRoute();
 
     const response = await close(bob.auth, routeId, steps[0]!.id, {
-      emotion: 'joy',
+      emotions: ['joy'],
     });
     const after = response.body.journey.steps as JourneyStep[];
 
@@ -357,7 +386,7 @@ describe('closing a film', () => {
     const { bob, routeId, steps } = await followedRoute();
 
     const response = await close(bob.auth, routeId, steps[1]!.id, {
-      emotion: 'awe',
+      emotions: ['awe'],
       seenBefore: true,
     });
     const after = response.body.journey.steps as JourneyStep[];
@@ -367,14 +396,14 @@ describe('closing a film', () => {
       state: 'closed',
       seenBefore: true,
       noteAfter: 'after-2',
-      authorEmotion: 'sadness',
+      authorEmotions: ['sadness'],
     });
   });
 
   it('does not require starting the film first', async () => {
     const { bob, enrollmentId, routeId, steps } = await followedRoute();
 
-    await close(bob.auth, routeId, steps[0]!.id, { emotion: 'joy' });
+    await close(bob.auth, routeId, steps[0]!.id, { emotions: ['joy'] });
 
     const row = await db.stepProgress.findFirstOrThrow({
       where: { enrollmentId },
@@ -387,7 +416,7 @@ describe('closing a film', () => {
     const { bob, enrollmentId, routeId, steps } = await followedRoute();
 
     await start(bob.auth, routeId, steps[0]!.id);
-    await close(bob.auth, routeId, steps[0]!.id, { emotion: 'joy' });
+    await close(bob.auth, routeId, steps[0]!.id, { emotions: ['joy'] });
 
     const row = await db.stepProgress.findFirstOrThrow({
       where: { enrollmentId },
@@ -398,17 +427,17 @@ describe('closing a film', () => {
 
   it('is final: a closed film cannot be closed or started again', async () => {
     const { bob, routeId, steps } = await followedRoute();
-    await close(bob.auth, routeId, steps[0]!.id, { emotion: 'joy' });
+    await close(bob.auth, routeId, steps[0]!.id, { emotions: ['joy'] });
 
     const closeAgain = await close(bob.auth, routeId, steps[0]!.id, {
-      emotion: 'fear',
+      emotions: ['fear'],
     });
     const startAgain = await start(bob.auth, routeId, steps[0]!.id);
 
     expect(closeAgain.status).toBe(409);
     expect(closeAgain.body.error.code).toBe('step_already_closed');
     expect(startAgain.status).toBe(409);
-    expect((await stepsOf(bob.auth, routeId))[0]!.myEmotion).toBe('joy');
+    expect((await stepsOf(bob.auth, routeId))[0]!.myEmotions).toEqual(['joy']);
   });
 
   it('keeps each traveler progress separate', async () => {
@@ -416,12 +445,12 @@ describe('closing a film', () => {
     const carol = await signUp('carol');
     await join(carol.auth, ada.auth, routeId);
 
-    await close(bob.auth, routeId, steps[0]!.id, { emotion: 'joy' });
+    await close(bob.auth, routeId, steps[0]!.id, { emotions: ['joy'] });
     const carolSteps = await stepsOf(carol.auth, routeId);
 
     expect(carolSteps[0]).toMatchObject({
       state: 'pending',
-      myEmotion: null,
+      myEmotions: [],
       noteAfter: null,
     });
   });
@@ -431,12 +460,12 @@ describe('completing a route', () => {
   it('completes it when the last film is closed, in any order', async () => {
     const { bob, enrollmentId, routeId, steps } = await followedRoute();
 
-    await close(bob.auth, routeId, steps[2]!.id, { emotion: 'joy' });
-    await close(bob.auth, routeId, steps[0]!.id, { emotion: 'awe' });
+    await close(bob.auth, routeId, steps[2]!.id, { emotions: ['joy'] });
+    await close(bob.auth, routeId, steps[0]!.id, { emotions: ['awe'] });
     expect(await statusOf(enrollmentId)).toBe('ACTIVE');
 
     const last = await close(bob.auth, routeId, steps[1]!.id, {
-      emotion: 'sadness',
+      emotions: ['sadness'],
     });
 
     expect(await statusOf(enrollmentId)).toBe('COMPLETED');
@@ -460,11 +489,11 @@ describe('completing a route', () => {
     for (let round = 0; round < 8; round += 1) {
       await resetDb(db);
       const { bob, enrollmentId, routeId, steps } = await followedRoute();
-      await close(bob.auth, routeId, steps[0]!.id, { emotion: 'joy' });
+      await close(bob.auth, routeId, steps[0]!.id, { emotions: ['joy'] });
 
       const [one, two] = await Promise.all([
-        close(bob.auth, routeId, steps[1]!.id, { emotion: 'awe' }),
-        close(bob.auth, routeId, steps[2]!.id, { emotion: 'fear' }),
+        close(bob.auth, routeId, steps[1]!.id, { emotions: ['awe'] }),
+        close(bob.auth, routeId, steps[2]!.id, { emotions: ['fear'] }),
       ]);
 
       expect([one.status, two.status], `round ${round}`).toEqual([200, 200]);
@@ -478,8 +507,8 @@ describe('completing a route', () => {
       const { bob, enrollmentId, routeId, steps } = await followedRoute();
 
       const results = await Promise.all([
-        close(bob.auth, routeId, steps[0]!.id, { emotion: 'joy' }),
-        close(bob.auth, routeId, steps[0]!.id, { emotion: 'fear' }),
+        close(bob.auth, routeId, steps[0]!.id, { emotions: ['joy'] }),
+        close(bob.auth, routeId, steps[0]!.id, { emotions: ['fear'] }),
       ]);
 
       expect(
@@ -494,14 +523,14 @@ describe('completing a route', () => {
 describe('leaving a route', () => {
   it('keeps the progress and blocks changes until they return', async () => {
     const { ada, bob, enrollmentId, routeId, steps } = await followedRoute();
-    await close(bob.auth, routeId, steps[0]!.id, { emotion: 'joy' });
+    await close(bob.auth, routeId, steps[0]!.id, { emotions: ['joy'] });
 
     const left = await request(app)
       .post(`/routes/${routeId}/journey/leave`)
       .set(bob.auth);
     const startWhileAway = await start(bob.auth, routeId, steps[1]!.id);
     const closeWhileAway = await close(bob.auth, routeId, steps[1]!.id, {
-      emotion: 'awe',
+      emotions: ['awe'],
     });
     const stillVisible = await journeyOf(bob.auth, routeId);
 
@@ -516,13 +545,13 @@ describe('leaving a route', () => {
     await join(bob.auth, ada.auth, routeId);
     const back = await stepsOf(bob.auth, routeId);
     expect(await statusOf(enrollmentId)).toBe('ACTIVE');
-    expect(back[0]!.myEmotion).toBe('joy');
+    expect(back[0]!.myEmotions).toEqual(['joy']);
   });
 
   it('cannot leave a completed route', async () => {
     const { bob, enrollmentId, routeId, steps } = await followedRoute();
     for (const step of steps) {
-      await close(bob.auth, routeId, step.id, { emotion: 'joy' });
+      await close(bob.auth, routeId, step.id, { emotions: ['joy'] });
     }
 
     const response = await request(app)
@@ -555,7 +584,7 @@ describe('what the author can still do', () => {
       .set(ada.auth)
       .send({ visibility: 'private' });
     for (const step of steps) {
-      await close(bob.auth, routeId, step.id, { emotion: 'joy' });
+      await close(bob.auth, routeId, step.id, { emotions: ['joy'] });
     }
 
     expect(unpublished.status).toBe(200);
@@ -571,7 +600,7 @@ describe('what the author can still do', () => {
     const view = await journeyOf(bob.auth, routeId);
     const started = await start(bob.auth, routeId, steps[0]!.id);
     const closed = await close(bob.auth, routeId, steps[0]!.id, {
-      emotion: 'joy',
+      emotions: ['joy'],
     });
 
     for (const response of [view, started, closed]) {
@@ -584,11 +613,11 @@ describe('what the author can still do', () => {
   it('shows the author their emotion next to the traveler one', async () => {
     const { ada, bob, enrollmentId, routeId, steps } = await followedRoute();
     await close(bob.auth, routeId, steps[0]!.id, {
-      emotion: 'joy',
+      emotions: ['joy'],
       comment: 'same as you',
     });
     await close(bob.auth, routeId, steps[1]!.id, {
-      emotion: 'fear',
+      emotions: ['fear'],
       seenBefore: true,
     });
 
@@ -606,25 +635,52 @@ describe('what the author can still do', () => {
     expect(response.body.steps).toMatchObject([
       {
         position: 1,
-        authorEmotion: 'joy',
-        travelerEmotion: 'joy',
+        authorEmotions: ['joy'],
+        travelerEmotions: ['joy'],
         travelerComment: 'same as you',
-        sameEmotion: true,
+        sharedEmotions: ['joy'],
       },
       {
         position: 2,
-        authorEmotion: 'sadness',
-        travelerEmotion: 'fear',
+        authorEmotions: ['sadness'],
+        travelerEmotions: ['fear'],
         seenBefore: true,
-        sameEmotion: false,
+        sharedEmotions: [],
       },
       {
         position: 3,
-        authorEmotion: 'awe',
-        travelerEmotion: null,
+        authorEmotions: ['awe'],
+        travelerEmotions: [],
         state: 'pending',
-        sameEmotion: null,
+        sharedEmotions: null,
       },
+    ]);
+  });
+
+  it('says which emotions the traveler and the author have in common', async () => {
+    const { ada, bob, enrollmentId, routeId, steps } = await followedRoute();
+    // The author felt joy (film 1) and sadness (film 2): the traveler adds a second one.
+    await request(app)
+      .patch(`/routes/${routeId}/steps/${steps[1]!.id}`)
+      .set(ada.auth)
+      .send({ authorEmotions: ['sadness', 'awe'] });
+    await close(bob.auth, routeId, steps[0]!.id, { emotions: ['awe', 'joy'] });
+    await close(bob.auth, routeId, steps[1]!.id, { emotions: ['fear', 'awe'] });
+    await close(bob.auth, routeId, steps[2]!.id, { emotions: ['fear'] });
+
+    const response = await request(app)
+      .get(`/routes/${routeId}/travelers/${enrollmentId}/journey`)
+      .set(ada.auth);
+
+    expect(response.status).toBe(200);
+    expect(
+      (response.body.steps as { sharedEmotions: string[] | null }[]).map(
+        (step) => step.sharedEmotions,
+      ),
+    ).toEqual([
+      ['joy'], // one in common out of two
+      ['awe'], // the second one of both
+      [], // nothing in common
     ]);
   });
 
@@ -658,7 +714,7 @@ describe('what the author can still do', () => {
 
   it('shows the progress of each traveler in the list', async () => {
     const { ada, bob, routeId, steps } = await followedRoute();
-    await close(bob.auth, routeId, steps[0]!.id, { emotion: 'joy' });
+    await close(bob.auth, routeId, steps[0]!.id, { emotions: ['joy'] });
 
     const response = await request(app)
       .get(`/routes/${routeId}/travelers`)
@@ -675,7 +731,7 @@ describe('my routes', () => {
     const { ada, bob, routeId, steps } = await followedRoute();
     const second = await sharedRoute(ada.auth);
     await join(bob.auth, ada.auth, second);
-    await close(bob.auth, routeId, steps[0]!.id, { emotion: 'joy' });
+    await close(bob.auth, routeId, steps[0]!.id, { emotions: ['joy'] });
 
     const response = await request(app).get('/journeys').set(bob.auth);
 
@@ -753,6 +809,39 @@ describe('database rules', () => {
     await expect(
       db.stepProgress.create({
         data: { enrollmentId, stepId: steps[0]!.id, emotion: 'JOY' },
+      }),
+    ).rejects.toThrow();
+  });
+
+  it('refuses a second emotion without a first one', async () => {
+    const { enrollmentId, steps } = await followedRoute();
+
+    await expect(
+      db.stepProgress.create({
+        data: {
+          enrollmentId,
+          stepId: steps[0]!.id,
+          startedAt: new Date(),
+          watchedAt: new Date(),
+          emotion2: 'JOY',
+        },
+      }),
+    ).rejects.toThrow();
+  });
+
+  it('refuses the same emotion twice', async () => {
+    const { enrollmentId, steps } = await followedRoute();
+
+    await expect(
+      db.stepProgress.create({
+        data: {
+          enrollmentId,
+          stepId: steps[0]!.id,
+          startedAt: new Date(),
+          watchedAt: new Date(),
+          emotion: 'JOY',
+          emotion2: 'JOY',
+        },
       }),
     ).rejects.toThrow();
   });

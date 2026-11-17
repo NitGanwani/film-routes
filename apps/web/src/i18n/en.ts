@@ -40,7 +40,7 @@ export const en: Translations = {
       },
       discover: {
         title: 'Find out what they felt',
-        text: 'As they close each film they pick an emotion and compare it with yours.',
+        text: 'As they close each film they pick one or two emotions and compare them with yours.',
       },
     },
     exampleTitle: 'One route, start to finish',
@@ -72,11 +72,11 @@ export const en: Translations = {
     },
     emotion: {
       title: 'Tell us what it left you with',
-      text: 'When you finish each film you pick an emotion: it is required, and it is what makes this special. If you like, add a comment of up to 280 characters for the guide.',
+      text: 'When you finish each film you pick one or two emotions: at least one is required, and it is what makes this special. If you like, add a comment of up to 280 characters for the guide.',
     },
     compare: {
       title: 'Compare with the guide',
-      text: 'When you close the film you see the guide’s emotion next to yours. Do you match? No answer is the right one. The order is advice: start with any film you like and leave whenever you want.',
+      text: 'When you close the film you see the guide’s emotions next to yours. You match if you share at least one. No answer is the right one. The order is advice: start with any film you like and leave whenever you want.',
     },
   },
   explore: {
@@ -113,6 +113,9 @@ export const en: Translations = {
     fear: 'Fear',
     sadness: 'Sadness',
     discomfort: 'Discomfort',
+  },
+  emotionPicker: {
+    limit: 'At most {{max}}: remove one to pick another.',
   },
   route: {
     writtenIn: 'Written in {{language}}',
@@ -250,11 +253,11 @@ export const en: Translations = {
       },
       summary: 'Notes: {{done}} of {{total}} complete',
       summaryHint:
-        'A film is complete with its synopsis and your emotion; the note after is recommended. None of this stops you from sharing the route: it only needs between {{min}} and {{max}} films and your confirmed email.',
+        'A film is complete with its synopsis and at least one emotion of yours; the note after is recommended. None of this stops you from sharing the route: it only needs between {{min}} and {{max}} films and your confirmed email.',
     },
     emotion: {
       title: 'What I felt',
-      hint: 'The traveler sees it only after choosing theirs',
+      hint: 'Pick one or two. The traveler sees them only after choosing theirs',
       unknown: 'I do not know yet',
     },
     locked: {
@@ -417,11 +420,12 @@ export const en: Translations = {
     noteBefore: '{{author}}’s synopsis',
     noteAfter: 'Note after from {{author}}',
     noteAfterLocked:
-      '{{author}}’s note after and emotion open when you close the film.',
+      '{{author}}’s note after and emotions open when you close the film.',
     yourComment: 'Your comment',
     you: 'You',
-    same: 'same',
-    different: 'different',
+    same: 'You match',
+    different: 'No match',
+    inCommon: 'in common',
     start: 'Start now',
     startOutOfOrder: 'Start out of order',
     closeWatched: 'I watched it',
@@ -448,13 +452,13 @@ export const en: Translations = {
       position: 'Film {{position}} of {{total}}',
       how: 'How do you close it?',
       emotion: 'What did it leave you with?',
-      emotionHint: 'Pick one',
+      emotionHint: 'Pick one or two',
       comment: 'A comment for {{author}}',
       optional: '(optional)',
-      commentHint: '{{author}} will see it next to your emotion.',
+      commentHint: '{{author}} will see it next to your emotions.',
       submit: 'Close this film',
       submitting: 'Closing…',
-      after: 'Closing it opens the note after and {{author}}’s emotion.',
+      after: 'Closing it opens the note after and {{author}}’s emotions.',
       problemEmotion: 'Pick an emotion to close the film.',
       problemComment: 'The comment is too long.',
     },

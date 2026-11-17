@@ -24,7 +24,8 @@ type Props = {
 };
 
 /**
- * Closing a film: how it was seen, one emotion (required) and a short comment.
+ * Closing a film: how it was seen, one or two emotions (at least one is
+ * required) and a short comment.
  * A native <dialog>, so the browser traps the focus, closes on Esc and dims the
  * page; on a phone it is a sheet from the bottom, on a wide screen a card.
  */
@@ -44,7 +45,7 @@ export function CloseDialog({
   const titleId = useId();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [form, setForm] = useState<CloseForm>({
-    emotion: null,
+    emotions: [],
     comment: '',
     seenBefore: initialSeenBefore,
   });
@@ -150,9 +151,9 @@ export function CloseDialog({
             </legend>
             <EmotionPicker
               name="emotion"
-              value={form.emotion}
+              value={form.emotions}
               labelledBy={`${titleId}-emotion`}
-              onChange={(emotion) => setForm({ ...form, emotion })}
+              onChange={(emotions) => setForm({ ...form, emotions })}
             />
           </fieldset>
 

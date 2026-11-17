@@ -39,7 +39,7 @@ export const es = {
       },
       discover: {
         title: 'Descubre qué sintió',
-        text: 'Al cerrar cada película elige una emoción y la compara con la tuya.',
+        text: 'Al cerrar cada película elige una o dos emociones y las compara con las tuyas.',
       },
     },
     exampleTitle: 'Una ruta, de principio a fin',
@@ -71,11 +71,11 @@ export const es = {
     },
     emotion: {
       title: 'Dinos qué te ha dejado',
-      text: 'Al terminar cada película eliges una emoción: es obligatorio y es lo que hace especial esto. Si quieres, añades un comentario de hasta 280 caracteres para la guía.',
+      text: 'Al terminar cada película eliges una o dos emociones: al menos una es obligatoria y es lo que hace especial esto. Si quieres, añades un comentario de hasta 280 caracteres para la guía.',
     },
     compare: {
       title: 'Compara con la guía',
-      text: 'Al cerrar la película ves la emoción de la guía junto a la tuya. ¿Coincidís? Ninguna respuesta es la correcta. El orden es un consejo: empieza por la que quieras y sal cuando quieras.',
+      text: 'Al cerrar la película ves las emociones de la guía junto a las tuyas. Coincidís si compartís al menos una. Ninguna respuesta es la correcta. El orden es un consejo: empieza por la que quieras y sal cuando quieras.',
     },
   },
   explore: {
@@ -112,6 +112,9 @@ export const es = {
     fear: 'Miedo',
     sadness: 'Tristeza',
     discomfort: 'Incomodidad',
+  },
+  emotionPicker: {
+    limit: 'Máximo {{max}}: quita una para elegir otra.',
   },
   route: {
     writtenIn: 'Escrita en {{language}}',
@@ -249,11 +252,11 @@ export const es = {
       },
       summary: 'Notas: {{done}} de {{total}} completas',
       summaryHint:
-        'Una película está completa con su sinopsis y tu emoción; la de después es recomendable. Nada de esto impide compartir la ruta: solo hacen falta entre {{min}} y {{max}} películas y tu correo confirmado.',
+        'Una película está completa con su sinopsis y al menos una emoción tuya; la de después es recomendable. Nada de esto impide compartir la ruta: solo hacen falta entre {{min}} y {{max}} películas y tu correo confirmado.',
     },
     emotion: {
       title: 'Lo que sentí yo',
-      hint: 'El viajero la verá solo después de elegir la suya',
+      hint: 'Elige una o dos. El viajero las verá solo después de elegir las suyas',
       unknown: 'Todavía no lo sé',
     },
     locked: {
@@ -416,11 +419,12 @@ export const es = {
     noteBefore: 'Sinopsis de {{author}}',
     noteAfter: 'Nota de después de {{author}}',
     noteAfterLocked:
-      'La nota de después y la emoción de {{author}} se abren al cerrar la película.',
+      'La nota de después y las emociones de {{author}} se abren al cerrar la película.',
     yourComment: 'Tu comentario',
     you: 'Tú',
-    same: 'igual',
-    different: 'distinta',
+    same: 'Coincidís',
+    different: 'No coincidís',
+    inCommon: 'en común',
     start: 'Empezar ahora',
     startOutOfOrder: 'Empezar fuera de orden',
     closeWatched: 'La he visto',
@@ -447,14 +451,14 @@ export const es = {
       position: 'Película {{position}} de {{total}}',
       how: '¿Cómo la cierras?',
       emotion: '¿Qué te ha dejado?',
-      emotionHint: 'Elige una',
+      emotionHint: 'Elige una o dos',
       comment: 'Un comentario para {{author}}',
       optional: '(opcional)',
-      commentHint: '{{author}} lo verá junto a tu emoción.',
+      commentHint: '{{author}} lo verá junto a tus emociones.',
       submit: 'Cerrar esta película',
       submitting: 'Cerrando…',
       after:
-        'Al cerrarla se abren la nota de después y la emoción de {{author}}.',
+        'Al cerrarla se abren la nota de después y las emociones de {{author}}.',
       problemEmotion: 'Elige una emoción para cerrar la película.',
       problemComment: 'El comentario es demasiado largo.',
     },

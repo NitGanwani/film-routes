@@ -87,7 +87,7 @@ async function complete(auth: Auth, routeId: string) {
     await request(app)
       .post(`/routes/${routeId}/journey/steps/${step.id}/close`)
       .set(auth)
-      .send({ emotion: 'joy' });
+      .send({ emotions: ['joy'] });
   }
 }
 
@@ -647,7 +647,7 @@ describe('what a hidden route does to everyone', () => {
     const close = await request(app)
       .post(`/routes/${routeId}/journey/steps/${second!.id}/close`)
       .set(bob.auth)
-      .send({ emotion: 'joy' });
+      .send({ emotions: ['joy'] });
     const leave = await request(app)
       .post(`/routes/${routeId}/journey/leave`)
       .set(bob.auth);
@@ -713,7 +713,7 @@ describe('what a hidden route does to everyone', () => {
     await request(app)
       .post(`/routes/${routeId}/journey/steps/${stepId}/close`)
       .set(bob.auth)
-      .send({ emotion: 'awe' });
+      .send({ emotions: ['awe'] });
     await hide(admin.auth, routeId);
     await unhide(admin.auth, routeId);
 
@@ -723,7 +723,7 @@ describe('what a hidden route does to everyone', () => {
     const listed = await request(app).get('/public/routes');
 
     expect(response.status).toBe(200);
-    expect(response.body.journey.steps[0].myEmotion).toBe('awe');
+    expect(response.body.journey.steps[0].myEmotions).toEqual(['awe']);
     expect(listed.body.total).toBe(1);
   });
 });

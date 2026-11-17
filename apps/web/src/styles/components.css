@@ -358,9 +358,19 @@
 .chip.emo[data-state='dimmed'] {
   opacity: 0.4;
 }
+/* In a comparison: the emotion both of you chose has a ring and a tick. */
+.chip.emo[data-shared] {
+  box-shadow: 0 0 0 2px var(--c);
+}
+.emo-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
 
-/* Emotion picker: native radios (keyboard and screen readers for free), drawn
-   as tiles. The checked state is shown by border, tint AND a tick. */
+/* Emotion picker: native checkboxes (keyboard and screen readers for free),
+   drawn as tiles, two at most. The checked state is shown by border, tint AND
+   a tick; with two chosen the rest are disabled and a line of text says why. */
 .emo-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -391,10 +401,23 @@
   height: 26px;
   color: var(--c);
 }
-.emo-opt:hover {
+.emo-opt:hover:not(:has(input:disabled)) {
   border-color: color-mix(in oklab, var(--c) 50%, var(--border));
 }
-.emo-opt:has(input:checked) {
+.emo-opt:has(input:disabled) {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.emo-limit {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+.emo-limit:not(:empty) {
+  margin-top: var(--sp-2);
+}
+.emo-opt:has(input:checked),
+.emo-opt[aria-pressed='true'] {
   background: color-mix(
     in oklab,
     var(--c) var(--emo-bg-amount),
@@ -406,7 +429,8 @@
   outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
-.emo-opt:has(input:checked)::after {
+.emo-opt:has(input:checked)::after,
+.emo-opt[aria-pressed='true']::after {
   content: '';
   position: absolute;
   top: 6px;
@@ -4027,6 +4051,11 @@ fieldset.field legend {
   border: 1px solid var(--border);
   border-radius: var(--r-pill);
   font-size: var(--fs-xs);
+}
+.finish-emo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 .finish-chip[data-same] {
   background: var(--accent-soft);

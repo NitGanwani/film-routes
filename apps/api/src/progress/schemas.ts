@@ -1,5 +1,6 @@
-import { EMOTIONS, ROUTE_LIMITS } from '@film-routes/shared';
+import { ROUTE_LIMITS } from '@film-routes/shared';
 import { z } from 'zod';
+import { emotionList } from '../emotions.js';
 import { routeParamsSchema } from '../routes/schemas.js';
 
 export const travelerParamsSchema = routeParamsSchema.extend({
@@ -7,11 +8,11 @@ export const travelerParamsSchema = routeParamsSchema.extend({
 });
 
 /**
- * Closing a film always needs an emotion: it is the point of the product, so
- * it is required even for films the traveler had already seen.
+ * Closing a film always needs an emotion (one or two): it is the point of the
+ * product, so it is required even for films the traveler had already seen.
  */
 export const closeStepSchema = z.object({
-  emotion: z.enum(EMOTIONS),
+  emotions: emotionList(1),
   comment: z
     .string()
     .trim()

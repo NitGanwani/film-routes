@@ -1,12 +1,10 @@
 import {
   ROUTE_LIMITS,
-  type Emotion,
   type Locale,
   type RouteVisibility,
 } from '@film-routes/shared';
 import type { Prisma } from '../../generated/prisma/client.js';
 import type {
-  Emotion as DbEmotion,
   Locale as DbLocale,
   Visibility as DbVisibility,
 } from '../../generated/prisma/enums.js';
@@ -14,6 +12,7 @@ import { assertEmailVerified } from '../auth/verified.js';
 import type { Db } from '../db.js';
 import { HttpError } from '../errors.js';
 import { filmImages } from '../films/images.js';
+import { fromColumns, toColumns } from '../emotions.js';
 import type { FilmService } from '../films/service.js';
 import {
   countsAsTraveler,
@@ -55,7 +54,6 @@ const routeTooShort = () =>
 
 const toDbLocale = (locale: Locale): DbLocale =>
   locale === 'es' ? 'ES' : 'EN';
-const toDbEmotion = (emotion: Emotion) => emotion.toUpperCase() as DbEmotion;
 const toDbVisibility = (visibility: RouteVisibility) =>
   visibility.toUpperCase() as DbVisibility;
 
@@ -117,8 +115,7 @@ export function toDetail(route: RouteRow) {
       position: step.position,
       noteBefore: step.noteBefore,
       noteAfter: step.noteAfter,
-      authorEmotion: (step.authorEmotion?.toLowerCase() ??
-        null) as Emotion | null,
+      authorEmotions: fromColumns(step.authorEmotion, step.authorEmotion2),
       film: toFilm(step.film, route.locale),
     })),
   };
@@ -322,9 +319,8 @@ export function createRouteService(
             position: count + 1,
             noteBefore: input.noteBefore ?? null,
             noteAfter: input.noteAfter ?? null,
-            authorEmotion: input.authorEmotion
-              ? toDbEmotion(input.authorEmotion)
-              : null,
+            authorEmotion: toColumns(input.authorEmotions ?? []).first,
+            authorEmotion2: toColumns(input.authorEmotions ?? []).second,
           },
         });
         await touch(tx, routeId);
@@ -352,10 +348,12 @@ export function createRouteService(
           data: {
             noteBefore: patch.noteBefore,
             noteAfter: patch.noteAfter,
+            // Both columns are written together: from two to one clears the
+            // second, from some to none clears both.
             authorEmotion:
-              patch.authorEmotion === undefined
-                ? undefined
-                : patch.authorEmotion && toDbEmotion(patch.authorEmotion),
+              patch.authorEmotions && toColumns(patch.authorEmotions).first,
+            authorEmotion2:
+              patch.authorEmotions && toColumns(patch.authorEmotions).second,
           },
         });
         await touch(tx, routeId);

@@ -271,7 +271,7 @@ function EmotionRow({
       <p className="finish-who">{who}</p>
       <ul className="finish-chips">
         {pairs.map((pair) => {
-          const emotion = pair[side];
+          const emotions = pair[side];
           return (
             <li
               key={pair.position}
@@ -279,14 +279,22 @@ function EmotionRow({
               data-same={pair.same || undefined}
             >
               <span className="visually-hidden">{pair.position}. </span>
-              {emotion ? (
-                <>
-                  <Icon name={emotion} size={14} />
-                  {t(`emotions.${emotion}`)}
-                </>
-              ) : (
-                noEmotion
-              )}
+              {emotions.length > 0
+                ? emotions.map((emotion) => (
+                    <span key={emotion} className="finish-emo">
+                      <Icon name={emotion} size={14} />
+                      {t(`emotions.${emotion}`)}
+                      {pair.shared.includes(emotion) && (
+                        <>
+                          <Icon name="check" size={12} />
+                          <span className="visually-hidden">
+                            {t('journey.inCommon')}
+                          </span>
+                        </>
+                      )}
+                    </span>
+                  ))
+                : noEmotion}
             </li>
           );
         })}

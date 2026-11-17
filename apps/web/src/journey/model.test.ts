@@ -4,6 +4,7 @@ import {
   closeBody,
   closeFormProblem,
   compareEmotions,
+  comparisonOf,
   progressPercent,
   stepActions,
   type CloseForm,
@@ -66,32 +67,69 @@ describe('progressPercent', () => {
 });
 
 describe('compareEmotions', () => {
-  it('says same or different when both sides have an emotion', () => {
-    expect(compareEmotions('joy', 'joy')).toBe('same');
-    expect(compareEmotions('joy', 'fear')).toBe('different');
+  it('matches when they share at least one emotion, and says which', () => {
+    expect(compareEmotions(['joy'], ['joy'])).toEqual({
+      result: 'same',
+      shared: ['joy'],
+    });
+    expect(compareEmotions(['joy', 'awe'], ['fear', 'awe'])).toEqual({
+      result: 'same',
+      shared: ['awe'],
+    });
+    expect(compareEmotions(['joy', 'awe'], ['awe', 'joy'])).toEqual({
+      result: 'same',
+      shared: ['joy', 'awe'],
+    });
+  });
+
+  it('is different when they share none', () => {
+    expect(compareEmotions(['joy'], ['fear'])).toEqual({
+      result: 'different',
+      shared: [],
+    });
+    expect(compareEmotions(['joy', 'awe'], ['fear', 'sadness'])).toEqual({
+      result: 'different',
+      shared: [],
+    });
   });
 
   it('says nothing while one side is missing', () => {
-    expect(compareEmotions(null, 'joy')).toBeNull();
-    expect(compareEmotions('joy', null)).toBeNull();
-    expect(compareEmotions(null, null)).toBeNull();
+    expect(compareEmotions([], ['joy'])).toBeNull();
+    expect(compareEmotions(['joy'], [])).toBeNull();
+    expect(compareEmotions([], [])).toBeNull();
+  });
+});
+
+describe('comparisonOf', () => {
+  it('takes what the API worked out', () => {
+    expect(comparisonOf(null)).toBeNull();
+    expect(comparisonOf([])).toEqual({ result: 'different', shared: [] });
+    expect(comparisonOf(['awe'])).toEqual({ result: 'same', shared: ['awe'] });
   });
 });
 
 describe('closing a film', () => {
   const form = (overrides: Partial<CloseForm> = {}): CloseForm => ({
-    emotion: 'awe',
+    emotions: ['awe'],
     comment: '',
     seenBefore: false,
     ...overrides,
   });
 
   it('needs an emotion, even for a film already seen', () => {
-    expect(closeFormProblem(form({ emotion: null }))).toBe('emotion_required');
-    expect(closeFormProblem(form({ emotion: null, seenBefore: true }))).toBe(
+    expect(closeFormProblem(form({ emotions: [] }))).toBe('emotion_required');
+    expect(closeFormProblem(form({ emotions: [], seenBefore: true }))).toBe(
       'emotion_required',
     );
-    expect(closeBody(form({ emotion: null }))).toBeNull();
+    expect(closeBody(form({ emotions: [] }))).toBeNull();
+  });
+
+  it('accepts one or two emotions and sends them in order', () => {
+    expect(closeFormProblem(form({ emotions: ['joy', 'awe'] }))).toBeNull();
+    expect(closeBody(form({ emotions: ['joy', 'awe'] }))?.emotions).toEqual([
+      'joy',
+      'awe',
+    ]);
   });
 
   it('accepts a comment of exactly the maximum length', () => {
@@ -112,7 +150,7 @@ describe('closing a film', () => {
 
   it('sends the trimmed comment', () => {
     expect(closeBody(form({ comment: '  qué final  ' }))).toEqual({
-      emotion: 'awe',
+      emotions: ['awe'],
       seenBefore: false,
       comment: 'qué final',
     });
@@ -120,7 +158,7 @@ describe('closing a film', () => {
 
   it('leaves the comment out when it is empty or only spaces', () => {
     expect(closeBody(form({ comment: '' }))).toEqual({
-      emotion: 'awe',
+      emotions: ['awe'],
       seenBefore: false,
     });
     expect(closeBody(form({ comment: '   ' }))).not.toHaveProperty('comment');

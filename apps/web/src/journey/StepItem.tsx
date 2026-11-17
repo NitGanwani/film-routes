@@ -39,7 +39,7 @@ export function StepItem({
   const shown = filmTitle(step.film, i18n.language);
   const original = originalTitleNote(step.film, shown);
   const actions = stepActions(step, following);
-  const comparison = compareEmotions(step.myEmotion, step.authorEmotion);
+  const comparison = compareEmotions(step.myEmotions, step.authorEmotions);
   const chip =
     step.state === 'closed' ? null : step.state === 'started' ? (
       <span className="chip chip-live">{t('journey.stateStarted')}</span>
@@ -89,11 +89,11 @@ export function StepItem({
             {chip}
           </div>
 
-          {step.state === 'closed' && step.myEmotion && (
+          {step.state === 'closed' && step.myEmotions.length > 0 && (
             <>
               <EmotionCompare
-                left={{ label: t('journey.you'), emotion: step.myEmotion }}
-                right={{ label: author, emotion: step.authorEmotion }}
+                left={{ label: t('journey.you'), emotions: step.myEmotions }}
+                right={{ label: author, emotions: step.authorEmotions }}
                 comparison={comparison}
                 reveal={reveal}
               />

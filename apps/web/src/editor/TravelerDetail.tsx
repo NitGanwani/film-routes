@@ -13,7 +13,7 @@ import { Poster } from '../components/Poster.js';
 import { EmptyState, ErrorBox } from '../components/States.js';
 import { filmTitle, originalTitleNote } from '../films/titles.js';
 import { EmotionCompare } from '../journey/EmotionCompare.js';
-import { compareEmotions } from '../journey/model.js';
+import { comparisonOf } from '../journey/model.js';
 import { formatDay } from './invites.js';
 import { TravelerChip } from './TravelerChip.js';
 import { tabPath } from './tabs.js';
@@ -168,14 +168,11 @@ function TravelerStepRow({
                 className="traveler-compare"
                 left={{
                   label: t('travelers.detail.me'),
-                  emotion: step.authorEmotion,
+                  emotions: step.authorEmotions,
                   empty: t('travelers.detail.noEmotion'),
                 }}
-                right={{ label: name, emotion: step.travelerEmotion }}
-                comparison={compareEmotions(
-                  step.authorEmotion,
-                  step.travelerEmotion,
-                )}
+                right={{ label: name, emotions: step.travelerEmotions }}
+                comparison={comparisonOf(step.sharedEmotions)}
               />
               {step.travelerComment ? (
                 <p className="note-text">

@@ -272,17 +272,20 @@ model RouteRating {
 }
 
 model RouteStep {
-  id            String   @id @default(uuid(7)) @db.Uuid
-  routeId       String   @map("route_id") @db.Uuid
-  filmId        String   @map("film_id") @db.Uuid
+  id             String   @id @default(uuid(7)) @db.Uuid
+  routeId        String   @map("route_id") @db.Uuid
+  filmId         String   @map("film_id") @db.Uuid
   /// 1-based order inside the route.
-  position      Int
+  position       Int
   /// Spoiler-free note shown when the step unlocks.
-  noteBefore    String?  @map("note_before")
+  noteBefore     String?  @map("note_before")
   /// Shown only after the traveler marks the film as watched.
-  noteAfter     String?  @map("note_after")
+  noteAfter      String?  @map("note_after")
   /// How the author felt: the "you vs them" comparison starts here.
-  authorEmotion Emotion? @map("author_emotion")
+  authorEmotion  Emotion? @map("author_emotion")
+  /// A second feeling, optional: at most two per film. Needs the first one and
+  /// must differ from it (CHECKs in the migration).
+  authorEmotion2 Emotion? @map("author_emotion_2")
 
   route    Route          @relation(fields: [routeId], references: [id], onDelete: Cascade)
   film     Film           @relation(fields: [filmId], references: [id], onDelete: Restrict)
@@ -353,6 +356,8 @@ model StepProgress {
   /// The traveler had already seen this film before the route; no "start now".
   seenBefore   Boolean   @default(false) @map("seen_before")
   emotion      Emotion?
+  /// A second feeling, optional: at most two per film (CHECKs in the migration).
+  emotion2     Emotion?  @map("emotion_2")
   /// Short private note; only the traveler and the route author can read it.
   comment      String?   @db.VarChar(280)
 

@@ -215,7 +215,7 @@ describe('POST /routes/:id/steps', () => {
       tmdbId: 603,
       noteBefore: ' Watch the lobby scene ',
       noteAfter: '',
-      authorEmotion: 'awe',
+      authorEmotions: ['awe'],
     });
     const second = await addStep(auth, routeId, { tmdbId: 1 });
 
@@ -227,7 +227,7 @@ describe('POST /routes/:id/steps', () => {
       position: 1,
       noteBefore: 'Watch the lobby scene',
       noteAfter: null,
-      authorEmotion: 'awe',
+      authorEmotions: ['awe'],
       film: { tmdbId: 603, title: 'Matrix', releaseYear: 1999 },
     });
     expect(await db.film.count()).toBe(2);
@@ -251,7 +251,7 @@ describe('POST /routes/:id/steps', () => {
     const unknown = await addStep(auth, routeId, { tmdbId: 999 });
     const badEmotion = await addStep(auth, routeId, {
       tmdbId: 1,
-      authorEmotion: 'rage',
+      authorEmotions: ['rage'],
     });
     const longNote = await addStep(auth, routeId, {
       tmdbId: 1,
@@ -331,22 +331,103 @@ describe('PATCH /routes/:id/steps/:stepId', () => {
     const edited = await request(app)
       .patch(url)
       .set(auth)
-      .send({ noteBefore: 'Before', noteAfter: 'After', authorEmotion: 'joy' });
+      .send({
+        noteBefore: 'Before',
+        noteAfter: 'After',
+        authorEmotions: ['joy'],
+      });
     const cleared = await request(app)
       .patch(url)
       .set(auth)
-      .send({ noteAfter: null, authorEmotion: null });
+      .send({ noteAfter: null, authorEmotions: [] });
 
     expect(edited.body.route.steps[0]).toMatchObject({
       noteBefore: 'Before',
       noteAfter: 'After',
-      authorEmotion: 'joy',
+      authorEmotions: ['joy'],
     });
     expect(cleared.body.route.steps[0]).toMatchObject({
       noteBefore: 'Before',
       noteAfter: null,
-      authorEmotion: null,
+      authorEmotions: [],
     });
+  });
+
+  it('keeps up to two emotions, in a list, and an empty list clears them', async () => {
+    const { auth } = await signUp('ada');
+    const { routeId, steps } = await routeWith(auth, [603]);
+    const url = `/routes/${routeId}/steps/${steps[0]!.id}`;
+    const emotionsOf = (response: {
+      body: { route: { steps: { authorEmotions: string[] }[] } };
+    }) => response.body.route.steps[0]!.authorEmotions;
+
+    const two = await request(app)
+      .patch(url)
+      .set(auth)
+      .send({ authorEmotions: ['awe', 'sadness'] });
+    const back = await request(app)
+      .patch(url)
+      .set(auth)
+      .send({ authorEmotions: ['joy'] });
+    const kept = await request(app)
+      .patch(url)
+      .set(auth)
+      .send({ noteBefore: 'x' });
+    const cleared = await request(app)
+      .patch(url)
+      .set(auth)
+      .send({ authorEmotions: [] });
+
+    expect(emotionsOf(two)).toEqual(['awe', 'sadness']);
+    // Going back to one takes the second away; leaving the field out changes nothing.
+    expect(emotionsOf(back)).toEqual(['joy']);
+    expect(emotionsOf(kept)).toEqual(['joy']);
+    expect(emotionsOf(cleared)).toEqual([]);
+  });
+
+  it('refuses three emotions, a repeated one and something that is not a list', async () => {
+    const { auth } = await signUp('ada');
+    const { routeId, steps } = await routeWith(auth, [603]);
+    const url = `/routes/${routeId}/steps/${steps[0]!.id}`;
+
+    for (const authorEmotions of [
+      ['joy', 'awe', 'fear'],
+      ['joy', 'joy'],
+      'joy',
+      null,
+    ]) {
+      const response = await request(app)
+        .patch(url)
+        .set(auth)
+        .send({ authorEmotions });
+      expect(response.status, JSON.stringify(authorEmotions)).toBe(400);
+    }
+  });
+
+  it('has database rules for the second emotion too', async () => {
+    const { auth } = await signUp('ada');
+    const { steps } = await routeWith(auth, [603]);
+    const where = { id: steps[0]!.id };
+
+    // Not even the API can get there, but a bad script could.
+    await expect(
+      db.routeStep.update({
+        where,
+        data: { authorEmotion: null, authorEmotion2: 'JOY' },
+      }),
+    ).rejects.toThrow();
+    await expect(
+      db.routeStep.update({
+        where,
+        data: { authorEmotion: 'JOY', authorEmotion2: 'JOY' },
+      }),
+    ).rejects.toThrow();
+    await expect(
+      db.routeStep.update({
+        where,
+        data: { authorEmotion: 'JOY', authorEmotion2: 'AWE' },
+      }),
+    ).resolves.toBeTruthy();
   });
 
   it('404s for a step of another route and 400s for an empty patch', async () => {

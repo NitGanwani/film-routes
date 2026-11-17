@@ -30,12 +30,12 @@ const step = (change: Partial<TravelerStep>): TravelerStep => ({
   position: 1,
   film,
   state: 'closed',
-  authorEmotion: 'joy',
-  travelerEmotion: 'joy',
+  authorEmotions: ['joy'],
+  travelerEmotions: ['joy'],
   travelerComment: null,
   seenBefore: false,
   watchedAt: null,
-  sameEmotion: true,
+  sharedEmotions: ['joy'],
   ...change,
 });
 
@@ -87,9 +87,9 @@ describe('matchSummary', () => {
   it('counts the films they felt the same about, out of the comparable ones', () => {
     expect(
       matchSummary([
-        step({ sameEmotion: true }),
-        step({ sameEmotion: false }),
-        step({ sameEmotion: true }),
+        step({ sharedEmotions: ['joy'] }),
+        step({ sharedEmotions: [] }),
+        step({ sharedEmotions: ['joy'] }),
       ]),
     ).toEqual({ same: 2, total: 3 });
   });
@@ -97,16 +97,16 @@ describe('matchSummary', () => {
   it('leaves out films that cannot be compared', () => {
     expect(
       matchSummary([
-        step({ sameEmotion: true }),
-        step({ sameEmotion: null, authorEmotion: null }),
-        step({ state: 'pending', sameEmotion: null, travelerEmotion: null }),
+        step({ sharedEmotions: ['joy'] }),
+        step({ sharedEmotions: null, authorEmotions: [] }),
+        step({ state: 'pending', sharedEmotions: null, travelerEmotions: [] }),
       ]),
     ).toEqual({ same: 1, total: 1 });
   });
 
   it('is null when there is nothing to compare', () => {
     expect(matchSummary([])).toBeNull();
-    expect(matchSummary([step({ sameEmotion: null })])).toBeNull();
+    expect(matchSummary([step({ sharedEmotions: null })])).toBeNull();
   });
 });
 

@@ -1,22 +1,32 @@
-import type { Emotion, EnrollmentStatus } from '@film-routes/shared';
+import {
+  sharedEmotions,
+  type Emotion,
+  type EnrollmentStatus,
+} from '@film-routes/shared';
 import type { JourneyStep } from '../api/types.js';
 
 /** One film of the route: what the traveler felt and what the author felt. */
 export type FinishPair = {
   position: number;
-  mine: Emotion | null;
-  author: Emotion | null;
+  mine: Emotion[];
+  author: Emotion[];
+  /** What they felt in common: they match when it is not empty. */
+  shared: Emotion[];
   same: boolean;
 };
 
 /** The films side by side, in the route's order. */
 export function finishPairs(steps: readonly JourneyStep[]): FinishPair[] {
-  return steps.map((step) => ({
-    position: step.position,
-    mine: step.myEmotion,
-    author: step.authorEmotion,
-    same: step.myEmotion !== null && step.myEmotion === step.authorEmotion,
-  }));
+  return steps.map((step) => {
+    const shared = sharedEmotions(step.myEmotions, step.authorEmotions);
+    return {
+      position: step.position,
+      mine: step.myEmotions,
+      author: step.authorEmotions,
+      shared,
+      same: shared.length > 0,
+    };
+  });
 }
 
 /**
@@ -24,7 +34,9 @@ export function finishPairs(steps: readonly JourneyStep[]): FinishPair[] {
  * can be compared, so a film the author left without one is not counted.
  */
 export function finishSummary(pairs: readonly FinishPair[]) {
-  const compared = pairs.filter((pair) => pair.mine && pair.author);
+  const compared = pairs.filter(
+    (pair) => pair.mine.length > 0 && pair.author.length > 0,
+  );
   return {
     compared: compared.length,
     same: compared.filter((pair) => pair.same).length,
