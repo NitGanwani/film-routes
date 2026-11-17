@@ -2,7 +2,7 @@ import { ROUTE_LIMITS, type Emotion } from '@film-routes/shared';
 import type { CloseStepBody, JourneyStep } from '../api/types.js';
 
 export type StepActions = {
-  /** "Start now": remembers it and unlocks the note before. */
+  /** "Start now": remembers it. */
   start: boolean;
   /** Close it as watched (it was started). */
   closeWatched: boolean;

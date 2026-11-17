@@ -65,7 +65,7 @@ export const es = {
     },
     noSpoilers: {
       title: 'Sin destripes',
-      text: 'Antes de ver una película lees una nota de la guía que no cuenta nada. La nota de después sigue cerrada hasta que termines.',
+      text: 'Antes de ver una película lees la sinopsis de la guía, que no cuenta nada. La nota de después sigue cerrada hasta que termines.',
       sample:
         'Fíjate en los pasillos. Tarda en arrancar: aguanta la primera hora.',
     },
@@ -124,7 +124,9 @@ export const es = {
     joining: 'Entrando…',
     loginToJoin: 'Entra para empezar esta ruta',
     own: 'Es tu ruta.',
-    spoilerFree: 'Las notas de {{author}} se abren cuando empiezas la ruta.',
+    spoilerFree:
+      'Las sinopsis de {{author}} no tienen spoilers. Lo que sintió y lo que cuenta después de cada película se abre cuando la cierras.',
+    synopsisOf: 'Sinopsis de {{author}}',
   },
   journeys: {
     title: 'Mis viajes',
@@ -225,10 +227,10 @@ export const es = {
     },
     notes: {
       before: {
-        title: 'Antes de verla',
-        label: 'La leerá justo antes de ver la película',
-        hint: 'Sin spoilers',
-        placeholder: 'Qué mirar, con qué ánimo entrar…',
+        title: 'Tu sinopsis, sin spoilers',
+        label: 'La verá cualquiera, también quien no tenga cuenta',
+        hint: 'Cuéntala con tus palabras sin destripar nada: ni el final ni los giros',
+        placeholder: 'De qué va, qué la hace especial, con qué ánimo verla…',
       },
       after: {
         title: 'Después de verla',
@@ -239,7 +241,7 @@ export const es = {
       preview: 'Cómo lo verá el viajero',
       previewHeading: 'Así la verá el viajero',
       status: {
-        before: 'Antes',
+        before: 'Sinopsis',
         after: 'Después',
         done: 'hecho',
         pending: 'pendiente',
@@ -247,7 +249,7 @@ export const es = {
       },
       summary: 'Notas: {{done}} de {{total}} completas',
       summaryHint:
-        'Una película está completa con su nota de antes y tu emoción; la de después es recomendable. Nada de esto impide compartir la ruta: solo hacen falta entre {{min}} y {{max}} películas y tu correo confirmado.',
+        'Una película está completa con su sinopsis y tu emoción; la de después es recomendable. Nada de esto impide compartir la ruta: solo hacen falta entre {{min}} y {{max}} películas y tu correo confirmado.',
     },
     emotion: {
       title: 'Lo que sentí yo',
@@ -411,9 +413,8 @@ export const es = {
     stateStarted: 'Viéndola ahora',
     statePending: 'Pendiente',
     stateClosed: 'Cerrada',
-    noteBefore: 'Nota de antes',
+    noteBefore: 'Sinopsis de {{author}}',
     noteAfter: 'Nota de después de {{author}}',
-    noteBeforeLocked: 'La nota de antes se abre al empezar la película.',
     noteAfterLocked:
       'La nota de después y la emoción de {{author}} se abren al cerrar la película.',
     yourComment: 'Tu comentario',
@@ -513,7 +514,7 @@ export const es = {
   invite: {
     eyebrow: 'Tienes una invitación',
     title: 'Alguien ha hecho una ruta de películas para ti',
-    lead: 'En Filmgrim una persona elige entre 3 y 10 películas para otra y te acompaña con una nota antes y otra después de cada una.',
+    lead: 'En Filmgrim una persona elige entre 3 y 10 películas para otra y te acompaña con una sinopsis antes y una nota después de cada una.',
     foot: 'El enlace te lo ha enviado una persona; nosotros no sabemos quién es hasta que aceptes.',
     register: 'Crear cuenta',
     login: 'Ya tengo cuenta',

@@ -176,7 +176,6 @@ export function createProgressService(
         const progress = step.progress[0];
         const state = states[index]!;
         const recommendedNext = index === nextIndex;
-        const noteBeforeLocked = state === 'pending' && !recommendedNext;
         const closed = state === 'closed';
         return {
           id: step.id,
@@ -184,8 +183,8 @@ export function createProgressService(
           film: toFilm(step.film, route.locale),
           state,
           recommendedNext,
-          noteBefore: noteBeforeLocked ? null : step.noteBefore,
-          noteBeforeLocked,
+          // The synopsis is public: nothing to keep shut while following the route.
+          noteBefore: step.noteBefore,
           noteAfter: closed ? step.noteAfter : null,
           noteAfterLocked: !closed,
           authorEmotion: closed ? toEmotion(step.authorEmotion) : null,

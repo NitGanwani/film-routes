@@ -112,7 +112,8 @@ export type Film = {
 
 /** A public route as anyone sees it: the films, never the notes. */
 export type PublicRouteDetail = PublicRouteSummary & {
-  steps: { position: number; film: Film }[];
+  /** `noteBefore` is the synopsis the author wrote: anyone can read it. */
+  steps: { position: number; noteBefore: string | null; film: Film }[];
 };
 
 export type JoinResult = {
@@ -140,9 +141,8 @@ export type JourneyStep = {
   film: Film;
   state: StepState;
   recommendedNext: boolean;
-  /** Null while locked: see `noteBeforeLocked`. */
+  /** The author's synopsis: public, so never locked. */
   noteBefore: string | null;
-  noteBeforeLocked: boolean;
   noteAfter: string | null;
   noteAfterLocked: boolean;
   authorEmotion: Emotion | null;

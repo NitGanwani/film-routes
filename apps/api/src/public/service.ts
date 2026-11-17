@@ -24,9 +24,11 @@ const routeNotFound = () =>
 // traveler changes their status but must not erase the fact that they finished.
 const completedOnly = { completedAt: { not: null } } as const;
 
-// Nothing here may ever select the notes or the author's emotions: those are
-// the traveler's to discover. Choosing fields explicitly (instead of loading
-// whole rows) makes a leak impossible by construction.
+// What anyone may read of a public route: the films and the author's
+// synopsis of each one (spoiler-free by design, the editor says so). Nothing
+// here may ever select the note after or the author's emotions: those are the
+// traveler's to discover. Choosing fields explicitly (instead of loading whole
+// rows) makes a leak impossible by construction.
 const summarySelect = {
   id: true,
   title: true,
@@ -135,7 +137,7 @@ export function createPublicService(db: Db) {
     return row?.total ?? 0;
   }
 
-  /** What anyone sees before starting: the films, but none of the notes. */
+  /** What anyone sees before starting: the films and the author's synopsis of each. */
   async function getRoute(routeId: string) {
     const route = await db.route.findFirst({
       where: { id: routeId, visibility: 'PUBLIC', hiddenAt: null },
@@ -145,6 +147,8 @@ export function createPublicService(db: Db) {
           orderBy: { position: 'asc' },
           select: {
             position: true,
+            // The synopsis (stored as noteBefore): public on purpose.
+            noteBefore: true,
             film: { include: { translations: true } },
           },
         },
@@ -163,6 +167,7 @@ export function createPublicService(db: Db) {
       ),
       steps: route.steps.map((step) => ({
         position: step.position,
+        noteBefore: step.noteBefore,
         film: toFilm(step.film, route.locale),
       })),
     };

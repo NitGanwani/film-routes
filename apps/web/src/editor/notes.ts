@@ -99,8 +99,8 @@ export function combineSaveState(...states: SaveState[]): SaveState {
 }
 
 /**
- * The film as the traveler meets it when they have started it: the note before
- * is open, the note after and the author's emotion are not. The real row of the
+ * The film as the traveler meets it when they have started it: the synopsis
+ * is open (it always is), the note after and the author's emotion are not. The real row of the
  * journey draws it, so the preview can never drift from what they will see.
  */
 export function previewStep(
@@ -114,7 +114,6 @@ export function previewStep(
     state: 'started',
     recommendedNext: false,
     noteBefore: keep(content.noteBefore),
-    noteBeforeLocked: false,
     noteAfter: null,
     noteAfterLocked: true,
     authorEmotion: null,

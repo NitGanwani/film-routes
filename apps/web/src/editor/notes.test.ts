@@ -170,7 +170,6 @@ describe('previewStep', () => {
     expect(preview).toMatchObject({
       state: 'started',
       noteBefore: 'Mira el árbol',
-      noteBeforeLocked: false,
       noteAfter: null,
       noteAfterLocked: true,
       authorEmotion: null,

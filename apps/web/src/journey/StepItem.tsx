@@ -108,15 +108,13 @@ export function StepItem({
         </div>
 
         <div className="aside">
-          {step.noteBeforeLocked ? (
-            <Locked text={t('journey.noteBeforeLocked')} />
-          ) : (
-            step.noteBefore && (
-              <p className="note-text">
-                <span className="note-label">{t('journey.noteBefore')}</span>
-                <q>{step.noteBefore}</q>
-              </p>
-            )
+          {step.noteBefore && (
+            <p className="note-text">
+              <span className="note-label">
+                {t('journey.noteBefore', { author })}
+              </span>
+              <q>{step.noteBefore}</q>
+            </p>
           )}
           {step.state === 'closed' ? (
             step.noteAfter && (

@@ -323,7 +323,7 @@ describe('the public list', () => {
 });
 
 describe('a public route before starting it', () => {
-  it('shows the films in order but none of the notes', async () => {
+  it('shows the films in order and the synopsis of each, but nothing the traveler discovers', async () => {
     const ada = await signUp('ada');
     const routeId = await publicRoute(ada.auth);
 
@@ -348,10 +348,16 @@ describe('a public route before starting it', () => {
       [2, 'Película 2'],
       [3, 'Película 3'],
     ]);
+    // The synopsis is public...
+    expect(
+      response.body.route.steps.map(
+        (step: { noteBefore: string | null }) => step.noteBefore,
+      ),
+    ).toEqual(['before-1', 'before-2', 'before-3']);
+    // ...the note after and the author's emotion are not, by any name.
     const text = JSON.stringify(response.body);
-    expect(text).not.toContain('before-');
     expect(text).not.toContain('after-');
-    expect(text).not.toContain('noteBefore');
+    expect(text).not.toContain('noteAfter');
     expect(text).not.toContain('authorEmotion');
   });
 

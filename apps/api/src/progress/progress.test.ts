@@ -100,7 +100,6 @@ type JourneyStep = {
   state: string;
   recommendedNext: boolean;
   noteBefore: string | null;
-  noteBeforeLocked: boolean;
   noteAfter: string | null;
   noteAfterLocked: boolean;
   authorEmotion: string | null;
@@ -174,15 +173,11 @@ describe('the traveler view', () => {
       false,
       false,
     ]);
+    // The synopsis is public: following the order does not keep any shut.
     expect(steps.map((step) => step.noteBefore)).toEqual([
       'before-1',
-      null,
-      null,
-    ]);
-    expect(steps.map((step) => step.noteBeforeLocked)).toEqual([
-      false,
-      true,
-      true,
+      'before-2',
+      'before-3',
     ]);
   });
 
@@ -193,8 +188,6 @@ describe('the traveler view', () => {
 
     const text = JSON.stringify(response.body);
     expect(text).not.toContain('after-');
-    expect(text).not.toContain('before-2');
-    expect(text).not.toContain('before-3');
     for (const step of response.body.journey.steps as JourneyStep[]) {
       expect(step.authorEmotion).toBeNull();
       expect(step.noteAfterLocked).toBe(true);
@@ -226,7 +219,7 @@ describe('the traveler view', () => {
 });
 
 describe('starting a film', () => {
-  it('unlocks its note before, even out of order', async () => {
+  it('can start any film, even out of order', async () => {
     const { bob, routeId, steps } = await followedRoute();
 
     const response = await start(bob.auth, routeId, steps[2]!.id);
@@ -236,11 +229,9 @@ describe('starting a film', () => {
     expect(after[2]).toMatchObject({
       state: 'started',
       noteBefore: 'before-3',
-      noteBeforeLocked: false,
     });
     // The recommendation still points at the first film.
     expect(after[0]!.recommendedNext).toBe(true);
-    expect(after[1]!.noteBefore).toBeNull();
   });
 
   it('can be repeated without moving the start time', async () => {

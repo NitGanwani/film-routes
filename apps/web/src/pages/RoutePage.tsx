@@ -18,7 +18,7 @@ import { formatAverage } from '../i18n/format.js';
 import { loginPathFor } from '../session/nextPath.js';
 import { useSession } from '../session/SessionProvider.js';
 
-/** What anyone sees of a public route: its films, none of the notes. */
+/** What anyone sees of a public route: its films and the author's synopsis of each. */
 export function RoutePage() {
   const { t, i18n } = useTranslation();
   const { routeId = '' } = useParams();
@@ -208,16 +208,26 @@ export function RoutePage() {
                 <li key={step.position} className="route-film">
                   <span className="route-step-n">{step.position}</span>
                   <Poster url={step.film.posterUrl} />
-                  <h3 className="route-film-text">
-                    {shown}
-                    {step.film.releaseYear !== null && (
-                      <>
-                        {' '}
-                        <span className="year">{step.film.releaseYear}</span>
-                      </>
+                  <div className="route-film-text">
+                    <h3>
+                      {shown}
+                      {step.film.releaseYear !== null && (
+                        <>
+                          {' '}
+                          <span className="year">{step.film.releaseYear}</span>
+                        </>
+                      )}
+                      {original && <span className="orig">{original}</span>}
+                    </h3>
+                    {step.noteBefore && (
+                      <p className="route-film-synopsis">
+                        <span className="visually-hidden">
+                          {t('route.synopsisOf', { author: data.author })}:{' '}
+                        </span>
+                        {step.noteBefore}
+                      </p>
                     )}
-                    {original && <span className="orig">{original}</span>}
-                  </h3>
+                  </div>
                 </li>
               );
             })}

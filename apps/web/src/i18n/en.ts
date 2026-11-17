@@ -66,7 +66,7 @@ export const en: Translations = {
     },
     noSpoilers: {
       title: 'No spoilers',
-      text: 'Before watching a film you read a note from the guide that gives nothing away. The note for afterwards stays closed until you finish.',
+      text: 'Before watching a film you read the guide’s synopsis, which gives nothing away. The note for afterwards stays closed until you finish.',
       sample:
         'Watch the corridors. It is slow to start: stay with it for the first hour.',
     },
@@ -125,7 +125,9 @@ export const en: Translations = {
     joining: 'Joining…',
     loginToJoin: 'Log in to start this route',
     own: 'This is your route.',
-    spoilerFree: '{{author}}’s notes open up when you start the route.',
+    spoilerFree:
+      '{{author}}’s synopses have no spoilers. What they felt and what they say after each film opens when you close it.',
+    synopsisOf: '{{author}}’s synopsis',
   },
   journeys: {
     title: 'My journeys',
@@ -225,10 +227,11 @@ export const en: Translations = {
     },
     notes: {
       before: {
-        title: 'Before watching',
-        label: 'They read it right before watching the film',
-        hint: 'No spoilers',
-        placeholder: 'What to look for, what mood to go in with…',
+        title: 'Your synopsis, no spoilers',
+        label: 'Anyone can read it, even without an account',
+        hint: 'Tell it in your own words without giving anything away: no ending, no twists',
+        placeholder:
+          'What it is about, what makes it special, what mood to watch it in…',
       },
       after: {
         title: 'After watching',
@@ -239,7 +242,7 @@ export const en: Translations = {
       preview: 'How the traveler will see it',
       previewHeading: 'How the traveler will see it',
       status: {
-        before: 'Before',
+        before: 'Synopsis',
         after: 'After',
         done: 'done',
         pending: 'to do',
@@ -247,7 +250,7 @@ export const en: Translations = {
       },
       summary: 'Notes: {{done}} of {{total}} complete',
       summaryHint:
-        'A film is complete with its note before and your emotion; the note after is recommended. None of this stops you from sharing the route: it only needs between {{min}} and {{max}} films and your confirmed email.',
+        'A film is complete with its synopsis and your emotion; the note after is recommended. None of this stops you from sharing the route: it only needs between {{min}} and {{max}} films and your confirmed email.',
     },
     emotion: {
       title: 'What I felt',
@@ -411,9 +414,8 @@ export const en: Translations = {
     stateStarted: 'Watching now',
     statePending: 'Pending',
     stateClosed: 'Closed',
-    noteBefore: 'Note before',
+    noteBefore: '{{author}}’s synopsis',
     noteAfter: 'Note after from {{author}}',
-    noteBeforeLocked: 'The note before opens when you start the film.',
     noteAfterLocked:
       '{{author}}’s note after and emotion open when you close the film.',
     yourComment: 'Your comment',
@@ -512,7 +514,7 @@ export const en: Translations = {
   invite: {
     eyebrow: 'You have an invitation',
     title: 'Someone made a route of films for you',
-    lead: 'On Filmgrim one person picks 3 to 10 films for another and walks you through them with a note before and another after each one.',
+    lead: 'On Filmgrim one person picks 3 to 10 films for another and walks you through them with a synopsis before and a note after each one.',
     foot: 'A person sent you this link; we do not know who until you accept.',
     register: 'Create account',
     login: 'I have an account',

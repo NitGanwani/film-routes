@@ -1080,7 +1080,8 @@ textarea.input {
 .route-film {
   display: flex;
   gap: var(--sp-4);
-  align-items: center;
+  /* The synopsis makes the text taller than the poster: both start at the top. */
+  align-items: flex-start;
   padding: var(--sp-3) 0;
   border-bottom: 1px solid var(--border);
   list-style: none;
@@ -1113,6 +1114,13 @@ textarea.input {
   flex: 1;
   min-width: 0;
   font-size: var(--fs-lg);
+  overflow-wrap: anywhere;
+}
+.route-film-synopsis {
+  margin: var(--sp-2) 0 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body, 1.5);
 }
 /* Loading placeholders keep the same footprint as the real rows. */
 .route-fade .skel.title {
