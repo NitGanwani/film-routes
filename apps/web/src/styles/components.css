@@ -3695,6 +3695,8 @@ fieldset.field legend {
 /* ---------- Score: 1 to 10 (the finished scene and the completed route) ---------- */
 .rating {
   display: grid;
+  /* A track of `auto` would take the strip's own size, not the room there is. */
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
   gap: var(--sp-2);
   width: 100%;
@@ -3736,8 +3738,9 @@ fieldset.field legend {
   border-radius: 8px;
 }
 @media (min-width: 720px) {
+  /* Never wider than the place it is in: the journey's side column is 300px. */
   .rating-wrap {
-    width: 400px;
+    width: min(100%, 400px);
   }
 }
 .rating-wrap[data-locked] {
@@ -3809,7 +3812,7 @@ fieldset.field legend {
 }
 @media (min-width: 720px) {
   .rating-scale {
-    width: 400px;
+    width: min(100%, 400px);
   }
 }
 .rating-hint {

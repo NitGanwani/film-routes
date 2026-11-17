@@ -15,7 +15,11 @@ export function useSmoothScroll(): RefObject<Lenis | null> {
 
   useEffect(() => {
     if (prefersReducedMotion()) return;
-    const lenis = new Lenis({ autoRaf: true });
+    // allowNestedScroll: a list, a dialog's panel or any box with a scroll of
+    // its own keeps the browser's wheel. Without it Lenis took the wheel there
+    // too (and cancelled it altogether while a dialog was open), so the lists
+    // could only be scrolled by dragging their bar.
+    const lenis = new Lenis({ autoRaf: true, allowNestedScroll: true });
     lenisRef.current = lenis;
 
     // A modal <dialog> locks the page behind it: let Lenis let go of the wheel,
