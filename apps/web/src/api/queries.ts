@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { SEARCH_DELAY_MS, searchTerm } from '../editor/films.js';
 import type {
+  AdminQueue,
+  AdminRouteReview,
   AuthorRouteDetail,
   AuthorRouteSummary,
   FilmSearchPage,
@@ -172,3 +174,17 @@ export const travelerJourneyQuery = (
 
 export const useTravelerJourney = (routeId: string, enrollmentId: string) =>
   useQuery(travelerJourneyQuery(routeId, enrollmentId));
+
+/** The moderators' queue: routes with open reports, a page at a time. */
+export const adminQueueQuery = (page: number) => ({
+  queryKey: ['admin', 'queue', page],
+  queryFn: () =>
+    api.request<AdminQueue>(`/admin/reports?page=${page}`, { auth: true }),
+});
+
+/** A reported route in full, with every report about it. */
+export const adminRouteQuery = (routeId: string) => ({
+  queryKey: ['admin', 'route', routeId],
+  queryFn: () =>
+    api.request<AdminRouteReview>(`/admin/routes/${routeId}`, { auth: true }),
+});

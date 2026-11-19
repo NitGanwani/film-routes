@@ -10,6 +10,7 @@ import {
   withStepUpdated,
 } from '../editor/films.js';
 import { applyPatch, type RoutePatch } from '../editor/model.js';
+import type { HideBody } from '../moderation/admin.js';
 import type { ReportBody } from '../moderation/report.js';
 import type { StepPatch } from '../editor/notes.js';
 import { api } from './instance.js';
@@ -401,3 +402,60 @@ export function useAcceptInvite() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['journeys'] }),
   });
 }
+
+/**
+ * What a moderator can do about a reported route. Every one changes the queue
+ * and the review page, and hiding or restoring also changes what people can
+ * open, so all of it is asked again afterwards.
+ */
+function useAdminAction<Variables = void>(
+  routeId: string,
+  run: (variables: Variables) => Promise<unknown>,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: run,
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['admin'] }),
+        queryClient.invalidateQueries({ queryKey: ['public-route', routeId] }),
+        queryClient.invalidateQueries({ queryKey: ['public-routes'] }),
+      ]),
+  });
+}
+
+/** Takes the route down for a reason the author will read. */
+export const useHideRoute = (routeId: string) =>
+  useAdminAction(routeId, (body: HideBody) =>
+    api.request(`/admin/routes/${routeId}/hide`, {
+      method: 'POST',
+      auth: true,
+      body,
+    }),
+  );
+
+export const useUnhideRoute = (routeId: string) =>
+  useAdminAction(routeId, () =>
+    api.request(`/admin/routes/${routeId}/unhide`, {
+      method: 'POST',
+      auth: true,
+    }),
+  );
+
+/** The route is fine: closes all its open reports. */
+export const useDismissRoute = (routeId: string) =>
+  useAdminAction(routeId, () =>
+    api.request(`/admin/routes/${routeId}/reports/dismiss`, {
+      method: 'POST',
+      auth: true,
+    }),
+  );
+
+/** Closes one report (a bad-faith one, say) and leaves the rest open. */
+export const useDismissReport = (routeId: string) =>
+  useAdminAction(routeId, (reportId: string) =>
+    api.request(`/admin/reports/${reportId}/dismiss`, {
+      method: 'POST',
+      auth: true,
+    }),
+  );

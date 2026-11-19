@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router';
 import { useSession } from './session/SessionProvider.js';
 import { Layout } from './components/Layout.js';
+import { RequireAdmin } from './components/RequireAdmin.js';
 import { RequireSession } from './components/RequireSession.js';
 import {
   ForgotPasswordPage,
@@ -9,6 +10,8 @@ import {
   VerifyEmailPage,
 } from './pages/AccountPages.js';
 import { LoginPage, RegisterPage } from './pages/AuthPages.js';
+import { AdminQueuePage } from './pages/AdminQueuePage.js';
+import { AdminRoutePage } from './pages/AdminRoutePage.js';
 import { ExplorePage } from './pages/ExplorePage.js';
 import { InvitePage } from './pages/InvitePage.js';
 import { JourneyPage } from './pages/JourneyPage.js';
@@ -87,6 +90,22 @@ export function App() {
             <RequireSession>
               <EditRoutePage />
             </RequireSession>
+          }
+        />
+        <Route
+          path="admin/reports"
+          element={
+            <RequireAdmin>
+              <AdminQueuePage />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="admin/reports/:routeId"
+          element={
+            <RequireAdmin>
+              <AdminRoutePage />
+            </RequireAdmin>
           }
         />
         <Route path="login" element={<LoginPage />} />

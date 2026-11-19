@@ -10,7 +10,7 @@ import { BottomNav } from './BottomNav.js';
 import { IconSprite } from './Icon.js';
 import { Logo } from './Logo.js';
 import { Toaster } from './toast/Toaster.js';
-import { NAV_LINKS } from './navLinks.js';
+import { visibleLinks } from './navLinks.js';
 import { VerifyBanner } from './VerifyBanner.js';
 
 /** The shell: top navigation, the page, and the TMDB notice. */
@@ -33,13 +33,13 @@ export function Layout() {
           aria-label={t('nav.main')}
           className={signedIn ? 'has-bottom-nav' : undefined}
         >
-          {NAV_LINKS.filter((link) => signedIn || !link.needsSession).map(
-            (link) => (
-              <NavLink key={link.to} to={link.to}>
-                {t(link.label)}
-              </NavLink>
-            ),
-          )}
+          {visibleLinks(
+            session.status === 'authenticated' ? session.user : null,
+          ).map((link) => (
+            <NavLink key={link.to} to={link.to}>
+              {t(link.label)}
+            </NavLink>
+          ))}
         </nav>
         <div className="me">
           <select

@@ -2,6 +2,7 @@ import type {
   Emotion,
   EnrollmentStatus,
   Locale,
+  ReportReason,
   RouteVisibility,
 } from '@film-routes/shared';
 
@@ -274,4 +275,43 @@ export type TravelerStep = {
 export type TravelerJourney = {
   traveler: Omit<Traveler, 'id'> & { enrollmentId: string };
   steps: TravelerStep[];
+};
+
+/** One route with open reports, in the moderators' queue (`GET /admin/reports`). */
+export type AdminQueueRoute = {
+  routeId: string;
+  title: string;
+  author: string;
+  visibility: RouteVisibility;
+  hidden: boolean;
+  openReports: number;
+  byReason: Partial<Record<ReportReason, number>>;
+  firstReportAt: string;
+  lastReportAt: string;
+};
+
+export type AdminQueue = {
+  routes: AdminQueueRoute[];
+  page: number;
+  pageSize: number;
+  total: number;
+};
+
+export type AdminReportStatus = 'open' | 'upheld' | 'dismissed';
+
+/** One report on a route, with who made it (only moderators see this). */
+export type AdminReport = {
+  id: string;
+  reporter: string;
+  reason: ReportReason;
+  note: string | null;
+  status: AdminReportStatus;
+  createdAt: string;
+  resolvedAt: string | null;
+};
+
+/** A route as a moderator reads it, and everything said about it (`GET /admin/routes/:id`). */
+export type AdminRouteReview = {
+  route: AuthorRouteDetail & { author: string; hiddenBy: string | null };
+  reports: AdminReport[];
 };
