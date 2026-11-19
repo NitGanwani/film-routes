@@ -2371,6 +2371,37 @@ fieldset.field legend {
 .step-preview-list {
   padding: var(--sp-2) var(--sp-4) var(--sp-6);
 }
+/* The sheet is 480 px wide at any window size, so the row always uses the
+   narrow layout (title, notes, buttons one under the other): the wide one
+   (96 px poster + 300 px side column) does not fit in it and overflowed. */
+.step-preview-list .step {
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+}
+.step-preview-list .step .poster {
+  width: 56px;
+}
+.step-preview-list .step .num {
+  left: var(--sp-2);
+  top: var(--sp-2);
+  width: 22px;
+  height: 22px;
+}
+.step-preview-list .step .body {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: none;
+  grid-template-areas: 'main' 'aside' 'actions';
+  row-gap: var(--sp-3);
+}
+.step-preview-list .step .aside {
+  padding-left: 0;
+  border-left: 0;
+}
+.step-preview-list .step h2,
+.step-preview-list .step h3 {
+  font-size: var(--fs-lg);
+}
 @media (min-width: 720px) {
   .step-preview-list {
     padding: var(--sp-2) var(--sp-6) var(--sp-6);
