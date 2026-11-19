@@ -554,7 +554,7 @@ export const es = {
       },
       removed: {
         title: 'Ya no estás en esta ruta',
-        body: 'Quien la hizo te quitó de ella. Puedes pedirle otro enlace si quieres volver.',
+        body: 'Quien la hizo te quitó de ella y no se puede volver a entrar, ni con otro enlace.',
       },
       hidden: {
         title: 'Esta ruta no está disponible',

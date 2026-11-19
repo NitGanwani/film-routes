@@ -47,7 +47,7 @@ export type ProblemView = {
  * What the page shows for each problem (Fable, "Estados de error"). Where the
  * person who made the link has decided something (turned it off, removed
  * someone, the route was taken down) the way out is to explore: asking again
- * would only insist.
+ * would only insist. Removed travelers cannot come back with a new link either.
  */
 export const PROBLEM_VIEW: Record<InviteProblem, ProblemView> = {
   expired: {
@@ -85,8 +85,9 @@ export const PROBLEM_VIEW: Record<InviteProblem, ProblemView> = {
     icon: 'frame-off',
     tone: 'danger',
     role: 'alert',
-    primary: 'askAgain',
-    secondary: 'explore',
+    // The API refuses a removed traveler on any link of the route, so asking
+    // for another one cannot help: the only way out is to look elsewhere.
+    primary: 'explore',
   },
   hidden: {
     strip: 'lock',

@@ -554,7 +554,7 @@ export const en: Translations = {
       },
       removed: {
         title: "You're no longer on this route",
-        body: "The person who made it removed you. Ask them for a new link if you'd like back in.",
+        body: "The person who made it removed you, and you can't get back in, not even with a new link.",
       },
       hidden: {
         title: "This route isn't available",
