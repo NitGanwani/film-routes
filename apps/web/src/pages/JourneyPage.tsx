@@ -14,6 +14,7 @@ import { Shared } from '../components/Shared.js';
 import { FilmStrip } from '../components/FilmStrip.js';
 import { ErrorBox } from '../components/States.js';
 import { CloseDialog } from '../journey/CloseDialog.js';
+import { ReportRoute } from '../moderation/ReportRoute.js';
 import { FinishedDialog } from '../journey/FinishedDialog.js';
 import { justCompleted } from '../journey/finish.js';
 import { RatingPicker } from '../journey/RatingPicker.js';
@@ -246,6 +247,10 @@ export function JourneyPage() {
               />
             ))}
           </ol>
+
+          <div className="report-foot">
+            <ReportRoute routeId={routeId} author={route.author} />
+          </div>
 
           {enrollment.status === 'active' && (
             <div style={{ marginTop: 'var(--sp-6)' }}>

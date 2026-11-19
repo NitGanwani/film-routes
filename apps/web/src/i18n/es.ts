@@ -463,6 +463,38 @@ export const es = {
       problemComment: 'El comentario es demasiado largo.',
     },
   },
+  report: {
+    open: 'Denunciar esta ruta',
+    title: 'Denunciar esta ruta',
+    intro:
+      'Un moderador la revisará. Tu denuncia es privada: el autor no sabrá que has sido tú.',
+    reason: '¿Qué ocurre?',
+    reasons: {
+      spoiler: {
+        title: 'Cuenta demasiado',
+        text: 'La sinopsis o las notas destripan películas',
+      },
+      offensive: {
+        title: 'Ofensiva',
+        text: 'Insulta, acosa o discrimina a alguien',
+      },
+      spam: {
+        title: 'Spam o publicidad',
+        text: 'Promociona algo que no es una ruta de cine',
+      },
+      other: {
+        title: 'Otro motivo',
+        text: 'Cuéntanoslo en la nota',
+      },
+    },
+    note: 'Algo más que debamos saber',
+    optional: '(opcional)',
+    submit: 'Enviar denuncia',
+    submitting: 'Enviando…',
+    cancel: 'Cancelar',
+    problemReason: 'Elige un motivo para enviar la denuncia.',
+    problemNote: 'La nota es demasiado larga.',
+  },
   footer: {
     tmdb: 'Este producto usa la API de TMDB, pero TMDB no lo respalda ni lo certifica.',
   },
@@ -591,6 +623,8 @@ export const es = {
       unlisted: 'Ahora solo se entra con el enlace',
       public: 'La ruta ahora es pública',
     },
+    reported: 'Denuncia enviada',
+    reportedDetail: 'Gracias. Un moderador la revisará.',
     copied: 'Enlace copiado',
     copiedDetail: 'Pégalo donde quieras',
     copyFailed: 'No se pudo copiar',
@@ -629,6 +663,8 @@ export const es = {
     route_not_found: 'No encontramos esa ruta.',
     step_not_found: 'No encontramos esa película en la ruta.',
     route_hidden: 'Un moderador ha ocultado esta ruta.',
+    already_reported: 'Ya denunciaste esta ruta. Un moderador la revisará.',
+    cannot_report_own_route: 'No puedes denunciar tu propia ruta.',
     route_not_shared: 'Primero elige cómo compartir la ruta.',
     route_too_short: 'Una ruta compartida necesita entre 3 y 10 películas.',
     removed_from_route: 'El autor te ha quitado de esta ruta.',

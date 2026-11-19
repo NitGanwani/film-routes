@@ -14,6 +14,7 @@ import { Poster } from '../components/Poster.js';
 import { Shared } from '../components/Shared.js';
 import { ErrorBox } from '../components/States.js';
 import { filmTitle, originalTitleNote } from '../films/titles.js';
+import { ReportRoute } from '../moderation/ReportRoute.js';
 import { formatAverage } from '../i18n/format.js';
 import { loginPathFor } from '../session/nextPath.js';
 import { useSession } from '../session/SessionProvider.js';
@@ -236,6 +237,9 @@ export function RoutePage() {
         <p className="note" style={{ marginTop: 'var(--sp-3)' }}>
           {t('route.spoilerFree', { author: data.author })}
         </p>
+        <div className="report-foot">
+          <ReportRoute routeId={routeId} author={data.author} />
+        </div>
 
         {/* Phones: pinned to the bottom of the screen. */}
         <div className="sticky-cta">{joinAction}</div>

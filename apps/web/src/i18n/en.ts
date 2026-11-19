@@ -463,6 +463,38 @@ export const en: Translations = {
       problemComment: 'The comment is too long.',
     },
   },
+  report: {
+    open: 'Report this route',
+    title: 'Report this route',
+    intro:
+      'A moderator will look at it. Your report is private: the author will not know it was you.',
+    reason: 'What is wrong?',
+    reasons: {
+      spoiler: {
+        title: 'Gives too much away',
+        text: 'The synopsis or the notes spoil films',
+      },
+      offensive: {
+        title: 'Offensive',
+        text: 'Insults, harasses or discriminates against someone',
+      },
+      spam: {
+        title: 'Spam or advertising',
+        text: 'Promotes something that is not a film route',
+      },
+      other: {
+        title: 'Something else',
+        text: 'Tell us in the note',
+      },
+    },
+    note: 'Anything else we should know',
+    optional: '(optional)',
+    submit: 'Send report',
+    submitting: 'Sending…',
+    cancel: 'Cancel',
+    problemReason: 'Pick a reason to send the report.',
+    problemNote: 'The note is too long.',
+  },
   footer: {
     tmdb: 'This product uses the TMDB API but is not endorsed or certified by TMDB.',
   },
@@ -591,6 +623,8 @@ export const en: Translations = {
       unlisted: 'Now only people with the link can join',
       public: 'The route is now public',
     },
+    reported: 'Report sent',
+    reportedDetail: 'Thank you. A moderator will look at it.',
     copied: 'Link copied',
     copiedDetail: 'Paste it wherever you like',
     copyFailed: 'Could not copy',
@@ -629,6 +663,9 @@ export const en: Translations = {
     route_not_found: 'We could not find that route.',
     step_not_found: 'We could not find that film in the route.',
     route_hidden: 'A moderator has hidden this route.',
+    already_reported:
+      'You already reported this route. A moderator will look at it.',
+    cannot_report_own_route: 'You cannot report your own route.',
     route_not_shared: 'First choose how to share the route.',
     route_too_short: 'A shared route needs between 3 and 10 films.',
     removed_from_route: 'The author removed you from this route.',

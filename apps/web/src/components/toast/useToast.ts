@@ -20,6 +20,13 @@ export function useToast() {
           title: t('toast.changes'),
           detail: t(`toast.visibility.${visibility}`),
         }),
+      /** A report was sent: the sheet closes, so this is the only answer. */
+      reported: () =>
+        showToast({
+          kind: 'changes',
+          title: t('toast.reported'),
+          detail: t('toast.reportedDetail'),
+        }),
       /** A link is on the clipboard. */
       copied: () =>
         showToast({

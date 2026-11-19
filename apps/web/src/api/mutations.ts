@@ -10,6 +10,7 @@ import {
   withStepUpdated,
 } from '../editor/films.js';
 import { applyPatch, type RoutePatch } from '../editor/model.js';
+import type { ReportBody } from '../moderation/report.js';
 import type { StepPatch } from '../editor/notes.js';
 import { api } from './instance.js';
 import { invitesQuery, myRouteQuery, travelersQuery } from './queries.js';
@@ -360,6 +361,21 @@ export function useRateRoute(routeId: string) {
       });
       void queryClient.invalidateQueries({ queryKey: ['public-routes'] });
     },
+  });
+}
+
+/**
+ * Report a route. Nothing in the page changes when it works (the toast says it
+ * and the sheet closes), so there is nothing to refresh or to roll back.
+ */
+export function useReportRoute(routeId: string) {
+  return useMutation({
+    mutationFn: (body: ReportBody) =>
+      api.request<{ report: { id: string } }>(`/routes/${routeId}/reports`, {
+        method: 'POST',
+        auth: true,
+        body,
+      }),
   });
 }
 
