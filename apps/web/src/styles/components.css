@@ -3873,6 +3873,10 @@ fieldset.field legend {
   border-left: 3px solid var(--danger);
   padding-left: 12px;
 }
+.toast[data-kind='update'] {
+  border-left: 3px solid var(--accent);
+  padding-left: 12px;
+}
 .toast:hover,
 .toast:focus-within {
   border-color: color-mix(in srgb, var(--text) 24%, var(--border));

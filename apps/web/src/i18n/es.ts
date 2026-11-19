@@ -687,6 +687,9 @@ export const es = {
   toast: {
     close: 'Cerrar aviso',
     retry: 'Reintentar',
+    update: 'Hay una versión nueva',
+    updateDetail: 'Al actualizar se recarga la página.',
+    updateNow: 'Actualizar',
     changes: 'Cambios guardados',
     visibility: {
       private: 'La ruta ahora es privada',
@@ -714,6 +717,10 @@ export const es = {
     retry: 'Reintentar',
     notFound: 'Esta página no existe.',
     loadFailed: 'No hemos podido cargar esto',
+  },
+  connection: {
+    title: 'No hay conexión con el servidor',
+    body: 'Tu sesión sigue guardada. Seguimos intentándolo y esto se abrirá solo cuando vuelva la red.',
   },
   errors: {
     unknown: 'Algo ha salido mal. Inténtalo de nuevo.',

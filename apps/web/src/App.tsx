@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router';
 import { useSession } from './session/SessionProvider.js';
+import { SessionWaiting } from './session/SessionWaiting.js';
 import { Layout } from './components/Layout.js';
 import { RequireAdmin } from './components/RequireAdmin.js';
 import { RequireSession } from './components/RequireSession.js';
@@ -34,7 +35,7 @@ const LandingPage = lazy(() =>
 function Home() {
   const session = useSession();
   // A stored session is being resumed: show neither until we know who this is.
-  if (session.status === 'loading') return null;
+  if (session.status === 'loading') return <SessionWaiting />;
   if (session.status === 'authenticated') return <ExplorePage />;
   return (
     <Suspense fallback={null}>

@@ -103,6 +103,16 @@ export function ToastIcon({ kind }: { kind: ToastKind }) {
           </m.g>
         </>
       )}
+      {kind === 'update' && (
+        <>
+          <m.path
+            className="stroke-light"
+            d="M20 12a8 8 0 1 1-2.34-5.66"
+            {...draw(0.1)}
+          />
+          <m.path className="stroke-light" d="M20 4v5h-5" {...draw(0.34)} />
+        </>
+      )}
       {kind === 'error' && (
         <>
           <m.circle

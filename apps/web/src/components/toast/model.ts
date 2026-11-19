@@ -1,5 +1,5 @@
-/** The four voices of a notice, each with its own icon and way of leaving. */
-export type ToastKind = 'changes' | 'copied' | 'invite' | 'error';
+/** The five voices of a notice, each with its own icon and way of leaving. */
+export type ToastKind = 'changes' | 'copied' | 'invite' | 'error' | 'update';
 
 export type Toast = {
   id: number;
@@ -21,6 +21,8 @@ export const DURATION: Record<ToastKind, number | null> = {
   copied: 5000,
   invite: 8000,
   error: null,
+  // A new version waits as long as it takes: it is the person's call.
+  update: null,
 };
 
 /** After hovering or focusing, never leave in less than this. */

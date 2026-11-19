@@ -6,6 +6,7 @@ import { ApiError } from './api/client.js';
 import { App } from './App.js';
 import { initI18n } from './i18n/index.js';
 import { MotionRoot } from './motion/MotionRoot.js';
+import { registerServiceWorker } from './pwa/register.js';
 import { SessionProvider } from './session/SessionProvider.js';
 import './styles/index.css';
 
@@ -38,4 +39,5 @@ void initI18n().then(() => {
       </QueryClientProvider>
     </StrictMode>,
   );
+  registerServiceWorker();
 });

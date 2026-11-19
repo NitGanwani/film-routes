@@ -687,6 +687,9 @@ export const en: Translations = {
   toast: {
     retry: 'Retry',
     close: 'Dismiss',
+    update: 'A new version is available',
+    updateDetail: 'Updating reloads the page.',
+    updateNow: 'Update',
     changes: 'Changes saved',
     visibility: {
       private: 'The route is now private',
@@ -714,6 +717,10 @@ export const en: Translations = {
     retry: 'Try again',
     notFound: 'This page does not exist.',
     loadFailed: 'We could not load this',
+  },
+  connection: {
+    title: 'No connection to the server',
+    body: 'Your session is still saved. We keep trying and this will open by itself when the network is back.',
   },
   errors: {
     invalid_token: 'This link is not valid or has expired. Ask for a new one.',

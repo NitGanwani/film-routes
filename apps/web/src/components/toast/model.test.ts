@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DURATION,
   MAX_TOASTS,
   MIN_AFTER_RESUME,
   timeAfterResume,
@@ -33,6 +34,19 @@ describe('withToast', () => {
     const next = withToast(full, toast(3, 'invite'));
     expect(next).toHaveLength(MAX_TOASTS);
     expect(next.map((item) => item.id)).toEqual([2, 3]);
+  });
+});
+
+describe('DURATION', () => {
+  it('keeps an error and a new version until the person answers', () => {
+    expect(DURATION.error).toBeNull();
+    expect(DURATION.update).toBeNull();
+  });
+
+  it('lets the rest leave by themselves', () => {
+    expect(DURATION.changes).toBeGreaterThan(0);
+    expect(DURATION.copied).toBeGreaterThan(0);
+    expect(DURATION.invite).toBeGreaterThan(0);
   });
 });
 

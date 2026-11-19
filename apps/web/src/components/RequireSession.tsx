@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Navigate, useLocation } from 'react-router';
 import { loginPathFor } from '../session/nextPath.js';
 import { useSession } from '../session/SessionProvider.js';
+import { SessionWaiting } from '../session/SessionWaiting.js';
 
 /**
  * Pages that need an account. Someone who is not signed in goes to the login
@@ -13,7 +14,9 @@ export function RequireSession({ children }: { children: ReactNode }) {
   const session = useSession();
   const location = useLocation();
 
-  if (session.status === 'loading') return <p>{t('common.loading')}</p>;
+  if (session.status === 'loading') {
+    return <SessionWaiting placeholder={<p>{t('common.loading')}</p>} />;
+  }
   if (session.status === 'anonymous') {
     return (
       <Navigate
